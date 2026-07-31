@@ -1,0 +1,95 @@
+<table class="table" role="table">
+  <caption class="visually-hidden">
+    Open pen name requests, with the screening checks each proposed name cleared.
+  </caption>
+
+  <thead class="table__group" role="rowgroup">
+    <tr class="table__row table__row--head" role="row">
+      <th class="table__head" role="columnheader" scope="col">Legal name</th>
+      <th class="table__head" role="columnheader" scope="col">Proposed pen name</th>
+      <th class="table__head" role="columnheader" scope="col">Checks</th>
+      <th class="table__head" role="columnheader" scope="col">Requested</th>
+      <th class="table__head" role="columnheader" scope="col">Status</th>
+      <th class="table__head table__head--center" role="columnheader" scope="col">Action</th>
+    </tr>
+  </thead>
+
+  <tbody class="table__group table__group--body" role="rowgroup">
+    @for (request of requests(); track request.id) {
+      <tr class="table__row" role="row">
+        <td class="table__cell" role="cell">
+          <span class="table__author">{{ request.legalName }}</span>
+          <span class="table__meta">{{ meta(request.presentation, request.origin) }}</span>
+        </td>
+
+        <td class="table__cell" role="cell">
+          <span class="table__pen-name">{{ request.proposedName || '—' }}</span>
+          @if (request.errorMessage) {
+            <span class="table__error">{{ request.errorMessage }}</span>
+          }
+        </td>
+
+        <td class="table__cell table__checks" role="cell">
+          @if (request.checks.length) {
+            @for (check of request.checks; track check.id) {
+              <nym-check-line [check]="check" />
+            }
+          } @else {
+            <span class="table__checks-placeholder" aria-label="Checks pending">—</span>
+          }
+        </td>
+
+        <td class="table__cell" role="cell">
+          <span class="table__stamp">{{ stamp(request.requestedAt) }}</span>
+        </td>
+
+        <td class="table__cell table__status" role="cell">
+          @if (request.status === Status.Generating) {
+            <span class="table__generating">
+              <nym-spinner size="sm" />
+              <span>Generating…</span>
+            </span>
+          } @else {
+            <nym-status-pill [status]="request.status" />
+          }
+        </td>
+
+        <td class="table__cell table__actions" role="cell">
+          @if (canRetry(request)) {
+            <button
+              nymButton
+              size="sm"
+              [attr.aria-label]="'Retry generation for ' + request.legalName"
+              (click)="retry.emit(request)"
+            >
+              <svg lucideRotateCw class="nym-icon" [size]="12" aria-hidden="true"></svg>
+              <span>Retry</span>
+            </button>
+          }
+
+          <a
+            class="table__link-button"
+            [routerLink]="['/requests', request.id]"
+            [attr.aria-label]="'Edit the request for ' + request.legalName"
+          >
+            <svg lucidePencil class="nym-icon" [size]="12" aria-hidden="true"></svg>
+            <span>Edit</span>
+          </a>
+
+          @if (canApprove(request)) {
+            <button
+              nymButton
+              variant="primary"
+              size="sm"
+              [attr.aria-label]="'Approve ' + request.proposedName + ' for ' + request.legalName"
+              (click)="approve.emit(request)"
+            >
+              <svg lucideCheck class="nym-icon" [size]="12" aria-hidden="true"></svg>
+              <span>Approve</span>
+            </button>
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

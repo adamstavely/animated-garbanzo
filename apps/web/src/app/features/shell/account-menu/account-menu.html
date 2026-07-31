@@ -1,0 +1,19 @@
+<button
+  type="button"
+  class="avatar"
+  [attr.aria-label]="triggerLabel()"
+  [cdkMenuTriggerFor]="accountMenu"
+  [cdkMenuPosition]="menuPosition"
+>
+  <span aria-hidden="true">{{ user()?.initials ?? '—' }}</span>
+</button>
+
+<ng-template #accountMenu>
+  <div cdkMenu class="menu menu--account" aria-label="Account">
+    <div class="menu__identity">
+      <span class="menu__identity-name">{{ user()?.name }}</span>
+      <span class="menu__identity-role">{{ user()?.role }}</span>
+    </div>
+    <button cdkMenuItem type="button" class="menu__item menu__item--simple">Team &amp; permissions</button>
+  </div>
+</ng-template>

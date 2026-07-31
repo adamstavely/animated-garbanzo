@@ -1,0 +1,31 @@
+@if (label()) {
+  <label class="field__label" [attr.for]="controlId">
+    {{ label() }}
+    @if (optional()) {
+      <span class="field__optional">optional</span>
+    }
+  </label>
+}
+
+<span class="select">
+  <select
+    class="field__control select__control"
+    [id]="controlId"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-describedby]="describedBy()"
+    [disabled]="disabled()"
+    (change)="onSelect($event)"
+    (blur)="touch()"
+  >
+    @for (option of options(); track option.value) {
+      <option [value]="option.value" [selected]="option.value === (value() ?? '')">
+        {{ option.label }}
+      </option>
+    }
+  </select>
+  <svg lucideChevronDown class="nym-icon select__chevron" [size]="14" aria-hidden="true"></svg>
+</span>
+
+@if (hint()) {
+  <span class="field__hint" [id]="hintId">{{ hint() }}</span>
+}

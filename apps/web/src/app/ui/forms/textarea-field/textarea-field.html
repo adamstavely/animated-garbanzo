@@ -1,0 +1,26 @@
+@if (label()) {
+  <label class="field__label" [attr.for]="controlId">
+    {{ label() }}
+    @if (optional()) {
+      <span class="field__optional">optional</span>
+    }
+  </label>
+}
+
+<textarea
+  class="field__control field__textarea"
+  [class.field__textarea--compact]="density() === 'compact'"
+  [id]="controlId"
+  [rows]="rows()"
+  [value]="value() ?? ''"
+  [placeholder]="placeholder()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-describedby]="describedBy()"
+  [disabled]="disabled()"
+  (input)="onInput($event)"
+  (blur)="touch()"
+></textarea>
+
+@if (hint()) {
+  <span class="field__hint" [id]="hintId">{{ hint() }}</span>
+}

@@ -1,0 +1,43 @@
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="header">
+  <div class="header__brand">
+    <nym-logo />
+    <nav class="header__tabs" aria-label="Views">
+      <a class="header__tab" routerLink="/queue" routerLinkActive="header__tab--active" ariaCurrentWhenActive="page">
+        Queue
+      </a>
+      <a class="header__tab" routerLink="/history" routerLinkActive="header__tab--active" ariaCurrentWhenActive="page">
+        History
+      </a>
+    </nav>
+  </div>
+
+  <div class="header__search">
+    <nym-search-box />
+  </div>
+
+  <div class="header__actions">
+    <button nymButton variant="primary" (click)="openNewRequest()">
+      <svg lucidePlus class="nym-icon" [size]="12" aria-hidden="true"></svg>
+      <span>New request</span>
+    </button>
+
+    <nym-theme-toggle />
+
+    <span class="header__divider" aria-hidden="true"></span>
+
+    <nym-app-picker />
+    <nym-account-menu />
+  </div>
+</header>
+
+<main id="main-content" class="main" tabindex="-1">
+  <router-outlet />
+</main>
+
+<nym-toast />
+
+@if (newRequestOpen()) {
+  <nym-new-request-modal (closed)="closeNewRequest()" />
+}

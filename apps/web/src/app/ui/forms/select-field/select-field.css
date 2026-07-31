@@ -1,0 +1,19 @@
+.select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.select__control {
+  appearance: none;
+  padding-right: var(--space-19);
+  cursor: pointer;
+}
+
+.select__chevron {
+  position: absolute;
+  right: var(--space-9);
+  color: var(--muted);
+  pointer-events: none;
+}

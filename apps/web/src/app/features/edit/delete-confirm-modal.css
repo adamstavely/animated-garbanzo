@@ -1,0 +1,15 @@
+.delete__note {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-loose);
+  color: var(--ink-3);
+}
+
+.delete__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  width: 100%;
+  padding-top: var(--space-2);
+}

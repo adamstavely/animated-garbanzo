@@ -1,0 +1,7 @@
+<button nymIconButton [label]="label()" class="theme-toggle" (click)="toggle()">
+  @if (isDark()) {
+    <svg lucideSun class="nym-icon" [size]="16" aria-hidden="true"></svg>
+  } @else {
+    <svg lucideMoon class="nym-icon" [size]="16" aria-hidden="true"></svg>
+  }
+</button>

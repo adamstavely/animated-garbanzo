@@ -1,0 +1,34 @@
+{
+  "name": "nym",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nym — pen name desk for publishing assistants",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @nym/shared && npm run build --workspace @nym/api && npm run build --workspace @nym/web",
+    "start:api": "npm run start:dev --workspace @nym/api",
+    "start:web": "npm run start --workspace @nym/web",
+    "lint": "npm run lint --workspace @nym/api && npm run lint --workspace @nym/web",
+    "typecheck": "npm run typecheck --workspace @nym/shared && npm run typecheck --workspace @nym/api && npm run typecheck --workspace @nym/web",
+    "test": "npm run test --workspace @nym/shared && npm run test --workspace @nym/api && npm run test --workspace @nym/web",
+    "test:unit": "npm run test:unit --workspace @nym/api && npm run test --workspace @nym/web",
+    "test:integration": "npm run test:integration --workspace @nym/api",
+    "test:e2e": "npm run test:e2e --workspace @nym/web",
+    "db:up": "./scripts/postgres.sh start",
+    "db:down": "./scripts/postgres.sh stop",
+    "migration:run": "npm run migration:run --workspace @nym/api",
+    "format": "prettier --write \"{apps,packages}/**/*.{ts,html,css,scss,json,md}\"",
+    "format:check": "prettier --check \"{apps,packages}/**/*.{ts,html,css,scss,json,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "typescript": "~5.9.2"
+  }
+}

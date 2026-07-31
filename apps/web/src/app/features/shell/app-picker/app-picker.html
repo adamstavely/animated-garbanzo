@@ -1,0 +1,25 @@
+<button
+  nymIconButton
+  variant="sunken"
+  label="Switch app"
+  class="app-picker__trigger"
+  [cdkMenuTriggerFor]="appMenu"
+  [cdkMenuPosition]="menuPosition"
+>
+  <svg lucideGrid3x3 class="nym-icon" [size]="16" aria-hidden="true"></svg>
+</button>
+
+<ng-template #appMenu>
+  <div cdkMenu class="menu menu--apps" aria-label="Publishing suite">
+    <p class="menu__heading">Publishing suite</p>
+    @for (app of apps(); track app.name) {
+      <a cdkMenuItem class="menu__item" [href]="app.href" [attr.aria-current]="app.current ? 'page' : null">
+        <span class="menu__item-title">{{ app.name }}</span>
+        <span class="menu__item-description">{{ app.description }}</span>
+        @if (app.current) {
+          <span class="menu__current">Current</span>
+        }
+      </a>
+    }
+  </div>
+</ng-template>

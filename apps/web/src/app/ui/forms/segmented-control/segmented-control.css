@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.segmented {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.segmented__legend {
+  padding: 0;
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-2);
+}
+
+.segmented__track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-rail-item);
+  background: var(--surface-sunken);
+}
+
+.segmented__segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target-min);
+  padding: var(--space-5) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-segment);
+  font-size: var(--text-body);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing),
+    color var(--duration-fast) var(--easing);
+}
+
+.segmented__segment:hover {
+  color: var(--ink);
+}
+
+.segmented__segment--selected {
+  background: var(--surface);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-raised);
+  color: var(--ink);
+}
+
+/* The input is hidden, so the ring has to be drawn on the visible segment. */
+.segmented__segment:has(.segmented__input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}

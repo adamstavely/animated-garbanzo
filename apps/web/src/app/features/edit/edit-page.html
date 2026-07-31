@@ -1,0 +1,123 @@
+@if (request(); as request) {
+  <div class="edit">
+    <aside class="rail" aria-labelledby="rail-heading">
+      <a class="rail__back" routerLink="/queue">
+        <svg lucideArrowLeft class="nym-icon" [size]="13" aria-hidden="true"></svg>
+        <span>Back to queue</span>
+      </a>
+
+      <div class="rail__section">
+        <h2 class="rail__heading" id="rail-heading">All requests</h2>
+        <ul class="rail__list">
+          @for (entry of allRequests(); track entry.id) {
+            <li>
+              <a
+                class="rail__item"
+                [class.rail__item--active]="entry.id === request.id"
+                [routerLink]="['/requests', entry.id]"
+                [attr.aria-current]="entry.id === request.id ? 'true' : null"
+              >
+                <span class="rail__item-title">{{ entry.legalName }}</span>
+                <span class="rail__item-status">{{ railStatus(entry) }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
+    </aside>
+
+    <nym-brief-form
+      [request]="request"
+      [promptEdited]="promptEdited()"
+      (briefChange)="onBriefChange($event)"
+      (generate)="generate()"
+      (regenerate)="regenerate($event)"
+      (openPrompt)="openPrompt()"
+      (askDelete)="deleteOpen.set(true)"
+    />
+
+    <section class="results" aria-labelledby="results-heading">
+      <div class="results__header">
+        <p class="results__eyebrow">Candidates for</p>
+        <h1 class="results__title" id="results-heading">{{ request.legalName }}</h1>
+      </div>
+
+      @if (busy()) {
+        <div class="results__busy">
+          <nym-spinner size="md" />
+          <p class="results__busy-note" role="status">{{ busyNote() }}</p>
+        </div>
+      } @else if (hasCandidates()) {
+        <div class="results__body">
+          <div class="results__meta">
+            <p class="results__meta-note">
+              Candidates that overlap the legal name or match a known person are filtered out before review.
+              {{ screeningNote() }}.
+            </p>
+            <p class="results__meta-note results__meta-note--end">
+              Locked names are kept when you regenerate; everything else is replaced.
+            </p>
+          </div>
+
+          <ul class="results__grid">
+            @for (candidate of candidates(); track candidate.id) {
+              <li>
+                <nym-candidate-card
+                  [candidate]="candidate"
+                  [selected]="candidate.name === request.chosenName"
+                  (choose)="choose($event)"
+                  (toggleLock)="toggleLock($event)"
+                />
+              </li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <nym-empty-state
+          variant="dashed"
+          heading="No candidates yet"
+          description="Fill in the brief and generate. Every returned name is screened for overlap with the legal name and for prior use by a published author."
+        />
+      }
+
+      @if (request.chosenName) {
+        <div class="approve-bar">
+          <div class="approve-bar__selection">
+            <p class="approve-bar__eyebrow">Selected</p>
+            <p class="approve-bar__name">{{ request.chosenName }}</p>
+          </div>
+          <div class="approve-bar__actions">
+            <button nymButton class="approve-bar__clear" (click)="clearChoice()">Clear</button>
+            <button nymButton variant="inverse" (click)="approve()">
+              {{ request.approvedName === request.chosenName ? 'Approved' : 'Approve pen name' }}
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+  </div>
+
+  @if (promptOpen() && promptSettings(); as settings) {
+    <nym-prompt-modal
+      [requestId]="request.id"
+      [settings]="settings"
+      (saved)="onPromptSaved($event)"
+      (closed)="promptOpen.set(false)"
+    />
+  }
+
+  @if (deleteOpen()) {
+    <nym-delete-confirm-modal
+      [legalName]="request.legalName"
+      (confirmed)="confirmDelete()"
+      (cancelled)="deleteOpen.set(false)"
+    />
+  }
+} @else {
+  <div class="edit__missing">
+    <nym-empty-state
+      heading="Request not found"
+      description="It may have been deleted. Head back to the queue to pick another."
+    />
+  </div>
+}

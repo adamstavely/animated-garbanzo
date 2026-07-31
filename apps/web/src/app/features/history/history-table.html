@@ -1,0 +1,65 @@
+<table class="table" role="table">
+  <caption class="visually-hidden">
+    Approved pen names, the checks they cleared, and who signed each one off.
+  </caption>
+
+  <thead class="table__group" role="rowgroup">
+    <tr class="table__row table__row--head" role="row">
+      <th class="table__head" role="columnheader" scope="col">Legal name</th>
+      <th class="table__head" role="columnheader" scope="col">Approved pen name</th>
+      <th class="table__head" role="columnheader" scope="col">Approved by</th>
+      <th class="table__head" role="columnheader" scope="col">Status</th>
+      <th class="table__head table__head--center" role="columnheader" scope="col">Action</th>
+    </tr>
+  </thead>
+
+  <tbody class="table__group table__group--body" role="rowgroup">
+    @for (request of requests(); track request.id) {
+      <tr class="table__row" role="row">
+        <td class="table__cell" role="cell">
+          <span class="table__author">{{ request.legalName }}</span>
+          <span class="table__meta">{{ meta(request.presentation, request.origin) }}</span>
+        </td>
+
+        <td class="table__cell" role="cell">
+          <span class="table__pen-name">{{ request.approvedName }}</span>
+          <span class="history__checks">
+            @for (check of visibleChecks(request); track check.id) {
+              <nym-check-line [check]="check" layout="inline" />
+            }
+          </span>
+        </td>
+
+        <td class="table__cell" role="cell">
+          <span class="history__approver">{{ request.approvedByName || '—' }}</span>
+          <span class="table__stamp">{{ stamp(request.approvedAt) }}</span>
+        </td>
+
+        <td class="table__cell" role="cell">
+          <nym-status-pill [status]="request.status" />
+        </td>
+
+        <td class="table__cell table__actions" role="cell">
+          <button
+            nymButton
+            size="sm"
+            [attr.aria-label]="'Reopen the request for ' + request.legalName"
+            (click)="reopen.emit(request)"
+          >
+            <svg lucideGitPullRequestArrow class="nym-icon" [size]="13" aria-hidden="true"></svg>
+            <span>Reopen</span>
+          </button>
+
+          <a
+            class="table__link-button"
+            [routerLink]="['/requests', request.id]"
+            [attr.aria-label]="'View the request for ' + request.legalName"
+          >
+            <svg lucideEye class="nym-icon" [size]="13" aria-hidden="true"></svg>
+            <span>View</span>
+          </a>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

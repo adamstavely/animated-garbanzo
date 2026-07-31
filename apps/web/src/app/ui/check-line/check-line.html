@@ -1,0 +1,13 @@
+<span
+  class="check"
+  [class.check--pass]="check().passed"
+  [class.check--fail]="!check().passed"
+  [class.check--inline]="layout() === 'inline'"
+>
+  @if (check().passed) {
+    <svg lucideCheck class="nym-icon check__glyph" [size]="12" aria-hidden="true"></svg>
+  } @else {
+    <svg lucideX class="nym-icon check__glyph" [size]="12" aria-hidden="true"></svg>
+  }
+  <span class="check__label">{{ label() }}</span>
+</span>

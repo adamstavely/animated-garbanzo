@@ -1,0 +1,32 @@
+:host {
+  display: inline-flex;
+}
+
+.spinner {
+  display: block;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: var(--border);
+  border-top-color: var(--ink);
+  animation: nym-spin var(--spin-duration) linear infinite;
+}
+
+.spinner--sm {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  border-width: 1.5px;
+}
+
+.spinner--md {
+  width: var(--space-14);
+  height: var(--space-14);
+  border-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: var(--border);
+    border-right-color: var(--ink);
+  }
+}

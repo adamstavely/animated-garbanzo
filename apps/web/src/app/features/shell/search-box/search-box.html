@@ -1,0 +1,21 @@
+<div class="search">
+  <svg lucideSearch class="nym-icon search__icon" [size]="14" aria-hidden="true"></svg>
+
+  <input
+    #searchInput
+    id="nym-search"
+    class="search__input"
+    type="search"
+    autocomplete="off"
+    aria-label="Search requests and history"
+    placeholder="Search requests and history"
+    [value]="query()"
+    (input)="onInput($event)"
+  />
+
+  @if (query()) {
+    <button nymIconButton size="sm" label="Clear search" class="search__clear" (click)="clear()">
+      <svg lucideX class="nym-icon" [size]="14" aria-hidden="true"></svg>
+    </button>
+  }
+</div>

@@ -1,0 +1,31 @@
+{
+  "name": "@nym/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Contracts shared between the Nym API and web client",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs",
+    "build:esm": "tsc -p tsconfig.esm.json && node ./scripts/write-package-type.mjs esm module",
+    "build:cjs": "tsc -p tsconfig.cjs.json && node ./scripts/write-package-type.mjs cjs commonjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2",
+    "vitest": "^3.0.5"
+  }
+}

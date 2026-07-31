@@ -1,0 +1,60 @@
+/**
+ * Shared field chrome: label, control and hint.
+ *
+ * Imported by every field component so the label, control and hint keep one
+ * rhythm across the brief, the intake modal and the prompt panel.
+ */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.field__label {
+  font-size: var(--text-body-sm);
+  font-weight: var(--weight-medium);
+  color: var(--ink-2);
+}
+
+.field__optional {
+  color: var(--faint);
+  font-weight: var(--weight-regular);
+}
+
+.field__hint {
+  font-size: var(--text-meta);
+  color: var(--muted);
+}
+
+.field__control {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-8) var(--space-9);
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+  background: var(--surface-sunken);
+  color: var(--ink);
+  font-size: var(--text-field);
+  transition:
+    border-color var(--duration-fast) var(--easing),
+    background-color var(--duration-fast) var(--easing);
+}
+
+.field__control:focus {
+  outline: none;
+  border-color: var(--ink);
+  background: var(--surface);
+}
+
+/* The global :focus-visible ring still applies; this only adds the fill change. */
+.field__control:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.field__control:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

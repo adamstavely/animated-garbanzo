@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#EFEFED">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#EFEFED"/>
+    <rect x="330" y="230" width="230" height="230" rx="34" fill="none" stroke="#A9B4AB" stroke-width="10"/>
+    <rect x="440" y="340" width="230" height="230" rx="34" fill="#1A1A19"/>
+    <text x="555" y="500" font-family="Georgia, serif" font-size="150" fill="#EFEFED" text-anchor="middle">N</text>
+    <text x="600" y="680" font-family="Georgia, serif" font-size="72" fill="#1A1A19" text-anchor="middle">Style guide</text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #EFEFED; color: #1A1A19; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #1A1A19; text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: #696961; }
+  doc-page:not(:defined) { visibility: hidden; }
+  .sg-h2 { break-after: avoid; }
+  .sg-card, .sg-swatch, .sg-row { break-inside: avoid; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+</style>
+<script src="./doc-page.js"></script>
+</helmet>
+
+<doc-page margin="0.7in">
+
+  <div slot="header" style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 8px; margin-bottom: 26px; border-bottom: 1px solid #D8D8D4; font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">
+    <span>Nym — Pen name desk</span>
+    <span>Design → development handoff</span>
+  </div>
+
+  <div slot="footer" style="display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-top: 8px; margin-top: 26px; border-top: 1px solid #D8D8D4; font-size: 9.5px; letter-spacing: 0.1em; color: #71716A;">
+    <span>Version 1.0 · July 2026</span>
+    <span>Source of truth: Nym.dc.html</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 34px; padding-bottom: 26px; border-bottom: 2px solid #1A1A19;">
+    <div style="font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #696961;">Style guide &amp; implementation spec</div>
+    <h1 style="font-family: 'Newsreader', serif; font-size: 46px; font-weight: 400; line-height: 1.02; letter-spacing: -0.025em; margin: 4px 0 0;">Nym design system</h1>
+    <p style="font-size: 13.5px; line-height: 1.65; color: #55554F; max-width: 32em; margin: 6px 0 0;">Everything required to build the pen name desk to design: colour, type, spacing, component specs, interaction states, both themes, accessibility requirements, and the product logic behind the screens.</p>
+  </div>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 34px 0 4px;">1 · Foundations</h2>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 18px;">The system is monochrome by intent: a near-black ink and a warm-neutral off-white carry the interface, and colour appears only to carry meaning. No pure black and no pure white anywhere.</p>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 22px 0 10px;">1.1 Light theme palette</h3>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+      <tr style="background: #F2F2F0;">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; width: 64px;">Swatch</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Token</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; width: 84px;">Hex</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Applied to</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #EFEFED; border: 1px solid #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">canvas</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#EFEFED</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">App shell background, edit-view canvas</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #FAFAF9; border: 1px solid #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">surface</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#FAFAF9</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Header, tables, cards, modals, brief pane</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #F2F2F0; border: 1px solid #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">surface-sunken</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#F2F2F0</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Input fills, table head, segmented track</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #F0F0EE; border: 1px solid #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">surface-hover</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#F0F0EE</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Table row hover, menu row hover</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #E7E7E4; border: 1px solid #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">rail</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#E7E7E4</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Edit-view request rail (hover #DEDEDA)</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #D8D8D4;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">border</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#D8D8D4</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Panel edges, dividers, table head rule</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #E6E6E2;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">border-subtle</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#E6E6E2</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Row separators inside tables and cards</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #8C8C87;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">border-control</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#8C8C87</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Inputs and secondary buttons — required for the 3:1 boundary rule</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #1A1A19;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">ink</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#1A1A19</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Body text, headings, primary button fill (hover #0E0E0D)</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #33332F;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">ink-2</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#33332F</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Field labels, approver name</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #55554F;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">ink-3</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#55554F</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Secondary button label, body prose, card origin note</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #696961;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">muted</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#696961</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Eyebrows, meta lines, timestamps, table headers. Darkest allowed muted tone — 4.5:1 on canvas</td>
+      </tr>
+      <tr>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 20px; border-radius: 3px; background: #71716A;"></span></td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2;">faint</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#71716A</td>
+        <td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">"optional" flags, placeholders, screening counts</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">1.2 Semantic colour</h3>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 14px;">Only three semantic families exist. Each is a triplet — text, 1px border, tinted fill — plus a dot colour for status pills. Never use a semantic hue decoratively.</p>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+    <div class="sg-card" style="border: 1px solid #C4DCCB; background: #F1F8F3; border-radius: 8px; padding: 14px;">
+      <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #2E6B4F; font-weight: 500;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #2E6B4F;"></span>Pass / Approved</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; line-height: 1.8; color: #55554F; margin-top: 8px;">text #2E6B4F<br>border #C4DCCB<br>fill #F1F8F3</div>
+      <div style="font-size: 11.5px; line-height: 1.5; color: #55554F; margin-top: 8px;">Cleared checks, Approved status, toast confirmation.</div>
+    </div>
+    <div class="sg-card" style="border: 1px solid #E5D3B4; background: #FBF5EA; border-radius: 8px; padding: 14px;">
+      <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #8A5A22; font-weight: 500;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #B07C2E;"></span>Awaiting action</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; line-height: 1.8; color: #55554F; margin-top: 8px;">text #8A5A22<br>border #E5D3B4<br>fill #FBF5EA<br>dot #B07C2E</div>
+      <div style="font-size: 11.5px; line-height: 1.5; color: #55554F; margin-top: 8px;">"Ready" status only — a request needing a human decision.</div>
+    </div>
+    <div class="sg-card" style="border: 1px solid #E8CCC5; background: #FBF1EF; border-radius: 8px; padding: 14px;">
+      <div style="display: flex; align-items: center; gap: 7px; font-size: 12px; color: #9C3B2B; font-weight: 500;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9C3B2B;"></span>Fail / Destructive</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; line-height: 1.8; color: #55554F; margin-top: 8px;">text #9C3B2B<br>border #E8CCC5<br>fill #FBF1EF<br>outline #C9A39B</div>
+      <div style="font-size: 11.5px; line-height: 1.5; color: #55554F; margin-top: 8px;">Failed generation, failed checks, delete affordances.</div>
+    </div>
+  </div>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">1.3 Dark theme palette</h3>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 12px;">Dark mode is neutral-cool, never warm. Surfaces gain elevation as they come forward; the header and rail recede below the canvas. Primary buttons invert: light fill, dark label.</p>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+      <tr style="background: #F2F2F0;">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Role</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; width: 92px;">Light</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; width: 92px;">Dark</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; width: 64px;">Preview</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Canvas</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#EFEFED</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#121417</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #121417;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Surface (cards, tables)</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#FAFAF9</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#1B1D20</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #1B1D20;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Header</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#FAFAF9</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#16181B</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #16181B;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Rail</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#E7E7E4</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#141619</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #141619;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Sunken / input fill</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#F2F2F0</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#21242A</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #21242A;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Hover fill</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#F0F0EE</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#24272C</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #24272C;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Border / border-subtle</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#D8D8D4 / #E6E6E2</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#343A40 / #262B31</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #343A40;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Primary text</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#1A1A19</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#E6E8EA</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #E6E8EA; border: 1px solid #D8D8D4;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Muted / faint text</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#696961 / #71716A</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#A3A8AE / #91969C</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #A3A8AE;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Inverted primary fill</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#1A1A19 fill / #EFEFED label</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#E6E8EA fill / #121417 label</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #E6E8EA; border: 1px solid #D8D8D4;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Semantic tints</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#F1F8F3 / #FBF5EA / #FBF1EF</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#16241F / #20242A / #231E20</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #16241F;"></span></td></tr>
+      <tr><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;">Semantic text (dark)</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#2E6B4F / #8A5A22 / #9C3B2B</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace;">#7FC3A1 / #E0B173 / #E39A8B</td><td style="padding: 6px 10px; border-bottom: 1px solid #E6E6E2;"><span style="display: block; height: 18px; border-radius: 3px; background: #7FC3A1;"></span></td></tr>
+    </tbody>
+  </table>
+  <div class="sg-card" style="border-left: 2px solid #1A1A19; padding: 10px 0 10px 14px; margin: 16px 0 0;">
+    <div style="font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Implementation note</div>
+    <p style="font-size: 12.5px; line-height: 1.65; color: #55554F; margin: 6px 0 0;">The design prototype swaps themes with attribute-scoped overrides because its styling is inline. In production, express every value above as a CSS custom property on <span style="font-family: 'IBM Plex Mono', monospace;">:root</span> and re-declare the set under <span style="font-family: 'IBM Plex Mono', monospace;">[data-theme="dark"]</span>. Theme choice should persist per user and honour <span style="font-family: 'IBM Plex Mono', monospace;">prefers-color-scheme</span> on first visit.</p>
+  </div>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">2 · Typography</h2>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 16px;">Two families. <strong style="font-weight: 500;">Inter</strong> carries the entire interface. <strong style="font-weight: 500;">Newsreader</strong> is reserved for exactly three things: the wordmark, page titles, and any pen name — so a proposed name always reads as the editorial object of the product.</p>
+
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <thead>
+      <tr style="background: #F2F2F0;">
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Style</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Spec</th>
+        <th style="text-align: left; padding: 8px 10px; border-bottom: 1px solid #D8D8D4; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Sample</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Wordmark</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Newsreader 400 · 22px · -0.015em</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-family: 'Newsreader', serif; font-size: 22px; letter-spacing: -0.015em;">Nym</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Page title (H1)</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Newsreader 400 · 38px · 1.05 · -0.02em</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-family: 'Newsreader', serif; font-size: 30px; letter-spacing: -0.02em;">Pen name requests</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Pen name</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Newsreader 400 · 20px table / 25px card · 1.2</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-family: 'Newsreader', serif; font-size: 20px; letter-spacing: -0.015em;">Bridget C. ASHWORTH</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Author name</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 500 · 19px · 1.2 · -0.01em</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-size: 19px; font-weight: 500; letter-spacing: -0.01em;">Margaret Ellen Voss</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Section eyebrow</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 400 · 9–9.5px · 0.18em · uppercase · muted</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-size: 9.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961;">2 open requests</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Body / description</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 400 · 13px · 1.55 · ink-3</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F; font-size: 13px;">Generated automatically on intake.</td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Field label</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 500 · 12px · ink-2</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-size: 12px; font-weight: 500; color: #33332F;">Legal name</td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Meta / check line</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 400 · 11.5px · 1.35</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-size: 11.5px; color: #2E6B4F;">✓ No name overlap</span></td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Timestamp</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 400 · 11px · 0.02em · muted · nowrap</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-size: 11px; color: #696961;">30 Jul 2026 · 09:14</td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Button label</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 500/600 · 12.5–13.5px</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-size: 13px; font-weight: 500;">Approve</td></tr>
+      <tr><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;">Table column header</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2; font-family: 'IBM Plex Mono', monospace; font-size: 11px;">Inter 700 · 9px · 0.18em · uppercase</td><td style="padding: 9px 10px; border-bottom: 1px solid #E6E6E2;"><span style="font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: #2F2F2F;">Proposed pen name</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size: 12.5px; line-height: 1.65; color: #55554F; margin: 14px 0 0;">Minimum interface text size is 11px, and only for uppercase micro-labels and timestamps. Surnames in generated names are set in full capitals — applied at data level so the caps persist through approval, history, and exports.</p>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">3 · Layout &amp; spacing</h2>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px;">
+    <tbody>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; width: 190px; font-weight: 500;">Spacing scale</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">4 · 6 · 8 · 12 · 14 · 16 · 20 · 22 · 26 · 32 · 40 · 64 px</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Page container</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">max-width 1560px, centred; padding 40px top / 32px sides / 64px bottom</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Header</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">64px tall, 0 28px padding, 1px bottom border; nav left, search centred (max 520px), actions right</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Edit view grid</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">268px rail / 376px brief / 1fr candidates; rail 26px 20px padding, brief 30px 28px, candidates 30px 34px 44px</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Queue table grid</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">minmax(150px,1.15fr) · minmax(170px,1fr) · 180px · 132px · 118px · 178px, column-gap 22px; every cell pinned with an explicit grid-column so a row can never shift out of alignment</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Table rows</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">20px 24px padding, 1px border-subtle separator, hover surface-hover</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Candidate grid</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">repeat(auto-fill, minmax(280px, 1fr)), gap 14px</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Radii</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">4px chips · 6px controls · 8px toast · 10px cards &amp; tables · 12px modals · 999px status pills</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Elevation</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Card: 0 1px 2px rgba(20,20,18,.04), 0 28px 56px -40px rgba(20,20,18,.5) · Menu: 0 20px 44px -20px rgba(20,20,18,.35) · Modal: 0 40px 80px -30px rgba(20,20,18,.7) · Dark adds inset 0 1px 0 rgba(255,255,255,.045)</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Breakpoints</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">≤1220px tables collapse to a two-column stacked card (header row hidden, cells return to auto placement); ≤1180px edit view drops to rail + stacked panes; ≤820px single column</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Canvas texture</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Fixed-attachment 860×740 SVG tile of paired "ghost names" at 7% ink (10% in dark), under diagonal veil scrims: bright sheet from the top-left, faint ink scrim from the bottom-right. Dark mode inverts — solid near-black at the top-left, names emerging toward the bottom-right.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">4 · Components</h2>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 22px 0 10px;">4.1 Buttons</h3>
+  <div class="sg-row" style="border: 1px solid #D8D8D4; border-radius: 10px; background: #FAFAF9; padding: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+    <button style="display: flex; align-items: center; gap: 7px; padding: 9px 16px 9px 13px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+      <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 1.6v8.8"></path><path d="M1.6 6h8.8"></path></svg>
+      <span>Primary</span>
+    </button>
+    <button style="display: flex; align-items: center; gap: 6px; padding: 8px 14px 8px 11px; border: 1px solid #8C8C87; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; cursor: pointer;">
+      <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8.2 1.6l2.2 2.2-6 6H2.2v-2z"></path></svg>
+      <span>Secondary</span>
+    </button>
+    <button style="padding: 10px 15px; border: 1px solid #1A1A19; background: #FAFAF9; color: #1A1A19; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">Outline emphasis</button>
+    <button style="display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid #C9A39B; background: transparent; color: #9C3B2B; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer;">
+      <svg viewBox="0 0 12 13" width="12" height="13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1.6 3.4h8.8"></path><path d="M4.6 3.4V2.1h2.8v1.3"></path><path d="M2.7 3.4l.5 7.5h5.6l.5-7.5"></path></svg>
+      <span>Destructive</span>
+    </button>
+    <button style="border: none; background: transparent; padding: 0; font-size: 12.5px; color: #1A1A19; cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">← Text / back</button>
+  </div>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px;">
+    <tbody>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; width: 150px; font-weight: 500;">Primary</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Ink fill, #EFEFED label, 6px radius, 1px shadow. Hover #0E0E0D. Dark: light fill #E6E8EA with #121417 label, hover #F2F4F6. One primary per view region.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Secondary</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Surface fill, border-control, ink-3 label. Hover: border and label to ink.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Outline emphasis</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Ink border on surface; hover inverts to ink fill. Used for Regenerate.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Destructive</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Transparent with #C9A39B outline and #9C3B2B label; hover fills #FBF1EF. Confirmation modal uses a solid #9C3B2B fill.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Icons</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Lucide, 12–13px, 1.3–1.6 stroke, <span style="font-family: 'IBM Plex Mono', monospace;">currentColor</span>, 6–8px gap before the label. Never icon-only without an aria-label.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Targets</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Minimum 26px; icon-only controls 32–34px square.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">4.2 Form controls</h3>
+  <div class="sg-row" style="border: 1px solid #D8D8D4; border-radius: 10px; background: #FAFAF9; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <label style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Legal name</span>
+      <div style="display: grid; grid-template-columns: 1fr 62px 1fr; gap: 8px;">
+        <span style="padding: 11px 12px; border: 1px solid #8C8C87; border-radius: 6px; font-size: 13px; background: #F2F2F0; color: #71716A;">First</span>
+        <span style="padding: 11px 6px; border: 1px solid #8C8C87; border-radius: 6px; font-size: 13px; background: #F2F2F0; color: #71716A; text-align: center;">M.</span>
+        <span style="padding: 11px 12px; border: 1px solid #8C8C87; border-radius: 6px; font-size: 13px; background: #F2F2F0; color: #71716A;">Last</span>
+      </div>
+      <span style="font-size: 11px; color: #696961;">Helper text sits below the field, muted, 11px.</span>
+    </label>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Segmented control</span>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; border: 1px solid #D8D8D4; border-radius: 7px; background: #F2F2F0;">
+        <span style="position: relative; padding: 9px 4px; border-radius: 5px; background: #FAFAF9; border: 1px solid #C9C9C4; box-shadow: 0 1px 2px rgba(20,20,18,0.07); font-size: 12.5px; text-align: center;">Female</span>
+        <span style="padding: 9px 4px; font-size: 12.5px; color: #55554F; text-align: center;">Male</span>
+        <span style="padding: 9px 4px; font-size: 12.5px; color: #55554F; text-align: center;">Unisex</span>
+      </div>
+      <span style="font-size: 11px; color: #696961;">Selection is drawn as an inset raised tile — never a colour fill.</span>
+    </div>
+  </div>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px;">
+    <tbody>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; width: 150px; font-weight: 500;">Text input / select / textarea</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">11px 12px padding, 6px radius, sunken fill, border-control. Focus: border to ink, fill to surface, plus the global focus ring. Textareas resize vertically only.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Select</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Native element, appearance stripped, custom chevron 12px from the right, 32px right padding. Origin list ships 38 language/culture options with "No preference" first.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Middle initial</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Single character, centred, letters only, auto-uppercased on input.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Search</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Header-centred, fluid to 520px, 31px left padding for the magnifier, clear button appears only when non-empty.</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">4.3 Status pills, checks and chips</h3>
+  <div class="sg-row" style="border: 1px solid #D8D8D4; border-radius: 10px; background: #FAFAF9; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+      <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #696961;"><span style="width: 13px; height: 13px; border: 1.5px solid #D8D8D4; border-top-color: #1A1A19; border-radius: 50%; display: inline-block;"></span>Generating…</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #8A5A22; border: 1px solid #E5D3B4; background: #FBF5EA; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #B07C2E;"></span>Ready</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #2E6B4F; border: 1px solid #C4DCCB; background: #F1F8F3; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #2E6B4F;"></span>Approved</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #696961; border: 1px solid #D8D8D4; background: #F2F2F0; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #B4B4AC;"></span>Queued</span>
+      <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #9C3B2B; border: 1px solid #E8CCC5; background: #FBF1EF; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #9C3B2B;"></span>Failed</span>
+    </div>
+    <div style="display: flex; gap: 26px; flex-wrap: wrap; border-top: 1px solid #E6E6E2; padding-top: 14px;">
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No name overlap</span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No prior use</span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>Not a famous name</span>
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No offensive terms</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 5px;">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #9C3B2B;"><span style="font-size: 10px;">✕</span>Overlaps legal name</span>
+        <span style="font-size: 11.5px; color: #71716A;">— (checks pending)</span>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 6px;">
+        <span style="border: 1px solid #D8D8D4; background: #F2F2F0; border-radius: 4px; padding: 6px 9px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #696961; display: inline-flex; align-items: center; gap: 5px;">
+          <svg viewBox="0 0 12 13" width="9" height="11" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.6" y="5.2" width="8" height="6.1" rx="1.3"></rect><path d="M3.6 5.2V3.4a2 2 0 0 1 4 0v1.8"></path></svg>Lock
+        </span>
+      </div>
+    </div>
+  </div>
+  <p style="font-size: 12.5px; line-height: 1.65; color: #55554F; margin: 12px 0 0;">Checks stack vertically in their own column, one line per rule, and are never the only signal — the wording states the outcome, so colour is reinforcement (WCAG 1.4.1). The checks cell always renders, showing an em-dash while a request is queued or generating, so the row can never shift out of alignment.</p>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">4.4 Candidate card</h3>
+  <div class="sg-row" style="display: grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start;">
+    <div style="position: relative; background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 2px rgba(20,20,18,0.04);">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+        <div style="font-family: 'Newsreader', serif; font-size: 25px; line-height: 1.15; letter-spacing: -0.015em;">Iris C. DONOVAN</div>
+        <span style="border: 1px solid #D8D8D4; background: #F2F2F0; border-radius: 4px; padding: 6px 9px; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #696961; white-space: nowrap;">Lock</span>
+      </div>
+      <div style="font-size: 11px; letter-spacing: 0.04em; color: #696961;">EYE-riss DON-uh-vun</div>
+      <div style="font-size: 12.5px; line-height: 1.6; color: #55554F;">Anglo-Irish, quiet literary register.</div>
+      <div style="display: flex; gap: 14px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid #E6E6E2; margin-top: 2px;">
+        <span style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #2E6B4F; padding-top: 6px;"><span style="font-size: 10px;">✓</span>No overlap</span>
+        <span style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #2E6B4F; padding-top: 6px;"><span style="font-size: 10px;">✓</span>No prior use</span>
+      </div>
+    </div>
+    <div style="font-size: 12.5px; line-height: 1.7; color: #55554F;">
+      <p style="margin: 0 0 8px;">Cards sit in an auto-fill grid at a 280px minimum. Content order is fixed: pen name, lock control, pronunciation, origin note, cleared checks below a hairline.</p>
+      <p style="margin: 0 0 8px;">Hover lifts the card 2px with a 0 14px 28px -18px shadow over a 0.18s ease transition. Selection draws a 1.5px ink-ratio ring at inset -1px plus a 4% tint — no colour change to the text.</p>
+      <p style="margin: 0;">The whole card is the select target; the lock chip stops propagation so locking never changes the selection.</p>
+    </div>
+  </div>
+
+  <h3 style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961; margin: 26px 0 10px;">4.5 Overlays</h3>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <tbody>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; width: 150px; font-weight: 500;">Modal</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Backdrop rgba(20,20,18,.5) with a 2px blur; sheet on surface, 12px radius, 26–28px padding, 14–18px internal gaps. Width: 440px (confirm), 540px (new request), 780px (prompt). Title block is an eyebrow plus a Newsreader title; borderless × at 22px, top right; actions right-aligned in the footer.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Dropdown menu</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">224–260px wide, 10px radius, 8px padding, offset 44px below the trigger. Rows are transparent with a 6px radius and hover surface-hover; a monospaced section label heads each group.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Toast</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Fixed bottom centre, 32px inset, ink fill, 8px radius, 13px label with a green ✓ disc. Rises 6px over 0.24s, auto-dismisses at 3.6s, and carries <span style="font-family: 'IBM Plex Mono', monospace;">role="status" aria-live="polite"</span>.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Selected bar</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Sticky to the bottom of the candidates pane, ink fill, 10px radius, "Selected" eyebrow over the serif name, Clear plus Approve on the right.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Loading &amp; empty</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Spinner is a 13–22px ring, 1.5–2px border, ink top-colour, 0.8s linear spin. Empty states use a dashed border-control container, a 23–24px title and one muted explanatory line.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">5 · Product logic</h2>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 14px;">The interface is thin; the value is in the screening. Build these rules server-side — never trust the model to have obeyed them.</p>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <tbody>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; width: 150px; font-weight: 500;">Intake</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">A request captures first name, middle initial, last name, pen-name presentation (Female / Male / Unisex), optional language or cultural origin, and optional editorial notes. Generation starts automatically on create — the assistant never has to press Generate for a new request.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Generation</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Request 20 candidates so some can be discarded, and keep 10–15 after screening. Each candidate returns name, pronunciation, origin note, prior-use flag and prior-use attribution as JSON.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Prompt guardrails</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">The system message forbids offensive, obscene or derogatory names in any language, and any name belonging to or closely resembling a real public figure, published author, brand or well-known character. The user prompt repeats those rules and adds: no near-miss of a famous name by one letter or homophone; no sacred figures, notorious criminals or extremist associations; no cultural appropriation beyond the requested origin; plausible and pronounceable on a jacket. Both are editable in-app for tuning.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Overlap screen</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">A candidate is rejected if any part of it shares a whole word, a first letter, or a three-letter phonetic stem with any part of the legal name, or if one name part contains another. Single-letter middle initials are compared against every initial of the legal name. Comparison is case-insensitive and strips punctuation.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Prior-use screen</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Any flagged candidate is discarded silently. Match on the given-name plus surname pair ignoring the middle initial, and err toward flagging. Production should verify against a real catalogue and rights database rather than model recall.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Result presentation</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Only cleared names are shown. The count of discards is reported ("4 discarded in screening") so the assistant knows screening ran. Surnames are uppercased at data level.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Regeneration</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Locked names are preserved and passed back as "do not repeat, match this register"; everything else is replaced. An optional free-text refinement ("more British, shorter surnames") applies to that pass only. Retry appears only on a failed request.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Approval</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Approving from the queue accepts the top candidate; approving in the edit view accepts the selected one. Bulk "Approve all ready" accepts the top candidate of every ready request. Every approval records approver and timestamp, raises a toast, and moves the request to History.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">History</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Shows author, approved pen name with its cleared checks, approver and time, status, and Reopen / View. Reopen clears the approval and returns the request to the queue.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Search</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Single field, filters both queue and history across legal name, proposed and approved names, every generated candidate, origin, notes and presentation. When the other tab has matches, the empty state says so.</td></tr>
+      <tr><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Deletion</td><td style="padding: 8px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Only from the edit view, behind an "Are you sure?" modal that names the author and states the action cannot be undone.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">6 · Accessibility requirements</h2>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 14px;">The design targets WCAG 2.2 AA. These are build requirements, not suggestions.</p>
+  <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+    <tbody>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; width: 150px; font-weight: 500;">Text contrast (1.4.3)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">All body text ≥4.5:1, large text ≥3:1, in both themes. #696961 is the lightest permitted muted tone on canvas; do not lighten it.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Non-text contrast (1.4.11)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Input and secondary-button boundaries use border-control (#8C8C87 light, #6A6A64 dark) to clear 3:1. Decorative hairlines may stay lighter.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Focus visible (2.4.7)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">2px solid ink outline with a 2px offset on <span style="font-family: 'IBM Plex Mono', monospace;">:focus-visible</span>, #E6E8EA in dark. Never remove outlines without an equivalent replacement.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Target size (2.5.8)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">≥24px on every control; the system uses 26px minimum.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Names &amp; labels (4.1.2)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Every icon-only control carries an aria-label: theme toggle, app picker, account menu, clear search, modal close. Search and refine inputs are labelled.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Status messages (4.1.3)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Toasts and generation state changes are announced politely; do not move focus to them.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Colour alone (1.4.1)</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Status and check outcomes always carry a word and a glyph as well as the hue.</td></tr>
+      <tr><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; font-weight: 500;">Build must add</td><td style="padding: 7px 10px; border-bottom: 1px solid #E6E6E2; color: #55554F;">Semantic <span style="font-family: 'IBM Plex Mono', monospace;">&lt;table&gt;</span> markup for the queue and history (the prototype uses CSS grid, so column relationships are not exposed); modal focus trap with Escape to close and focus restored to the trigger; a document <span style="font-family: 'IBM Plex Mono', monospace;">lang</span>; reduced-motion handling for the spinner and card lift; 400% zoom reflow testing.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">7 · Tokens for implementation</h2>
+  <p style="font-size: 13px; line-height: 1.7; color: #55554F; margin: 0 0 12px;">Drop-in starting point. Names match the roles used throughout this guide.</p>
+  <pre style="font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; line-height: 1.75; background: #F2F2F0; border: 1px solid #D8D8D4; border-radius: 8px; padding: 16px; overflow-x: auto; white-space: pre-wrap; color: #33332F; margin: 0;">:root {
+  --canvas: #EFEFED;      --surface: #FAFAF9;     --surface-sunken: #F2F2F0;
+  --surface-hover: #F0F0EE; --rail: #E7E7E4;      --rail-hover: #DEDEDA;
+  --border: #D8D8D4;      --border-subtle: #E6E6E2; --border-control: #8C8C87;
+  --ink: #1A1A19;         --ink-hover: #0E0E0D;   --ink-2: #33332F;
+  --ink-3: #55554F;       --muted: #696961;       --faint: #71716A;
+  --on-ink: #EFEFED;
+  --pass: #2E6B4F;        --pass-border: #C4DCCB; --pass-fill: #F1F8F3;
+  --wait: #8A5A22;        --wait-border: #E5D3B4; --wait-fill: #FBF5EA; --wait-dot: #B07C2E;
+  --fail: #9C3B2B;        --fail-border: #E8CCC5; --fail-fill: #FBF1EF; --fail-outline: #C9A39B;
+  --radius-chip: 4px; --radius-control: 6px; --radius-card: 10px; --radius-modal: 12px;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-display: 'Newsreader', Georgia, serif;
+  --shadow-card: 0 1px 2px rgba(20,20,18,.04), 0 28px 56px -40px rgba(20,20,18,.5);
+  --shadow-menu: 0 20px 44px -20px rgba(20,20,18,.35);
+  --shadow-modal: 0 40px 80px -30px rgba(20,20,18,.7);
+}
+[data-theme="dark"] {
+  --canvas: #121417;      --surface: #1B1D20;     --surface-sunken: #21242A;
+  --surface-hover: #24272C; --rail: #141619;      --rail-hover: #1E2126;
+  --border: #343A40;      --border-subtle: #262B31; --border-control: #6A6A64;
+  --ink: #E6E8EA;         --ink-hover: #F2F4F6;   --ink-2: #DADDE1;
+  --ink-3: #BCC1C7;       --muted: #A3A8AE;       --faint: #91969C;
+  --on-ink: #121417;
+  --pass: #7FC3A1;        --pass-border: #31503C; --pass-fill: #16241F;
+  --wait: #E0B173;        --wait-border: #454039; --wait-fill: #20242A;
+  --fail: #E39A8B;        --fail-border: #4A3634; --fail-fill: #231E20;
+}</pre>
+
+  <h2 class="sg-h2" style="font-family: 'Newsreader', serif; font-size: 27px; font-weight: 400; letter-spacing: -0.02em; margin: 38px 0 4px;">8 · Handoff checklist</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+    <div class="sg-card" style="border: 1px solid #D8D8D4; border-radius: 8px; padding: 14px; background: #FAFAF9;">
+      <div style="font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Ship with</div>
+      <ul style="font-size: 12.5px; line-height: 1.7; color: #55554F; margin: 8px 0 0; padding-left: 18px;">
+        <li>Token file exactly as section 7</li>
+        <li>Inter 400/500/600 and Newsreader 400 self-hosted</li>
+        <li>Lucide icon set, 12–13px, currentColor</li>
+        <li>Semantic tables for queue and history</li>
+        <li>Screening rules implemented server-side</li>
+        <li>Prompt and system message as editable configuration</li>
+      </ul>
+    </div>
+    <div class="sg-card" style="border: 1px solid #D8D8D4; border-radius: 8px; padding: 14px; background: #FAFAF9;">
+      <div style="font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Open questions for the client</div>
+      <ul style="font-size: 12.5px; line-height: 1.7; color: #55554F; margin: 8px 0 0; padding-left: 18px;">
+        <li>Which catalogue or rights database backs the prior-use check?</li>
+        <li>Should approvals notify the author, or only the editor?</li>
+        <li>Retention policy for rejected candidates and screening logs</li>
+        <li>Roles and permissions — who may approve versus generate?</li>
+        <li>Do trademark and domain checks belong in this flow?</li>
+      </ul>
+    </div>
+  </div>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>

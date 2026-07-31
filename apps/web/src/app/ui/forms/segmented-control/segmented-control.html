@@ -1,0 +1,20 @@
+<fieldset class="segmented">
+  <legend class="segmented__legend">{{ label() }}</legend>
+  <div class="segmented__track">
+    @for (option of options(); track option.value) {
+      <label class="segmented__segment" [class.segmented__segment--selected]="value() === option.value">
+        <input
+          class="visually-hidden segmented__input"
+          type="radio"
+          [name]="groupName"
+          [value]="option.value"
+          [checked]="value() === option.value"
+          [disabled]="disabled()"
+          (change)="select(option.value)"
+          (blur)="touch()"
+        />
+        <span class="segmented__label">{{ option.label }}</span>
+      </label>
+    }
+  </div>
+</fieldset>

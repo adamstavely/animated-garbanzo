@@ -1,0 +1,82 @@
+<section class="brief" [formGroup]="form" aria-labelledby="brief-heading">
+  <h2 class="brief__heading" id="brief-heading">Request details</h2>
+
+  <nym-text-field
+    formControlName="legalName"
+    label="Legal name"
+    placeholder="e.g. Margaret Ellen Voss"
+    hint="Full name including middle initial"
+  />
+
+  <nym-segmented-control
+    formControlName="presentation"
+    label="Presentation of pen name"
+    [options]="presentationOptions"
+  />
+
+  <nym-select-field
+    formControlName="origin"
+    label="Language / cultural origin"
+    [optional]="true"
+    [options]="originOptions"
+  />
+
+  <nym-textarea-field
+    formControlName="notes"
+    label="Notes to steer the list"
+    [optional]="true"
+    [rows]="4"
+    placeholder="Genre, era, market, anything to avoid…"
+  />
+
+  <div class="exclusions">
+    <p class="exclusions__title">Excluded from results</p>
+    <ul class="exclusions__list">
+      @for (exclusion of exclusions(); track exclusion) {
+        <li class="exclusions__chip">{{ exclusion }}</li>
+      }
+    </ul>
+    <p class="exclusions__note">{{ exclusionNote() }}</p>
+  </div>
+
+  <div class="brief__actions">
+    <button nymButton variant="primary" size="lg" [block]="true" [disabled]="busy()" (click)="generate.emit()">
+      <svg lucideSparkles class="nym-icon" [size]="13" aria-hidden="true"></svg>
+      <span>{{ generateLabel() }}</span>
+    </button>
+
+    <button nymButton class="brief__prompt-button" (click)="openPrompt.emit()">
+      <svg lucideFileText class="nym-icon" [size]="12" aria-hidden="true"></svg>
+      <span>{{ promptButtonLabel() }}</span>
+    </button>
+  </div>
+
+  <div class="regenerate">
+    <nym-text-field
+      formControlName="refine"
+      label="Refine and regenerate"
+      ariaLabel="Refine the candidate list"
+      placeholder="e.g. more British, shorter surnames"
+    />
+    <button
+      nymButton
+      variant="alt"
+      [block]="true"
+      [disabled]="busy()"
+      class="regenerate__button"
+      (click)="onRegenerate()"
+    >
+      <svg lucideRotateCw class="nym-icon" [size]="12" aria-hidden="true"></svg>
+      <span>{{ regenerateLabel() }}</span>
+    </button>
+  </div>
+
+  @if (request().errorMessage) {
+    <p class="brief__error" role="alert">{{ request().errorMessage }}</p>
+  }
+
+  <button nymButton variant="danger" [block]="true" class="brief__delete" (click)="askDelete.emit()">
+    <svg lucideTrash2 class="nym-icon" [size]="13" aria-hidden="true"></svg>
+    <span>Delete request</span>
+  </button>
+</section>
