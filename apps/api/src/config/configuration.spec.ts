@@ -18,10 +18,24 @@ describe('loadConfiguration', () => {
 
     expect(config.port).toBe(3000);
     expect(config.apiPrefix).toBe('api/v1');
+    expect(config.trustProxy).toBe(0);
     expect(config.anthropic.model).toBe('claude-sonnet-5');
     expect(config.oidc.scopes).toBe('openid profile email');
     expect(config.session.cookieName).toBe('nym_session');
     expect(config.session.ttlSeconds).toBe(28_800);
+    expect(config.oidc.adminRoles).toEqual([]);
+    expect(config.generation.staleMs).toBe(150_000);
+    expect(config.requests.listDefaultLimit).toBe(100);
+    expect(config.rateLimit.generate).toBe(20);
+  });
+
+  it('parses OIDC_ADMIN_ROLES as a trimmed list', () => {
+    const config = loadConfiguration({
+      ...validEnv,
+      OIDC_ADMIN_ROLES: ' Admin, Desk lead ,',
+    });
+
+    expect(config.oidc.adminRoles).toEqual(['Admin', 'Desk lead']);
   });
 
   it('coerces numeric and boolean values from strings', () => {
@@ -31,6 +45,7 @@ describe('loadConfiguration', () => {
       DATABASE_SSL: 'true',
       SESSION_COOKIE_SECURE: 'false',
       ANTHROPIC_MAX_TOKENS: '1500',
+      TRUST_PROXY: '1',
     });
 
     expect(config.port).toBe(8080);
@@ -38,6 +53,7 @@ describe('loadConfiguration', () => {
     expect(config.database.sslRejectUnauthorized).toBe(true);
     expect(config.session.secureCookie).toBe(false);
     expect(config.anthropic.maxTokens).toBe(1500);
+    expect(config.trustProxy).toBe(1);
   });
 
   it('allows disabling TLS verification only outside production', () => {

@@ -1,8 +1,11 @@
 import { PenNameRequestDto, RequestListDto, RequestStatus } from '@nym/shared';
+import { ConfigService } from '@nestjs/config';
 import { Server } from 'node:http';
 
 import request from 'supertest';
 
+import { RateLimiter } from '../src/common/rate-limiter';
+import { AppConfig } from '../src/config/configuration';
 import { TestHarness, createTestHarness } from './test-app';
 
 const API = '/api/v1';
@@ -136,7 +139,7 @@ describe('Requests (integration)', () => {
         .expect(200);
 
       const body = updated.body as PenNameRequestDto;
-      expect(body.checks[0]?.passed).toBe(false);
+      expect(body.checks[0]?.outcome).toBe('failed');
     });
 
     it('fails the request when nothing survives screening', async () => {
@@ -308,6 +311,83 @@ describe('Requests (integration)', () => {
       await auth(http().post(`${API}/requests/${created.id}/choose`))
         .send({ penName: 'Not A. CANDIDATE' })
         .expect(400);
+    });
+  });
+
+  describe('pagination', () => {
+    it('returns a page of items with total, limit and offset', async () => {
+      await createRequest();
+      await createRequest({ firstName: 'Daniel', middleInitial: 'O', lastName: 'Reyes' });
+      await createRequest({ firstName: 'Elena', middleInitial: 'M', lastName: 'Park' });
+
+      const first = await auth(http().get(`${API}/requests`).query({ limit: 2, offset: 0 })).expect(
+        200,
+      );
+      const firstBody = first.body as RequestListDto;
+
+      expect(firstBody.items).toHaveLength(2);
+      expect(firstBody.total).toBe(3);
+      expect(firstBody.limit).toBe(2);
+      expect(firstBody.offset).toBe(0);
+
+      const second = await auth(http().get(`${API}/requests`).query({ limit: 2, offset: 2 })).expect(
+        200,
+      );
+      const secondBody = second.body as RequestListDto;
+
+      expect(secondBody.items).toHaveLength(1);
+      expect(secondBody.total).toBe(3);
+      expect(secondBody.offset).toBe(2);
+    });
+
+    it('clamps limit to REQUESTS_LIST_MAX_LIMIT', async () => {
+      const response = await auth(http().get(`${API}/requests`).query({ limit: 500 })).expect(200);
+      const body = response.body as RequestListDto;
+      const config = harness.app.get(ConfigService<AppConfig, true>);
+
+      expect(body.limit).toBe(config.get('requests', { infer: true }).listMaxLimit);
+    });
+  });
+
+  describe('rate limits', () => {
+    function fillBucket(key: 'create' | 'generate' | 'approveAll'): void {
+      const limiter = harness.app.get(RateLimiter);
+      const rateLimit = harness.app.get(ConfigService<AppConfig, true>).get('rateLimit', {
+        infer: true,
+      });
+      const limit = rateLimit[key];
+      for (let i = 0; i < limit; i++) {
+        limiter.consume(`${key === 'approveAll' ? 'approve-all' : key}:${harness.user.id}`, limit, rateLimit.windowMs);
+      }
+    }
+
+    it('returns 429 when generate is over the per-user limit', async () => {
+      const created = await createRequest();
+      fillBucket('generate');
+
+      await auth(http().post(`${API}/requests/${created.id}/generate`))
+        .send({})
+        .expect(429);
+    });
+
+    it('returns 429 when approve-all is over the per-user limit', async () => {
+      await createRequest();
+      fillBucket('approveAll');
+
+      await auth(http().post(`${API}/requests/approve-all`)).expect(429);
+    });
+
+    it('returns 429 when create is over the per-user limit', async () => {
+      fillBucket('create');
+
+      await auth(http().post(`${API}/requests`))
+        .send({
+          firstName: 'Margaret',
+          middleInitial: 'E',
+          lastName: 'Voss',
+          presentation: 'Female',
+        })
+        .expect(429);
     });
   });
 

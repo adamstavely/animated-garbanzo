@@ -26,6 +26,7 @@ describe('Authentication (integration)', () => {
   beforeEach(async () => {
     await harness.reset();
     harness.oidc.exchangeError = null;
+    harness.oidc.exchanges.length = 0;
   });
 
   const http = () => request(harness.app.getHttpServer() as Server);
@@ -72,12 +73,14 @@ describe('Authentication (integration)', () => {
         name: 'Rosa Marchetti',
         initials: 'RM',
         role: 'Publishing assistant · Trade',
+        canAdminister: true,
       });
     });
 
-    it('leaves both health probes open', async () => {
+    it('leaves the health probes open', async () => {
       await http().get(`${API}/health`).expect(200);
       await http().get(`${API}/health/live`).expect(200);
+      await http().get(`${API}/health/ready`).expect(200);
     });
 
     it('answers liveness without touching the database', async () => {
@@ -117,9 +120,16 @@ describe('Authentication (integration)', () => {
       const callback = await http()
         .get(`${API}/auth/callback?code=abc&state=state-value`)
         .set('Cookie', transactionCookie ?? '')
+        .set('Host', 'evil.example')
+        .set('X-Forwarded-Host', 'evil.example')
+        .set('X-Forwarded-Proto', 'https')
         .expect(302);
 
       expect(callback.headers['location']).toBe('http://localhost:4200');
+      // Exchange URL comes from OIDC_REDIRECT_URI, not Host / X-Forwarded-*.
+      expect(harness.oidc.exchanges.at(-1)?.url).toBe(
+        'http://localhost:3000/api/v1/auth/callback?code=abc&state=state-value',
+      );
 
       const session = cookieValue(toCookieList(callback.headers['set-cookie']), 'nym_session');
       expect(session).toContain('HttpOnly');

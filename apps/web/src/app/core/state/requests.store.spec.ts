@@ -38,6 +38,9 @@ function listResponse(items: PenNameRequestDto[]): RequestListDto {
     items,
     queueMatchCount: items.filter((item) => item.status !== RequestStatus.Approved).length,
     historyMatchCount: items.filter((item) => item.status === RequestStatus.Approved).length,
+    total: items.length,
+    limit: 200,
+    offset: 0,
   };
 }
 
@@ -66,7 +69,7 @@ describe('RequestsStore', () => {
   it('splits the loaded list into the queue and history tabs', async () => {
     const loading = store.load();
 
-    const request = http.expectOne(`${BASE}/requests?view=all`);
+    const request = http.expectOne(`${BASE}/requests?view=all&limit=200`);
     expect(request.request.method).toBe('GET');
     request.flush(
       listResponse([
@@ -86,7 +89,7 @@ describe('RequestsStore', () => {
     store.setQuery('  ashworth  ');
     const loading = store.load();
 
-    http.expectOne(`${BASE}/requests?view=all&q=ashworth`).flush(listResponse([]));
+    http.expectOne(`${BASE}/requests?view=all&q=ashworth&limit=200`).flush(listResponse([]));
     await loading;
 
     expect(store.query()).toBe('  ashworth  ');
@@ -96,7 +99,7 @@ describe('RequestsStore', () => {
     const loading = store.load();
 
     http
-      .expectOne(`${BASE}/requests?view=all`)
+      .expectOne(`${BASE}/requests?view=all&limit=200`)
       .flush({ message: 'Sign in to continue.' }, { status: 401, statusText: 'Unauthorized' });
     await loading;
 
@@ -107,7 +110,7 @@ describe('RequestsStore', () => {
   it('counts only ready requests that actually have a name to approve', async () => {
     const loading = store.load();
     http
-      .expectOne(`${BASE}/requests?view=all`)
+      .expectOne(`${BASE}/requests?view=all&limit=200`)
       .flush(
         listResponse([
           makeRequest(),
@@ -122,7 +125,7 @@ describe('RequestsStore', () => {
 
   it('moves an approved request from the queue to history in place', async () => {
     const loading = store.load();
-    http.expectOne(`${BASE}/requests?view=all`).flush(listResponse([makeRequest()]));
+    http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
     await loading;
 
     const approving = store.approve('r1');
@@ -151,7 +154,7 @@ describe('RequestsStore', () => {
 
   it('drops a deleted request from the list', async () => {
     const loading = store.load();
-    http.expectOne(`${BASE}/requests?view=all`).flush(listResponse([makeRequest()]));
+    http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
     await loading;
 
     const removing = store.remove('r1');
@@ -163,7 +166,7 @@ describe('RequestsStore', () => {
 
   it('prepends a newly created request', async () => {
     const loading = store.load();
-    http.expectOne(`${BASE}/requests?view=all`).flush(listResponse([makeRequest()]));
+    http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
     await loading;
 
     const creating = store.create({
@@ -185,7 +188,7 @@ describe('RequestsStore', () => {
     try {
       const loading = store.load();
       http
-        .expectOne(`${BASE}/requests?view=all`)
+        .expectOne(`${BASE}/requests?view=all&limit=200`)
         .flush(listResponse([makeRequest({ status: RequestStatus.Generating })]));
       await loading;
       TestBed.tick();
@@ -193,7 +196,7 @@ describe('RequestsStore', () => {
       expect(store.hasPendingGeneration()).toBe(true);
 
       vi.advanceTimersByTime(GENERATION_POLL_MS);
-      http.expectOne(`${BASE}/requests?view=all`).flush(listResponse([makeRequest()]));
+      http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
       await Promise.resolve();
       TestBed.tick();
 
@@ -201,7 +204,7 @@ describe('RequestsStore', () => {
 
       // Nothing is pending any more, so no further request is made.
       vi.advanceTimersByTime(GENERATION_POLL_MS * 2);
-      http.expectNone(`${BASE}/requests?view=all`);
+      http.expectNone(`${BASE}/requests?view=all&limit=200`);
     } finally {
       vi.useRealTimers();
     }
