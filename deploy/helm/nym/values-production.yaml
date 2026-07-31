@@ -1,0 +1,97 @@
+# Example production overlay.
+#
+#   helm upgrade --install nym deploy/helm/nym \
+#     --namespace nym --create-namespace \
+#     --values deploy/helm/nym/values-production.yaml
+#
+# Credentials are deliberately absent: they come from a Secret managed outside
+# Helm, so they never appear in a values file, a release history or a CI log.
+
+publicUrl: https://nym.publisher.example
+
+global:
+  imageRegistry: ghcr.io/adamstavely
+  imagePullSecrets:
+    - name: ghcr-pull
+
+api:
+  # Pin by digest in production: a tag can move, a digest cannot, so a rollback
+  # returns to exactly the bits that were running.
+  image:
+    repository: nym-api
+    digest: '' # sha256:...
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 12
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: nym
+          app.kubernetes.io/component: api
+
+web:
+  image:
+    repository: nym-web
+    digest: '' # sha256:...
+  replicaCount: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+
+config:
+  database:
+    ssl: true
+  oidc:
+    issuerUrl: https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/v2.0
+    clientId: '00000000-0000-0000-0000-000000000000'
+    # Entra ID puts the display name in `name` and the address in `preferred_username`.
+    nameClaim: name
+    emailClaim: preferred_username
+    roleClaim: roles
+    defaultRole: Publishing assistant
+  session:
+    secureCookie: true
+    ttlSeconds: 28800
+
+secrets:
+  create: false
+  # Must carry DATABASE_URL, ANTHROPIC_API_KEY, OIDC_CLIENT_SECRET and
+  # SESSION_SECRET. Populate it with External Secrets, Sealed Secrets or your
+  # cloud's secret store.
+  existingSecret: nym-credentials
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    nginx.ingress.kubernetes.io/proxy-body-size: 1m
+    # A generation run is a long request; the default 60s read timeout would cut
+    # the client's poll short.
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '180'
+  tls:
+    enabled: true
+    secretName: nym-tls
+
+networkPolicy:
+  enabled: true
+  ingressFromNamespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: ingress-nginx
+
+commonLabels:
+  app.kubernetes.io/owner: publishing-platform

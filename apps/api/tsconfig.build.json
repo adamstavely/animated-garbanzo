@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Without this, the shared root of `src` and `test` becomes the rootDir and
+    // the output lands in dist/src, which the container's start command and the
+    // migration entry point would both miss.
+    "rootDir": "./src"
+  },
+  // Nothing under test/ may reach a built image. It contains the end-to-end
+  // support server, whose controller can reset the database and mint sessions.
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "**/*.spec.ts",
+    "jest.config.ts",
+    "jest.integration.config.ts"
+  ]
+}

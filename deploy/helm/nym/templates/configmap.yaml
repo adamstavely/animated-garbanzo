@@ -1,0 +1,48 @@
+{{- include "nym.validateValues" . -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nym.configMapName" . }}
+  labels:
+    {{- include "nym.labels" . | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  # Everything here is non-secret. The four credentials live in the Secret, and
+  # the API validates this whole set at boot.
+  PORT: {{ .Values.api.service.port | quote }}
+  API_PREFIX: {{ .Values.config.apiPrefix | quote }}
+
+  # Same-origin: the ingress serves the client and the API from one host, so the
+  # session cookie is first-party.
+  WEB_ORIGIN: {{ .Values.publicUrl | quote }}
+  WEB_APP_URL: {{ .Values.publicUrl | quote }}
+
+  DATABASE_SSL: {{ .Values.config.database.ssl | quote }}
+  DATABASE_LOGGING: {{ .Values.config.database.logging | quote }}
+  # Migrations are a release hook; the app never alters its own schema.
+  DATABASE_SYNCHRONIZE: "false"
+
+  ANTHROPIC_MODEL: {{ .Values.config.anthropic.model | quote }}
+  ANTHROPIC_MAX_TOKENS: {{ .Values.config.anthropic.maxTokens | quote }}
+  ANTHROPIC_TIMEOUT_MS: {{ .Values.config.anthropic.timeoutMs | quote }}
+  ANTHROPIC_MAX_RETRIES: {{ .Values.config.anthropic.maxRetries | quote }}
+
+  OIDC_ISSUER_URL: {{ .Values.config.oidc.issuerUrl | quote }}
+  OIDC_CLIENT_ID: {{ .Values.config.oidc.clientId | quote }}
+  OIDC_SCOPES: {{ .Values.config.oidc.scopes | quote }}
+  OIDC_REDIRECT_URI: {{ include "nym.oidcRedirectUri" . | quote }}
+  OIDC_POST_LOGOUT_REDIRECT_URI: {{ include "nym.oidcPostLogoutRedirectUri" . | quote }}
+  OIDC_NAME_CLAIM: {{ .Values.config.oidc.nameClaim | quote }}
+  OIDC_EMAIL_CLAIM: {{ .Values.config.oidc.emailClaim | quote }}
+  OIDC_ROLE_CLAIM: {{ .Values.config.oidc.roleClaim | quote }}
+  OIDC_DEFAULT_ROLE: {{ .Values.config.oidc.defaultRole | quote }}
+
+  SESSION_COOKIE_NAME: {{ .Values.config.session.cookieName | quote }}
+  SESSION_TTL_SECONDS: {{ .Values.config.session.ttlSeconds | quote }}
+  SESSION_COOKIE_SECURE: {{ .Values.config.session.secureCookie | quote }}
+  {{- with .Values.config.session.cookieDomain }}
+  SESSION_COOKIE_DOMAIN: {{ . | quote }}
+  {{- end }}

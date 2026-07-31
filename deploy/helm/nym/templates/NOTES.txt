@@ -1,0 +1,41 @@
+Nym {{ .Chart.AppVersion }} is installed as release {{ .Release.Name }}.
+
+{{ if .Values.ingress.enabled -}}
+  Open: {{ .Values.publicUrl }}
+{{- else -}}
+  No ingress is enabled. To reach it locally:
+
+    kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "nym.webFullname" . }} 8080:{{ .Values.web.service.port }}
+{{- end }}
+
+Check the rollout:
+
+  kubectl --namespace {{ .Release.Namespace }} rollout status deploy/{{ include "nym.apiFullname" . }}
+  kubectl --namespace {{ .Release.Namespace }} rollout status deploy/{{ include "nym.webFullname" . }}
+
+Verify it end to end (client shell, API liveness, and the database reachable):
+
+  helm test {{ .Release.Name }} --namespace {{ .Release.Namespace }}
+
+{{ if .Values.migrations.enabled -}}
+Migrations ran as a pre-upgrade hook. If the release failed, read them first:
+
+  kubectl --namespace {{ .Release.Namespace }} logs job/{{ include "nym.fullname" . }}-migrate
+{{- end }}
+
+Before anyone can sign in, this callback must be registered with your identity
+provider as an allowed redirect URI:
+
+  {{ include "nym.oidcRedirectUri" . }}
+
+{{- if and .Values.secrets.create (not .Values.secrets.existingSecret) }}
+
+NOTE: the chart is holding your four credentials in a Secret it created, which
+means they are also in this release's values. For production, manage them
+outside Helm and point at them with `secrets.existingSecret`.
+{{- end }}
+{{- if not .Values.config.session.secureCookie }}
+
+WARNING: session.secureCookie is false. The session cookie will be sent over
+plain HTTP. Only ever do this for local development.
+{{- end }}

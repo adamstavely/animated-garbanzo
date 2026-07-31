@@ -1,0 +1,27 @@
+{{- range $component := list "api" "web" }}
+{{- $values := index $.Values $component }}
+{{- if $values.podDisruptionBudget.enabled }}
+{{- if not (eq $component "api") }}
+---
+{{- end }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ printf "%s-%s" (include "nym.fullname" $) $component }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" $ "component" $component) | nindent 4 }}
+  {{- with $.Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if $values.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ $values.podDisruptionBudget.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ $values.podDisruptionBudget.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nym.componentSelectorLabels" (dict "context" $ "component" $component) | nindent 6 }}
+{{- end }}
+{{- end }}

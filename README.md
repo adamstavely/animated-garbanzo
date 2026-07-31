@@ -127,6 +127,46 @@ Notable decisions:
 
 ---
 
+## Deploying
+
+Container images build from the repository root, because both apps are workspace
+members:
+
+```bash
+docker build -f apps/api/Dockerfile -t ghcr.io/adamstavely/nym-api:1.0.0 .
+docker build -f apps/web/Dockerfile -t ghcr.io/adamstavely/nym-web:1.0.0 .
+```
+
+Both run as non-root with a read-only root filesystem. The API image carries no
+dev dependencies and no test code; the client is served by unprivileged nginx.
+
+The Helm chart in `deploy/helm/nym` deploys the API, the client, and a migration
+hook that runs before either serves traffic:
+
+```bash
+helm upgrade --install nym deploy/helm/nym \
+  --namespace nym --create-namespace \
+  --set publicUrl=https://nym.publisher.example \
+  --set config.oidc.issuerUrl=... --set config.oidc.clientId=... \
+  --set secrets.existingSecret=nym-credentials
+
+helm test nym --namespace nym
+```
+
+`deploy/helm/nym/README.md` covers the values, the credential handling and the
+design decisions. Three worth knowing here:
+
+- **One host serves both.** The ingress routes `/api/v1` to the API and
+  everything else to the client, so the session cookie stays first-party — the
+  same arrangement `ng serve`'s proxy reproduces in development.
+- **Readiness checks the database; liveness does not.** A shared database blip
+  must not restart every pod at once.
+- **Migrations are a release hook** (`node dist/database/migrate.js`, in a single
+  transaction). A failed migration fails the release rather than letting new code
+  start against an old schema.
+
+---
+
 ## Accessibility
 
 The build targets **WCAG 2.2 AA** and is verified, not asserted. Every page and

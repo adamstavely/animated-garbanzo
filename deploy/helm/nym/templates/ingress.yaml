@@ -1,0 +1,49 @@
+{{- if .Values.ingress.enabled }}
+{{- $host := include "nym.ingressHost" . -}}
+{{- $apiPrefix := trim .Values.config.apiPrefix -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "nym.fullname" . }}
+  labels:
+    {{- include "nym.labels" . | nindent 4 }}
+  {{- with (mergeOverwrite (deepCopy .Values.commonAnnotations) .Values.ingress.annotations) }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ $host | quote }}
+        {{- range .Values.ingress.extraHosts }}
+        - {{ . | quote }}
+        {{- end }}
+      secretName: {{ default (printf "%s-tls" (include "nym.fullname" .)) .Values.ingress.tls.secretName }}
+  {{- end }}
+  rules:
+    {{- range concat (list $host) .Values.ingress.extraHosts }}
+    - host: {{ . | quote }}
+      http:
+        paths:
+          # The API is matched first and more specifically. One host for both
+          # keeps the session cookie first-party, which the application assumes.
+          - path: /{{ $apiPrefix }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "nym.apiFullname" $ }}
+                port:
+                  name: http
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "nym.webFullname" $ }}
+                port:
+                  name: http
+    {{- end }}
+{{- end }}
