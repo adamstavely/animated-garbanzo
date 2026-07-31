@@ -45,6 +45,8 @@ export class CandidateCardComponent {
   /** Live brief legal name — drives the overlap line, not a hardcoded pass. */
   readonly legalName = input.required<string>();
   readonly selected = input(false);
+  /** False while Generating or Approved — selection and locks stay inert. */
+  readonly interactive = input(true);
 
   readonly choose = output<CandidateDto>();
   readonly toggleLock = output<CandidateDto>();
@@ -53,9 +55,27 @@ export class CandidateCardComponent {
     checksForCandidate(this.candidate().name, this.legalName()),
   );
 
+  protected readonly overlaps = computed(() =>
+    overlapsLegalName(this.candidate().name, this.legalName()),
+  );
+
+  /**
+   * Overlapping names cannot be selected — matches the API choose gate. A card
+   * that is already selected stays clickable so the desk can clear it after a
+   * legal-name edit flips overlap to failed.
+   */
+  protected readonly canSelect = computed(
+    () => this.interactive() && (this.selected() || !this.overlaps()),
+  );
+
+  protected readonly canLock = computed(() => this.interactive());
+
   /** Locking is a nested action, so it must not also select the card. */
   protected onToggleLock(event: MouseEvent): void {
     event.stopPropagation();
+    if (!this.canLock()) {
+      return;
+    }
     this.toggleLock.emit(this.candidate());
   }
 }

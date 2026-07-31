@@ -65,9 +65,10 @@ export class BriefFormComponent {
   readonly canAdminister = input(false);
 
   readonly briefChange = output<UpdateRequestPayload>();
-  readonly generate = output<void>();
-  /** Emits the refine text so the page does not need a second copy of it. */
-  readonly regenerate = output<string>();
+  /** Current brief — parent persists any dirty fields before starting generation. */
+  readonly generate = output<UpdateRequestPayload>();
+  /** Current brief (incl. refine) — parent persists, then regenerates. */
+  readonly regenerate = output<UpdateRequestPayload>();
   readonly openPrompt = output<void>();
   readonly askDelete = output<void>();
 
@@ -86,6 +87,12 @@ export class BriefFormComponent {
   private seededBrief: BriefSeed | undefined;
 
   protected readonly busy = computed(() => this.request().status === RequestStatus.Generating);
+
+  /** History is sealed until reopen; Generating also locks writes the API refuses. */
+  protected readonly readOnly = computed(() => {
+    const status = this.request().status;
+    return status === RequestStatus.Approved || status === RequestStatus.Generating;
+  });
 
   protected readonly generateLabel = computed(() => {
     if (this.busy()) {
@@ -121,12 +128,18 @@ export class BriefFormComponent {
   constructor() {
     // Re-seed when the request id or brief fields change. Generation polling
     // replaces the whole row every few seconds (status / candidates only) —
-    // those must not clobber mid-edit / pre-debounce local values.
+    // those must not clobber mid-edit / pre-debounce local values — except
+    // while read-only, when any drifted local values are forced back to server.
     effect(() => {
       const request = this.request();
       const brief = briefSeedFrom(request);
+      const locked =
+        request.status === RequestStatus.Generating ||
+        request.status === RequestStatus.Approved;
       if (sameBriefSeed(this.seededBrief, brief)) {
-        return;
+        if (!locked || briefMatchesForm(brief, this.form.getRawValue())) {
+          return;
+        }
       }
       this.seededBrief = brief;
       this.form.setValue(
@@ -141,13 +154,40 @@ export class BriefFormComponent {
       );
     });
 
+    // Lock the brief while Generating or Approved — the API refuses PATCH, and
+    // leaving fields open lets local values drift from server-bound exclusions/title.
+    effect(() => {
+      if (this.readOnly()) {
+        this.form.disable({ emitEvent: false });
+      } else {
+        this.form.enable({ emitEvent: false });
+      }
+    });
+
     this.form.valueChanges
       .pipe(debounceTime(AUTOSAVE_DEBOUNCE_MS), takeUntilDestroyed())
-      .subscribe(() => this.briefChange.emit(this.form.getRawValue()));
+      .subscribe(() => {
+        // Drop settles that fire after Generate flipped status, or on sealed History.
+        if (this.readOnly()) {
+          return;
+        }
+        this.briefChange.emit(this.form.getRawValue());
+      });
+  }
+
+  /** Flush the live form with Generate so screening cannot race a pending debounce. */
+  protected onGenerate(): void {
+    if (this.readOnly()) {
+      return;
+    }
+    this.generate.emit(this.form.getRawValue());
   }
 
   protected onRegenerate(): void {
-    this.regenerate.emit(this.form.getRawValue().refine);
+    if (this.readOnly()) {
+      return;
+    }
+    this.regenerate.emit(this.form.getRawValue());
   }
 }
 
@@ -180,5 +220,18 @@ function sameBriefSeed(a: BriefSeed | undefined, b: BriefSeed): boolean {
     a.origin === b.origin &&
     a.notes === b.notes &&
     a.refine === b.refine
+  );
+}
+
+function briefMatchesForm(
+  brief: BriefSeed,
+  form: { legalName: string; presentation: Presentation; origin: string; notes: string; refine: string },
+): boolean {
+  return (
+    form.legalName === brief.legalName &&
+    form.presentation === brief.presentation &&
+    form.origin === brief.origin &&
+    form.notes === brief.notes &&
+    form.refine === brief.refine
   );
 }

@@ -152,9 +152,7 @@ describe('BriefFormComponent', () => {
     });
 
     it('keeps in-progress edits when a poll only refreshes status or candidates', async () => {
-      const element = await render(
-        makeRequest({ status: RequestStatus.Generating, candidates: [] }),
-      );
+      const element = await render(makeRequest({ candidates: [] }));
       const legalName = element.querySelector('input') as HTMLInputElement;
 
       legalName.value = 'Margaret E. Vossington';
@@ -163,7 +161,6 @@ describe('BriefFormComponent', () => {
       fixture.componentRef.setInput(
         'request',
         makeRequest({
-          status: RequestStatus.Generating,
           candidates: [
             {
               id: 'c1',
@@ -180,6 +177,52 @@ describe('BriefFormComponent', () => {
       expect(legalName.value).toBe('Margaret E. Vossington');
     });
 
+    it('locks the brief while a run is in flight', async () => {
+      const element = await render(makeRequest({ status: RequestStatus.Generating }));
+      const legalName = element.querySelector('input') as HTMLInputElement;
+
+      expect(legalName.disabled).toBe(true);
+    });
+
+    it('locks the brief for Approved History views until reopen', async () => {
+      const element = await render(
+        makeRequest({
+          status: RequestStatus.Approved,
+          approvedName: 'Bridget C. ASHWORTH',
+          chosenName: 'Bridget C. ASHWORTH',
+        }),
+      );
+      const legalName = element.querySelector('input') as HTMLInputElement;
+      const generate = Array.from(element.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Start a fresh list'),
+      );
+
+      expect(legalName.disabled).toBe(true);
+      expect(generate?.disabled).toBe(true);
+    });
+
+    it('does not autosave while a run is in flight', async () => {
+      const element = await render(makeRequest());
+      const saves: UpdateRequestPayload[] = [];
+      fixture.componentInstance.briefChange.subscribe((payload) => saves.push(payload));
+
+      const legalName = element.querySelector('input') as HTMLInputElement;
+      legalName.value = 'Margaret E. Vossington';
+      legalName.dispatchEvent(new Event('input'));
+
+      fixture.componentRef.setInput(
+        'request',
+        makeRequest({ status: RequestStatus.Generating, legalName: 'Margaret E. Voss' }),
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      withFakeTimers(() => vi.advanceTimersByTime(1000));
+
+      expect(saves).toHaveLength(0);
+      expect(legalName.disabled).toBe(true);
+    });
+
     it('reseeds when the server brief fields actually change', async () => {
       const element = await render(makeRequest());
       const legalName = element.querySelector('input') as HTMLInputElement;
@@ -193,10 +236,34 @@ describe('BriefFormComponent', () => {
       expect(legalName.value).toBe('Ada Lovelace');
     });
 
-    it('emits the refine text with the regenerate intent', async () => {
+    it('emits the live brief with generate so the parent can flush before starting', async () => {
       const element = await render(makeRequest());
-      const refines: string[] = [];
-      fixture.componentInstance.regenerate.subscribe((refine) => refines.push(refine));
+      const briefs: UpdateRequestPayload[] = [];
+      fixture.componentInstance.generate.subscribe((brief) => briefs.push(brief));
+
+      const legalName = element.querySelector('input') as HTMLInputElement;
+      legalName.value = 'Margaret E. Vossington';
+      legalName.dispatchEvent(new Event('input'));
+
+      const generate = Array.from(element.querySelectorAll('button')).find((button) =>
+        button.textContent?.includes('Start a fresh list'),
+      );
+      generate?.click();
+
+      expect(briefs).toEqual([
+        expect.objectContaining({
+          legalName: 'Margaret E. Vossington',
+          presentation: 'Female',
+          origin: 'Anglo-Irish',
+          notes: 'Literary historical fiction.',
+        }),
+      ]);
+    });
+
+    it('emits the live brief with regenerate, including refine text', async () => {
+      const element = await render(makeRequest());
+      const briefs: UpdateRequestPayload[] = [];
+      fixture.componentInstance.regenerate.subscribe((brief) => briefs.push(brief));
 
       // Selected by its label: the segmented control contributes radio inputs too.
       const refineField = element.querySelector(
@@ -210,7 +277,7 @@ describe('BriefFormComponent', () => {
       );
       regenerate?.click();
 
-      expect(refines).toEqual(['shorter surnames']);
+      expect(briefs).toEqual([expect.objectContaining({ refine: 'shorter surnames' })]);
     });
   });
 });

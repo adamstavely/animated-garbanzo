@@ -1,4 +1,9 @@
-<div class="candidate" [class.candidate--selected]="selected()">
+<div
+  class="candidate"
+  [class.candidate--selected]="selected()"
+  [class.candidate--blocked]="overlaps() && !selected()"
+  [class.candidate--inert]="!interactive()"
+>
   <div class="candidate__top">
     <p class="candidate__name">
       <!-- The button's ::after covers the card, so the whole tile is clickable
@@ -6,8 +11,13 @@
       <button
         type="button"
         class="candidate__select"
+        [disabled]="!canSelect()"
         [attr.aria-pressed]="selected()"
-        [attr.aria-label]="'Select ' + candidate().name + ' as the pen name'"
+        [attr.aria-label]="
+          overlaps() && !selected()
+            ? candidate().name + ' overlaps the legal name and cannot be selected'
+            : 'Select ' + candidate().name + ' as the pen name'
+        "
         (click)="choose.emit(candidate())"
       >
         {{ candidate().name }}
@@ -17,6 +27,7 @@
     <button
       type="button"
       class="candidate__lock"
+      [disabled]="!canLock()"
       [class.candidate__lock--on]="candidate().locked"
       [attr.aria-pressed]="candidate().locked"
       [attr.aria-label]="(candidate().locked ? 'Unlock ' : 'Lock ') + candidate().name + ' against regeneration'"

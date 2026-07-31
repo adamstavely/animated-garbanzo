@@ -19,6 +19,17 @@
   transform: translateY(-2px);
 }
 
+.candidate--inert,
+.candidate--blocked {
+  opacity: 0.72;
+}
+
+.candidate--inert:hover,
+.candidate--blocked:hover {
+  box-shadow: var(--shadow-card);
+  transform: none;
+}
+
 .candidate--selected {
   border-color: var(--ink);
   box-shadow: 0 0 0 1px var(--ink);
@@ -60,6 +71,10 @@
   cursor: pointer;
 }
 
+.candidate__select:disabled {
+  cursor: not-allowed;
+}
+
 /* Stretches the button's hit area over the whole card. */
 .candidate__select::after {
   content: '';
@@ -93,6 +108,16 @@
 .candidate__lock:hover {
   border-color: var(--ink);
   color: var(--ink);
+}
+
+.candidate__lock:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.candidate__lock:disabled:hover {
+  border-color: var(--border-control);
+  color: var(--muted);
 }
 
 .candidate__lock--on {

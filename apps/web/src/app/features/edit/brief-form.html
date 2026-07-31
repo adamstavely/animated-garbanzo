@@ -40,7 +40,14 @@
   </div>
 
   <div class="brief__actions">
-    <button nymButton variant="primary" size="lg" [block]="true" [disabled]="busy()" (click)="generate.emit()">
+    <button
+      nymButton
+      variant="primary"
+      size="lg"
+      [block]="true"
+      [disabled]="readOnly()"
+      (click)="onGenerate()"
+    >
       <svg lucideSparkles class="nym-icon" [size]="13" aria-hidden="true"></svg>
       <span>{{ generateLabel() }}</span>
     </button>
@@ -62,7 +69,7 @@
       nymButton
       variant="alt"
       [block]="true"
-      [disabled]="busy()"
+      [disabled]="readOnly()"
       class="regenerate__button"
       (click)="onRegenerate()"
     >
@@ -76,7 +83,14 @@
   }
 
   @if (canAdminister()) {
-    <button nymButton variant="danger" [block]="true" class="brief__delete" (click)="askDelete.emit()">
+    <button
+      nymButton
+      variant="danger"
+      [block]="true"
+      [disabled]="busy()"
+      class="brief__delete"
+      (click)="askDelete.emit()"
+    >
       <svg lucideTrash2 class="nym-icon" [size]="13" aria-hidden="true"></svg>
       <span>Delete request</span>
     </button>

@@ -182,6 +182,13 @@
   text-align: right;
 }
 
+.results__sealed {
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--ink-2);
+}
+
 .results__grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--candidate-min-width), 1fr));
