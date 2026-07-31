@@ -75,8 +75,17 @@ describe('Authentication (integration)', () => {
       });
     });
 
-    it('leaves the health probe open', async () => {
+    it('leaves both health probes open', async () => {
       await http().get(`${API}/health`).expect(200);
+      await http().get(`${API}/health/live`).expect(200);
+    });
+
+    it('answers liveness without touching the database', async () => {
+      // Readiness owns the database check; liveness must stay independent of it
+      // so a database blip cannot restart every pod at once.
+      const response = await http().get(`${API}/health/live`).expect(200);
+
+      expect(response.body).toEqual({ status: 'ok' });
     });
   });
 

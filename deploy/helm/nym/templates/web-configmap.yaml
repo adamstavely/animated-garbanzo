@@ -1,0 +1,67 @@
+{{- $apiRoot := first (splitList "/" (trim .Values.config.apiPrefix)) -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-nginx" (include "nym.fullname" .) }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "web") | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+data:
+  # Mirrors apps/web/nginx/default.conf. It is mounted rather than baked in so
+  # the serving behaviour can be tuned without rebuilding the image.
+  default.conf: |
+    server {
+        listen       {{ .Values.web.service.containerPort }};
+        listen       [::]:{{ .Values.web.service.containerPort }};
+        server_name  _;
+
+        root  /usr/share/nginx/html;
+        index index.html;
+
+        # Probes hit this rather than the SPA.
+        location = /healthz {
+            access_log off;
+            add_header Content-Type text/plain;
+            return 200 'ok';
+        }
+
+        # Angular emits content-hashed filenames, so these can be cached hard.
+        location ~* \.(?:js|css|woff2?|png|svg|ico|webmanifest)$ {
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+            try_files $uri =404;
+        }
+
+        # Never cache the entry point, or a deploy strands clients on old hashes.
+        location = /index.html {
+            add_header Cache-Control "no-store, must-revalidate";
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # The ingress routes /{{ trim .Values.config.apiPrefix }} straight to the
+        # API, so a request arriving here is a misroute. Answering 404 rather
+        # than the SPA shell turns that into a clear error instead of a JSON
+        # parse failure in the client.
+        location /{{ $apiRoot }}/ {
+            return 404;
+        }
+
+        gzip              on;
+        gzip_vary         on;
+        gzip_min_length   1024;
+        gzip_proxied      any;
+        gzip_types        text/plain text/css application/json application/javascript
+                          application/manifest+json image/svg+xml;
+
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-Frame-Options        "DENY"    always;
+        add_header Referrer-Policy        "strict-origin-when-cross-origin" always;
+
+        server_tokens off;
+    }

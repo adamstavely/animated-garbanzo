@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ printf "%s-test" (include "nym.fullname" .) }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "test") | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
+  containers:
+    - name: probe
+      image: curlimages/curl:8.11.1
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 8 }}
+      # Proves the release is actually serving: the client returns its shell,
+      # the API answers liveness, and readiness confirms the database is
+      # reachable from inside the cluster.
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          curl -fsS --max-time 10 \
+            "http://{{ include "nym.webFullname" . }}:{{ .Values.web.service.port }}/healthz" > /dev/null
+          echo "web: ok"
+
+          curl -fsS --max-time 10 \
+            "http://{{ include "nym.apiFullname" . }}:{{ .Values.api.service.port }}/{{ trim .Values.config.apiPrefix }}/health/live" > /dev/null
+          echo "api liveness: ok"
+
+          curl -fsS --max-time 20 \
+            "http://{{ include "nym.apiFullname" . }}:{{ .Values.api.service.port }}/{{ trim .Values.config.apiPrefix }}/health" > /dev/null
+          echo "api readiness (database reachable): ok"
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          memory: 64Mi
