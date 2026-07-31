@@ -119,7 +119,8 @@
     <nym-prompt-modal
       [requestId]="request.id"
       [settings]="settings"
-      [canAdminister]="canEditPrompt()"
+      [canAdminister]="canAdminister()"
+      [sealed]="sealed()"
       (saved)="onPromptSaved($event)"
       (closed)="promptOpen.set(false)"
     />

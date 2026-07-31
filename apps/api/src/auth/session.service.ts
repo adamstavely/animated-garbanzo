@@ -33,6 +33,11 @@ const TRANSACTION_TTL_SECONDS = 600;
  * in an httpOnly, SameSite=Lax cookie. That keeps the IdP tokens off the
  * browser entirely and means no server-side session store is needed. There is
  * no sign-out path; sessions end when the JWT expires.
+ *
+ * Ops caveat: desk-admin privilege is the `role` claim frozen at issue time.
+ * The cookie is only reissued on a fresh OIDC callback, so an IdP demotion
+ * does not take effect until the JWT expires (SESSION_TTL_SECONDS). Intentional
+ * SSO shape — revoke access sooner by rotating SESSION_SECRET or shortening TTL.
  */
 @Injectable()
 export class SessionService {

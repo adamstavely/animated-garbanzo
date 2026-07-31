@@ -237,7 +237,14 @@ export class RequestsService {
       this.assertClearOfLegalName(penName, request.legalName);
     }
 
-    await this.updateIfStatus(id, expectedStatus, { chosenName: penName });
+    // Pin legalName when a selection is set so a concurrent brief edit cannot
+    // flip overlap under this write (status-only WHERE would still succeed).
+    await this.updateIfStatus(
+      id,
+      expectedStatus,
+      { chosenName: penName },
+      penName ? request.legalName : undefined,
+    );
     return this.findOne(id);
   }
 
@@ -302,7 +309,14 @@ export class RequestsService {
     // Same live overlap the Checks column and refine cards show after a brief edit.
     this.assertClearOfLegalName(penName, request.legalName);
 
-    await this.updateIfStatus(id, RequestStatus.Ready, this.approvalFields(penName, user));
+    // Pin the legalName we screened so a concurrent Ready brief edit cannot
+    // introduce overlap under an in-flight approve (status-only WHERE would).
+    await this.updateIfStatus(
+      id,
+      RequestStatus.Ready,
+      this.approvalFields(penName, user),
+      request.legalName,
+    );
 
     return this.findOne(id);
   }
@@ -333,7 +347,7 @@ export class RequestsService {
 
       const fields = this.approvalFields(penName, user);
       const result = await this.requests.update(
-        { id: request.id, status: RequestStatus.Ready },
+        { id: request.id, status: RequestStatus.Ready, legalName: request.legalName },
         fields,
       );
       if (!result.affected) {
@@ -417,13 +431,22 @@ export class RequestsService {
    * Persists a patch only when status is still what we read. A concurrent
    * generate claim flips status to Generating; a stale entity.save() would
    * write Ready (etc.) back and erase the claim — this UPDATE cannot.
+   *
+   * When `expectedLegalName` is set (choose/approve after an overlap screen),
+   * the row must still carry that name so a concurrent brief edit cannot flip
+   * overlap under the status-only write.
    */
   private async updateIfStatus(
     id: string,
     expectedStatus: RequestStatus,
     values: QueryDeepPartialEntity<PenNameRequestEntity>,
+    expectedLegalName?: string,
   ): Promise<void> {
-    const result = await this.requests.update({ id, status: expectedStatus }, values);
+    const where =
+      expectedLegalName === undefined
+        ? { id, status: expectedStatus }
+        : { id, status: expectedStatus, legalName: expectedLegalName };
+    const result = await this.requests.update(where, values);
     if (!result.affected) {
       throw new ConflictException(STATUS_CONFLICT);
     }

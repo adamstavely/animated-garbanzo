@@ -1,4 +1,4 @@
-import { PenNameRequestDto, RequestListDto, RequestStatus } from '@nym/shared';
+import { CheckId, PenNameRequestDto, RequestListDto, RequestStatus } from '@nym/shared';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
@@ -135,6 +135,33 @@ describe('RequestsStore', () => {
           makeRequest(),
           makeRequest({ id: 'r2', status: RequestStatus.Ready, proposedName: '' }),
           makeRequest({ id: 'r3', status: RequestStatus.Failed }),
+        ]),
+      );
+    await loading;
+
+    expect(store.readyCount()).toBe(1);
+  });
+
+  it('excludes ready rows whose live overlap check has failed', async () => {
+    const loading = store.load();
+    http
+      .expectOne(`${BASE}/requests?view=all&limit=200`)
+      .flush(
+        listResponse([
+          makeRequest(),
+          makeRequest({
+            id: 'r2',
+            legalName: 'Bridget A. Voss',
+            checks: [
+              {
+                id: CheckId.Overlap,
+                passLabel: 'No name overlap',
+                failLabel: 'Overlaps legal name',
+                unknownLabel: 'Overlap unchecked',
+                outcome: 'failed',
+              },
+            ],
+          }),
         ]),
       );
     await loading;
@@ -326,6 +353,112 @@ describe('RequestsStore', () => {
 
     http.expectNone(`${BASE}/requests/r1`);
     expect(store.byId('r1')).toBeUndefined();
+  });
+
+  it('keeps a pinned off-list request when syncPinned getRequest fails transiently', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const loading = store.load();
+      http
+        .expectOne(`${BASE}/requests?view=all&limit=200`)
+        .flush(listResponse([makeRequest({ status: RequestStatus.Generating })]));
+      await loading;
+      TestBed.tick();
+
+      store.pin('r1');
+      store.setQuery('no-match');
+
+      // Establish the off-list pin first — pin() alone does not copy into pinned state.
+      const firstRefresh = store.refresh();
+      http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+      await Promise.resolve();
+      http
+        .expectOne(`${BASE}/requests/r1`)
+        .flush(makeRequest({ status: RequestStatus.Generating }));
+      await firstRefresh;
+      TestBed.tick();
+
+      expect(store.requests()).toHaveLength(0);
+      expect(store.byId('r1')?.status).toBe(RequestStatus.Generating);
+
+      const secondRefresh = store.refresh();
+      http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+      await Promise.resolve();
+      http
+        .expectOne(`${BASE}/requests/r1`)
+        .flush({ message: 'upstream down' }, { status: 503, statusText: 'Service Unavailable' });
+      await secondRefresh;
+      TestBed.tick();
+
+      expect(store.byId('r1')?.status).toBe(RequestStatus.Generating);
+      expect(store.hasPendingGeneration()).toBe(true);
+
+      vi.advanceTimersByTime(GENERATION_POLL_MS);
+      http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+      await Promise.resolve();
+      http.expectOne(`${BASE}/requests/r1`).flush(makeRequest({ status: RequestStatus.Ready }));
+      await Promise.resolve();
+      TestBed.tick();
+
+      expect(store.byId('r1')?.status).toBe(RequestStatus.Ready);
+      expect(store.hasPendingGeneration()).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('clears a pinned off-list request only when getRequest returns 404', async () => {
+    const loading = store.load();
+    http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
+    await loading;
+
+    store.pin('r1');
+    store.setQuery('no-match');
+
+    const firstRefresh = store.refresh();
+    http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+    await Promise.resolve();
+    http.expectOne(`${BASE}/requests/r1`).flush(makeRequest());
+    await firstRefresh;
+
+    expect(store.byId('r1')).toBeDefined();
+
+    const secondRefresh = store.refresh();
+    http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+    await Promise.resolve();
+    http
+      .expectOne(`${BASE}/requests/r1`)
+      .flush({ message: 'Not found' }, { status: 404, statusText: 'Not Found' });
+    await secondRefresh;
+
+    expect(store.byId('r1')).toBeUndefined();
+  });
+
+  it('does not reinsert a filtered-out pinned request into the list on mutation', async () => {
+    const loading = store.load();
+    http.expectOne(`${BASE}/requests?view=all&limit=200`).flush(listResponse([makeRequest()]));
+    await loading;
+
+    store.pin('r1');
+    store.setQuery('no-match');
+    const refreshing = store.refresh();
+    http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+    await Promise.resolve();
+    http.expectOne(`${BASE}/requests/r1`).flush(makeRequest());
+    await refreshing;
+
+    expect(store.requests()).toHaveLength(0);
+
+    const updating = store.update('r1', { notes: 'updated' });
+    http
+      .expectOne(`${BASE}/requests/r1`)
+      .flush(makeRequest({ notes: 'updated', proposedName: 'Bridget C. ASHWORTH' }));
+    await updating;
+
+    expect(store.requests()).toHaveLength(0);
+    expect(store.queueRequests()).toHaveLength(0);
+    expect(store.byId('r1')?.notes).toBe('updated');
   });
 });
 
