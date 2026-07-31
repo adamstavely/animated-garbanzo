@@ -1,5 +1,5 @@
 import { RequestStatus } from '@nym/shared';
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 
@@ -113,14 +113,17 @@ function buildHarness(options: {
             },
         values: Partial<PenNameRequestEntity>,
       ) => {
-        // Atomic claim: UPDATE … WHERE status <> generating (TypeORM `Not`).
+        // Atomic claim: UPDATE … WHERE status NOT IN (generating, approved).
         if (
           typeof criteria === 'object' &&
           'status' in criteria &&
           criteria.status !== RequestStatus.Generating &&
           !('updatedAt' in criteria)
         ) {
-          if (request.status === RequestStatus.Generating) {
+          if (
+            request.status === RequestStatus.Generating ||
+            request.status === RequestStatus.Approved
+          ) {
             return Promise.resolve({ affected: 0 });
           }
           Object.assign(request, values);
@@ -213,6 +216,20 @@ describe('GenerationService', () => {
     const { service, request } = buildHarness({ request: { status: RequestStatus.Generating } });
 
     await expect(service.start(request)).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('refuses to claim an approved request — reopen is the return path', async () => {
+    const { service, request, written } = buildHarness({
+      request: {
+        status: RequestStatus.Approved,
+        approvedName: 'Bridget C. ASHWORTH',
+        approvedByName: 'Rosa Marchetti',
+        approvedAt: new Date('2026-07-30T10:00:00Z'),
+      },
+    });
+
+    await expect(service.start(request)).rejects.toBeInstanceOf(BadRequestException);
+    expect(written.updates).toEqual([]);
   });
 
   it('claims the row with a status predicate so overlapping starts cannot both proceed', async () => {
@@ -311,7 +328,37 @@ describe('GenerationService', () => {
     expect(saved.map((candidate) => candidate.name)).toEqual(['Bridget C. ASHWORTH']);
 
     const final = written.updates.at(-1);
-    expect(final).toMatchObject({ status: RequestStatus.Ready, discardedCount: 3 });
+    expect(final).toMatchObject({
+      status: RequestStatus.Ready,
+      discardedCount: 3,
+      approvedName: '',
+      approvedByName: '',
+      approvedById: null,
+      approvedAt: null,
+    });
+  });
+
+  it('clears leftover approval stamps when persisting Ready', async () => {
+    const { service, request, written } = buildHarness({
+      request: {
+        status: RequestStatus.Ready,
+        approvedName: 'Stale Sign-Off',
+        approvedByName: 'Someone',
+        approvedById: 'u1',
+        approvedAt: new Date('2026-07-01T00:00:00Z'),
+      },
+      generated: [{ name: 'Bridget C. Ashworth' }],
+    });
+
+    await (await service.start(request)).completion;
+
+    expect(written.updates.at(-1)).toMatchObject({
+      status: RequestStatus.Ready,
+      approvedName: '',
+      approvedByName: '',
+      approvedById: null,
+      approvedAt: null,
+    });
   });
 
   it('keeps locked candidates and replaces the rest on a regeneration', async () => {

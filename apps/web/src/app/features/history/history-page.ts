@@ -21,6 +21,9 @@ export class HistoryPageComponent {
 
   protected readonly requests = this.store.historyRequests;
   protected readonly error = this.store.error;
+  protected readonly listTruncated = this.store.listTruncated;
+  protected readonly listTotal = this.store.listTotal;
+  protected readonly shownCount = computed(() => this.store.requests().length);
 
   protected readonly crossTabNote = computed(() => {
     if (!this.store.query().trim()) {

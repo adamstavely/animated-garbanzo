@@ -1,5 +1,5 @@
 import { RequestStatus } from '@nym/shared';
-import { ConflictException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 
@@ -48,13 +48,28 @@ function entity(overrides: Partial<PenNameRequestEntity> = {}): PenNameRequestEn
   } as PenNameRequestEntity;
 }
 
-function buildService(request: PenNameRequestEntity, updateAffected = 1) {
+function buildService(
+  request: PenNameRequestEntity,
+  updateAffected = 1,
+  promptSettings: PromptSettingsService = {
+    overrideColumns: () => ({
+      promptOverride: 'Custom prompt.',
+      systemOverride: 'Custom system.',
+    }),
+    clearedOverrides: () => ({ promptOverride: null, systemOverride: null }),
+    describeFor: () => ({
+      prompt: 'Custom prompt.',
+      system: 'Custom system.',
+      isCustom: true,
+    }),
+  } as unknown as PromptSettingsService,
+) {
   const requests = {
     findOne: jest.fn(() => Promise.resolve(request)),
     find: jest.fn(() => Promise.resolve([request])),
     update: jest.fn(() => Promise.resolve({ affected: updateAffected })),
     save: jest.fn(),
-    delete: jest.fn(),
+    delete: jest.fn(() => Promise.resolve({ affected: updateAffected })),
     create: jest.fn(),
   } as unknown as Repository<PenNameRequestEntity>;
 
@@ -85,7 +100,7 @@ function buildService(request: PenNameRequestEntity, updateAffected = 1) {
     requests,
     candidates,
     {} as GenerationService,
-    {} as PromptSettingsService,
+    promptSettings,
     { consume: jest.fn(() => Promise.resolve()) } as unknown as RateLimiter,
     configService,
   );
@@ -107,6 +122,21 @@ describe('RequestsService concurrency', () => {
       { notes: 'prefer softer names' },
     );
     expect(requests.save).not.toHaveBeenCalled();
+  });
+
+  it('refuses choose and brief updates on Approved until reopen', async () => {
+    const request = entity({ status: RequestStatus.Approved });
+    const { service, requests } = buildService(request);
+
+    await expect(
+      service.chooseCandidate('r1', { penName: 'Bridget C. Ashworth' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    await expect(service.update('r1', { notes: 'quiet edit' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+
+    expect(requests.update).not.toHaveBeenCalled();
   });
 
   it('refuses choose/approve/reopen when status no longer matches', async () => {
@@ -141,6 +171,109 @@ describe('RequestsService concurrency', () => {
     expect(requests.save).not.toHaveBeenCalled();
   });
 
+  it('deletes with WHERE status = expected so a generate claim cannot CASCADE-delete mid-flight', async () => {
+    const request = entity({ status: RequestStatus.Ready });
+    const { service, requests } = buildService(request);
+
+    await service.remove('r1');
+
+    expect(requests.delete).toHaveBeenCalledWith({
+      id: 'r1',
+      status: RequestStatus.Ready,
+    });
+  });
+
+  it('refuses delete while Generating or when a generate claim won the race', async () => {
+    const generating = entity({ status: RequestStatus.Generating });
+    const { service: busy, requests: busyRepo } = buildService(generating);
+
+    await expect(busy.remove('r1')).rejects.toBeInstanceOf(ConflictException);
+    expect(busyRepo.delete).not.toHaveBeenCalled();
+
+    const raced = entity({ status: RequestStatus.Ready });
+    const { service, requests } = buildService(raced, 0);
+
+    await expect(service.remove('r1')).rejects.toBeInstanceOf(ConflictException);
+    expect(requests.delete).toHaveBeenCalledWith({
+      id: 'r1',
+      status: RequestStatus.Ready,
+    });
+  });
+
+  it('updates prompt overrides with WHERE status = expected, not entity.save()', async () => {
+    const request = entity({ status: RequestStatus.Ready });
+    const { service, requests } = buildService(request);
+
+    await service.updatePromptSettings('r1', {
+      system: 'Custom system.',
+      prompt: 'Custom prompt.',
+    });
+
+    expect(requests.update).toHaveBeenCalledWith(
+      { id: 'r1', status: RequestStatus.Ready },
+      { promptOverride: 'Custom prompt.', systemOverride: 'Custom system.' },
+    );
+    expect(requests.save).not.toHaveBeenCalled();
+  });
+
+  it('resets prompt overrides with WHERE status = expected, not entity.save()', async () => {
+    const request = entity({
+      status: RequestStatus.Ready,
+      promptOverride: 'Custom prompt.',
+      systemOverride: 'Custom system.',
+    });
+    const { service, requests } = buildService(request);
+
+    await service.resetPromptSettings('r1');
+
+    expect(requests.update).toHaveBeenCalledWith(
+      { id: 'r1', status: RequestStatus.Ready },
+      { promptOverride: null, systemOverride: null },
+    );
+    expect(requests.save).not.toHaveBeenCalled();
+  });
+
+  it('refuses prompt update/reset when a generate claim won the race', async () => {
+    const request = entity({ status: RequestStatus.Ready });
+    const { service, requests } = buildService(request, 0);
+
+    await expect(
+      service.updatePromptSettings('r1', {
+        system: 'Custom system.',
+        prompt: 'Custom prompt.',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    await expect(service.resetPromptSettings('r1')).rejects.toBeInstanceOf(ConflictException);
+    expect(requests.save).not.toHaveBeenCalled();
+  });
+
+  it('refuses prompt update/reset while Generating', async () => {
+    const request = entity({ status: RequestStatus.Generating });
+    const { service, requests } = buildService(request);
+
+    await expect(
+      service.updatePromptSettings('r1', {
+        system: 'Custom system.',
+        prompt: 'Custom prompt.',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+
+    await expect(service.resetPromptSettings('r1')).rejects.toBeInstanceOf(ConflictException);
+    expect(requests.update).not.toHaveBeenCalled();
+  });
+
+
+  it('refuses approve when the request is not Ready', async () => {
+    for (const status of [RequestStatus.Failed, RequestStatus.Approved, RequestStatus.Queued]) {
+      const request = entity({ status });
+      const { service, requests } = buildService(request);
+
+      await expect(service.approve('r1', {}, user)).rejects.toBeInstanceOf(BadRequestException);
+      expect(requests.update).not.toHaveBeenCalled();
+    }
+  });
+
   it('skips bulk-approve rows that lost a race with generate', async () => {
     const ready = entity({ id: 'r1', status: RequestStatus.Ready });
     const raced = entity({ id: 'r2', status: RequestStatus.Ready });
@@ -154,6 +287,52 @@ describe('RequestsService concurrency', () => {
     const result = await service.approveAll(user);
 
     expect(result.approvedCount).toBe(1);
-    expect(requests.save).not.toHaveBeenCalled();
+    expect(result.requests).toHaveLength(1);
+  });
+
+  it('refuses generate on approved requests so History stays sealed', async () => {
+    const request = entity({
+      status: RequestStatus.Approved,
+      approvedName: 'Bridget C. Ashworth',
+    });
+    const generation = { start: jest.fn() } as unknown as GenerationService;
+    const requests = {
+      findOne: jest.fn(() => Promise.resolve(request)),
+      find: jest.fn(),
+      update: jest.fn(),
+      save: jest.fn(),
+      delete: jest.fn(),
+      create: jest.fn(),
+    } as unknown as Repository<PenNameRequestEntity>;
+
+    const configService = {
+      get: (key: keyof AppConfig) => {
+        if (key === 'requests') {
+          return { listDefaultLimit: 50, listMaxLimit: 100, approveAllLimit: 50 };
+        }
+        if (key === 'rateLimit') {
+          return {
+            windowMs: 60_000,
+            list: 120,
+            create: 30,
+            generate: 30,
+            approveAll: 5,
+          };
+        }
+        return undefined;
+      },
+    } as unknown as ConfigService<AppConfig, true>;
+
+    const service = new RequestsService(
+      requests,
+      { findOne: jest.fn(), save: jest.fn() } as unknown as Repository<CandidateEntity>,
+      generation,
+      {} as PromptSettingsService,
+      { consume: jest.fn(() => Promise.resolve()) } as unknown as RateLimiter,
+      configService,
+    );
+
+    await expect(service.generate('r1', {}, user)).rejects.toBeInstanceOf(BadRequestException);
+    expect(generation.start).not.toHaveBeenCalled();
   });
 });

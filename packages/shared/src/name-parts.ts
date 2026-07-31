@@ -1,10 +1,9 @@
 /**
- * Name tokenisation shared by the API's screening rules and the client's
- * "Excluded from results" chips.
+ * Name tokenisation shared by the API's screening rules, the client's
+ * "Excluded from results" chips, and live overlap labelling on refine cards.
  *
  * It lives here so both sides split a name exactly the same way — the chips the
- * assistant reads are the same words the server screens against. The screening
- * decision itself is always the server's; the client only labels it.
+ * assistant reads are the same words screening compares against.
  */
 
 /** Separators between name parts: spaces, hyphens and apostrophes. */

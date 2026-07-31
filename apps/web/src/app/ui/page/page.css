@@ -49,6 +49,17 @@
   color: var(--fail);
 }
 
+.page__notice {
+  margin: 0;
+  padding: var(--space-8) var(--space-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  background: var(--rail);
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--ink-2);
+}
+
 @media (max-width: 720px) {
   .page {
     padding: var(--space-15) var(--space-11) var(--space-21);

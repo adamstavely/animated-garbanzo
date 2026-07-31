@@ -31,6 +31,9 @@ export class QueuePageComponent {
   protected readonly requests = this.store.queueRequests;
   protected readonly error = this.store.error;
   protected readonly canAdminister = this.auth.canAdminister;
+  protected readonly listTruncated = this.store.listTruncated;
+  protected readonly listTotal = this.store.listTotal;
+  protected readonly shownCount = computed(() => this.store.requests().length);
 
   protected readonly approveAllLabel = computed(() => {
     const count = this.store.readyCount();

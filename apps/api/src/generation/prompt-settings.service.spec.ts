@@ -1,5 +1,3 @@
-import { Repository } from 'typeorm';
-
 import { PenNameRequestEntity } from '../database/entities';
 import { DEFAULT_SYSTEM_INSTRUCTION, PromptBuilderService } from './prompt-builder.service';
 import { PromptSettingsService } from './prompt-settings.service';
@@ -20,19 +18,7 @@ function request(overrides: Partial<PenNameRequestEntity> = {}): PenNameRequestE
 
 describe('PromptSettingsService', () => {
   const promptBuilder = new PromptBuilderService();
-  let saved: PenNameRequestEntity | null;
-  const requests = {
-    save: jest.fn(async (entity: PenNameRequestEntity) => {
-      saved = entity;
-      return entity;
-    }),
-  } as unknown as Repository<PenNameRequestEntity>;
-  const service = new PromptSettingsService(requests, promptBuilder);
-
-  beforeEach(() => {
-    saved = null;
-    jest.clearAllMocks();
-  });
+  const service = new PromptSettingsService(promptBuilder);
 
   it('describes the brief-composed prompt when no override is set', () => {
     const described = service.describeFor(request());
@@ -53,18 +39,19 @@ describe('PromptSettingsService', () => {
     expect(service.describeFor(entity).isCustom).toBe(true);
   });
 
-  it('persists overrides on the request and clears them when defaults are saved', async () => {
+  it('computes overrides and clears them when defaults are saved', () => {
     const entity = request();
-    const custom = await service.update(entity, {
+    const custom = service.overrideColumns(entity, {
       system: 'Custom system.',
       prompt: 'Custom prompt.',
     });
 
-    expect(custom.isCustom).toBe(true);
-    expect(saved?.systemOverride).toBe('Custom system.');
-    expect(saved?.promptOverride).toBe('Custom prompt.');
+    expect(custom).toEqual({
+      systemOverride: 'Custom system.',
+      promptOverride: 'Custom prompt.',
+    });
 
-    const cleared = await service.update(entity, {
+    const cleared = service.overrideColumns(entity, {
       system: DEFAULT_SYSTEM_INSTRUCTION,
       prompt: promptBuilder.build({
         legalName: entity.legalName,
@@ -74,21 +61,13 @@ describe('PromptSettingsService', () => {
       }),
     });
 
-    expect(cleared.isCustom).toBe(false);
-    expect(saved?.systemOverride).toBeNull();
-    expect(saved?.promptOverride).toBeNull();
+    expect(cleared).toEqual({ systemOverride: null, promptOverride: null });
   });
 
-  it('reset clears both overrides on the request', async () => {
-    const entity = request({
-      systemOverride: 'Custom system.',
-      promptOverride: 'Custom prompt.',
+  it('clearedOverrides nulls both columns', () => {
+    expect(service.clearedOverrides()).toEqual({
+      systemOverride: null,
+      promptOverride: null,
     });
-
-    const restored = await service.reset(entity);
-
-    expect(restored.isCustom).toBe(false);
-    expect(saved?.systemOverride).toBeNull();
-    expect(saved?.promptOverride).toBeNull();
   });
 });

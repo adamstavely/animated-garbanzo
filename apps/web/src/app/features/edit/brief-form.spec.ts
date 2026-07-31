@@ -151,6 +151,48 @@ describe('BriefFormComponent', () => {
       expect(saves).toHaveLength(0);
     });
 
+    it('keeps in-progress edits when a poll only refreshes status or candidates', async () => {
+      const element = await render(
+        makeRequest({ status: RequestStatus.Generating, candidates: [] }),
+      );
+      const legalName = element.querySelector('input') as HTMLInputElement;
+
+      legalName.value = 'Margaret E. Vossington';
+      legalName.dispatchEvent(new Event('input'));
+
+      fixture.componentRef.setInput(
+        'request',
+        makeRequest({
+          status: RequestStatus.Generating,
+          candidates: [
+            {
+              id: 'c1',
+              name: 'Bridget C. ASHWORTH',
+              pronunciation: '',
+              origin: '',
+              locked: false,
+            },
+          ],
+        }),
+      );
+      await fixture.whenStable();
+
+      expect(legalName.value).toBe('Margaret E. Vossington');
+    });
+
+    it('reseeds when the server brief fields actually change', async () => {
+      const element = await render(makeRequest());
+      const legalName = element.querySelector('input') as HTMLInputElement;
+
+      fixture.componentRef.setInput(
+        'request',
+        makeRequest({ legalName: 'Ada Lovelace', notes: 'Updated elsewhere.' }),
+      );
+      await fixture.whenStable();
+
+      expect(legalName.value).toBe('Ada Lovelace');
+    });
+
     it('emits the refine text with the regenerate intent', async () => {
       const element = await render(makeRequest());
       const refines: string[] = [];

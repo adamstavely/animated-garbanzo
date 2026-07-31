@@ -144,6 +144,7 @@ export class RequestsService {
   async update(id: string, dto: UpdateRequestDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    this.assertNotApproved(request);
     const expectedStatus = request.status;
 
     const patch: QueryDeepPartialEntity<PenNameRequestEntity> = {};
@@ -178,13 +179,19 @@ export class RequestsService {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
 
-    const result = await this.requests.delete(id);
+    // Status in the WHERE so a concurrent generate claim cannot lose the row
+    // (and CASCADE its candidates) while the worker is still mid-flight.
+    const result = await this.requests.delete({ id, status: request.status });
     if (!result.affected) {
-      throw new NotFoundException(`Request ${id} was not found.`);
+      throw new ConflictException('This request is still generating. Try again shortly.');
     }
   }
 
-  /** Starts (or restarts) generation. Returns the request in its "generating" state. */
+  /**
+   * Starts (or restarts) generation. Returns the request in its "generating" state.
+   * Approved rows must go through reopen first — generate must not pull History
+   * back into the queue while leaving a stale sign-off.
+   */
   async generate(id: string, dto: GenerateRequestDto, user: AuthenticatedUser): Promise<PenNameRequestDto> {
     await this.rateLimiter.consume(
       `generate:${user.id}`,
@@ -193,6 +200,10 @@ export class RequestsService {
     );
 
     const request = await this.requireRequest(id);
+
+    if (request.status === RequestStatus.Approved) {
+      throw new BadRequestException('Reopen this request before generating again.');
+    }
 
     if (!request.legalName.trim()) {
       throw new BadRequestException('Add the author’s legal name first.');
@@ -210,6 +221,7 @@ export class RequestsService {
   async chooseCandidate(id: string, dto: ChooseCandidateDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    this.assertNotApproved(request);
     const expectedStatus = request.status;
     const penName = normaliseName(dto.penName);
 
@@ -242,6 +254,8 @@ export class RequestsService {
   /**
    * Signs off a pen name. Defaults to the proposed name, which is what the queue's
    * Approve button means; the edit view sends the selected candidate explicitly.
+   * Only Ready rows may be approved — Failed leftovers and re-stamping Approved
+   * are refused, matching approveAll.
    */
   async approve(
     id: string,
@@ -249,8 +263,7 @@ export class RequestsService {
     user: AuthenticatedUser,
   ): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
-    this.assertNotGenerating(request);
-    const expectedStatus = request.status;
+    this.assertReadyForApproval(request);
     const penName = normaliseName(dto.penName ?? '') || resolveProposedName(request);
 
     if (!penName) {
@@ -260,7 +273,7 @@ export class RequestsService {
       throw new BadRequestException('That name is not among the cleared candidates.');
     }
 
-    await this.updateIfStatus(id, expectedStatus, this.approvalFields(penName, user));
+    await this.updateIfStatus(id, RequestStatus.Ready, this.approvalFields(penName, user));
 
     return this.findOne(id);
   }
@@ -334,11 +347,21 @@ export class RequestsService {
     id: string,
     dto: UpdatePromptSettingsDto,
   ): Promise<PromptSettingsDto> {
-    return this.promptSettings.update(await this.requireRequest(id), dto);
+    const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
+    const patch = this.promptSettings.overrideColumns(request, dto);
+    await this.updateIfStatus(id, request.status, patch);
+    Object.assign(request, patch);
+    return this.promptSettings.describeFor(request);
   }
 
   async resetPromptSettings(id: string): Promise<PromptSettingsDto> {
-    return this.promptSettings.reset(await this.requireRequest(id));
+    const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
+    const patch = this.promptSettings.clearedOverrides();
+    await this.updateIfStatus(id, request.status, patch);
+    Object.assign(request, patch);
+    return this.promptSettings.describeFor(request);
   }
 
   private approvalFields(
@@ -374,6 +397,21 @@ export class RequestsService {
   private assertNotGenerating(request: PenNameRequestEntity): void {
     if (request.status === RequestStatus.Generating) {
       throw new ConflictException('This request is still generating. Try again shortly.');
+    }
+  }
+
+  /** History rows stay sealed until reopen — no silent brief or selection drift. */
+  private assertNotApproved(request: PenNameRequestEntity): void {
+    if (request.status === RequestStatus.Approved) {
+      throw new BadRequestException('Reopen this request before making changes.');
+    }
+  }
+
+  /** Approve is Ready-only; Failed may still hold prior candidates. */
+  private assertReadyForApproval(request: PenNameRequestEntity): void {
+    this.assertNotGenerating(request);
+    if (request.status !== RequestStatus.Ready) {
+      throw new BadRequestException('Only ready requests can be approved.');
     }
   }
 

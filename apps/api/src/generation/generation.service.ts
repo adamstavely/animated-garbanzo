@@ -1,5 +1,6 @@
 import { RequestStatus } from '@nym/shared';
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -10,7 +11,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { LessThan, Not, Repository } from 'typeorm';
+import { In, LessThan, Not, Repository } from 'typeorm';
 
 import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
@@ -89,9 +90,10 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
   /**
    * Marks a request as generating and starts the run.
    *
-   * The claim is a single UPDATE … WHERE status <> generating so two API
-   * instances cannot both start Anthropic runs for the same row. Stale
-   * generating rows are reclaimed first so a dead worker cannot block retries.
+   * The claim is a single UPDATE … WHERE status NOT IN (generating, approved)
+   * so two API instances cannot both start Anthropic runs for the same row,
+   * and History rows stay sealed until reopen. Stale generating rows are
+   * reclaimed first so a dead worker cannot block retries.
    */
   async start(
     request: PenNameRequestEntity,
@@ -99,11 +101,18 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
   ): Promise<GenerationHandle> {
     await this.reclaimStale();
 
+    if (request.status === RequestStatus.Approved) {
+      throw new BadRequestException('Reopen this request before generating again.');
+    }
+
     const refine = options.refine ?? request.refine ?? '';
     const runId = randomUUID();
 
     const claimed = await this.requests.update(
-      { id: request.id, status: Not(RequestStatus.Generating) },
+      {
+        id: request.id,
+        status: Not(In([RequestStatus.Generating, RequestStatus.Approved])),
+      },
       {
         status: RequestStatus.Generating,
         errorMessage: '',
@@ -113,6 +122,10 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
     );
 
     if (!claimed.affected) {
+      const current = await this.requireRequest(request.id);
+      if (current.status === RequestStatus.Approved) {
+        throw new BadRequestException('Reopen this request before generating again.');
+      }
       throw new ConflictException('This request is already generating.');
     }
 
@@ -266,6 +279,12 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
           status: RequestStatus.Ready,
           errorMessage: '',
           generationRunId: null,
+          // Generation is not reopen — drop any leftover sign-off so Ready
+          // never carries History stamps into the queue.
+          approvedName: '',
+          approvedByName: '',
+          approvedById: null,
+          approvedAt: null,
           discardedCount: input.regenerate
             ? request.discardedCount + input.discarded
             : input.discarded,
