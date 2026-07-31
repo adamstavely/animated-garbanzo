@@ -105,7 +105,7 @@ export interface BulkApproveResultDto {
 }
 
 export interface PromptSettingsDto {
-  /** System instruction sent with every generation. */
+  /** System instruction sent with generations for this request. */
   system: string;
   /** Generation prompt; auto-composed from the brief unless overridden. */
   prompt: string;

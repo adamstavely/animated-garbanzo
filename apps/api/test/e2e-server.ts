@@ -172,9 +172,6 @@ class TestSupportController {
     await this.dataSource.query(
       'TRUNCATE TABLE "candidates", "pen_name_requests", "users" RESTART IDENTITY CASCADE',
     );
-    await this.dataSource.query(
-      `UPDATE "prompt_settings" SET "systemOverride" = NULL, "promptOverride" = NULL WHERE id = 'default'`,
-    );
 
     const users = this.dataSource.getRepository(UserEntity);
     const requests = this.dataSource.getRepository(PenNameRequestEntity);

@@ -23,6 +23,11 @@
             </li>
           }
         </ul>
+        @if (listTruncated()) {
+          <p class="rail__notice" role="status">
+            Showing {{ shownCount() }} of {{ listTotal() }}. Narrow the search to see the rest.
+          </p>
+        }
       </div>
     </aside>
 
@@ -65,6 +70,7 @@
               <li>
                 <nym-candidate-card
                   [candidate]="candidate"
+                  [legalName]="request.legalName"
                   [selected]="candidate.name === request.chosenName"
                   (choose)="choose($event)"
                   (toggleLock)="toggleLock($event)"
@@ -115,6 +121,10 @@
       (cancelled)="deleteOpen.set(false)"
     />
   }
+} @else if (resolving()) {
+  <div class="edit__missing" role="status" aria-live="polite">
+    <nym-spinner size="md" />
+  </div>
 } @else {
   <div class="edit__missing">
     <nym-empty-state

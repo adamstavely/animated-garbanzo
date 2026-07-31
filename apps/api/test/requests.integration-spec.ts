@@ -256,6 +256,35 @@ describe('Requests (integration)', () => {
         .expect(400);
     });
 
+    it('refuses approve on Failed leftovers and does not re-stamp Approved', async () => {
+      const ready = await createRequest({ firstName: 'Nora', lastName: 'Vale' });
+      expect(ready.candidates.length).toBeGreaterThan(0);
+
+      harness.generator.queueFailure(new Error('upstream'));
+      await auth(http().post(`${API}/requests/${ready.id}/generate`))
+        .send({ regenerate: true })
+        .expect(202);
+      const failed = await settle(ready.id);
+
+      expect(failed.status).toBe(RequestStatus.Failed);
+      expect(failed.candidates.length).toBeGreaterThan(0);
+
+      await auth(http().post(`${API}/requests/${failed.id}/approve`))
+        .send({ penName: failed.candidates[0]?.name })
+        .expect(400);
+
+      const approved = await createRequest({ firstName: 'Ivy', lastName: 'Shaw' });
+      const first = await auth(http().post(`${API}/requests/${approved.id}/approve`))
+        .send({})
+        .expect(200);
+      const stamped = (first.body as PenNameRequestDto).approvedAt;
+
+      await auth(http().post(`${API}/requests/${approved.id}/approve`)).send({}).expect(400);
+
+      const listed = await auth(http().get(`${API}/requests/${approved.id}`)).expect(200);
+      expect((listed.body as PenNameRequestDto).approvedAt).toBe(stamped);
+    });
+
     it('approves every ready request at once', async () => {
       await createRequest();
       await createRequest({ firstName: 'Daniel', middleInitial: 'O', lastName: 'Reyes' });
@@ -286,6 +315,21 @@ describe('Requests (integration)', () => {
       expect(body.approvedName).toBe('');
       expect(body.approvedByName).toBe('');
       expect(body.approvedAt).toBeNull();
+    });
+
+    it('refuses choose and brief updates on Approved until reopen', async () => {
+      const created = await createRequest();
+      await auth(http().post(`${API}/requests/${created.id}/approve`))
+        .send({})
+        .expect(200);
+
+      await auth(http().post(`${API}/requests/${created.id}/choose`))
+        .send({ penName: created.candidates[0]?.name ?? '' })
+        .expect(400);
+
+      await auth(http().patch(`${API}/requests/${created.id}`))
+        .send({ notes: 'quiet edit after approval' })
+        .expect(400);
     });
   });
 
@@ -529,6 +573,38 @@ describe('Requests (integration)', () => {
 
       expect(body.isCustom).toBe(false);
       expect(body.prompt).toContain('Author legal name: Margaret E. Voss');
+    });
+
+    it('keeps an override scoped to the request it was saved on', async () => {
+      const overridden = await createRequest();
+      const other = await createRequest({
+        firstName: 'James',
+        middleInitial: 'T',
+        lastName: 'Harlow',
+        presentation: 'Male',
+        origin: '',
+        notes: '',
+      });
+
+      await auth(http().patch(`${API}/requests/${overridden.id}/prompt`))
+        .send({ system: 'Custom system.', prompt: 'Custom prompt, only for this brief.' })
+        .expect(200);
+
+      const otherPrompt = await auth(http().get(`${API}/requests/${other.id}/prompt`)).expect(200);
+      expect((otherPrompt.body as { isCustom: boolean; prompt: string }).isCustom).toBe(false);
+      expect((otherPrompt.body as { prompt: string }).prompt).toContain(
+        'Author legal name: James T. Harlow',
+      );
+
+      await auth(http().post(`${API}/requests/${other.id}/generate`)).send({}).expect(202);
+      await settle(other.id);
+
+      expect(harness.generator.calls.at(-1)?.prompt).toContain(
+        'Author legal name: James T. Harlow',
+      );
+      expect(harness.generator.calls.at(-1)?.prompt).not.toBe(
+        'Custom prompt, only for this brief.',
+      );
     });
   });
 

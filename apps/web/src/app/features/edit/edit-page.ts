@@ -5,7 +5,15 @@ import {
   RequestStatus,
   UpdateRequestPayload,
 } from '@nym/shared';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { LucideArrowLeft } from '@lucide/angular';
@@ -57,10 +65,27 @@ export class EditPageComponent {
   protected readonly promptSettings = signal<PromptSettingsDto | null>(null);
   protected readonly promptOpen = signal(false);
   protected readonly deleteOpen = signal(false);
+  /** True while `ensure` is resolving a deep link / filtered-out id. */
+  protected readonly resolving = signal(true);
 
   protected readonly request = computed(() => this.store.byId(this.id()));
-  protected readonly allRequests = this.store.requests;
   protected readonly canAdminister = this.auth.canAdminister;
+  protected readonly listTruncated = this.store.listTruncated;
+  protected readonly listTotal = this.store.listTotal;
+  protected readonly shownCount = computed(() => this.store.requests().length);
+
+  /**
+   * Rail entries: the filtered store list, with the open request prepended when
+   * search or the 200-row ceiling would otherwise hide it.
+   */
+  protected readonly allRequests = computed(() => {
+    const items = this.store.requests();
+    const current = this.request();
+    if (!current || items.some((entry) => entry.id === current.id)) {
+      return items;
+    }
+    return [current, ...items];
+  });
 
   protected readonly busy = computed(() => this.request()?.status === RequestStatus.Generating);
 
@@ -74,6 +99,20 @@ export class EditPageComponent {
   );
 
   protected readonly promptEdited = computed(() => this.promptSettings()?.isCustom ?? false);
+
+  constructor() {
+    effect((onCleanup) => {
+      const id = this.id();
+      this.store.pin(id);
+      this.resolving.set(true);
+      void this.store.ensure(id).finally(() => {
+        if (this.id() === id) {
+          this.resolving.set(false);
+        }
+      });
+      onCleanup(() => this.store.unpin(id));
+    });
+  }
 
   protected async onBriefChange(payload: UpdateRequestPayload): Promise<void> {
     try {

@@ -29,6 +29,19 @@ export class RequestsStore {
   private readonly errorState = signal('');
   private readonly queueMatchesState = signal(0);
   private readonly historyMatchesState = signal(0);
+  private readonly totalState = signal(0);
+  private readonly limitState = signal(200);
+
+  /**
+   * The edit page pins its open id so list refresh (search / poll / 200-row
+   * ceiling) cannot drop it out from under `byId`. Kept outside `requestsState`
+   * so filtered queue/history tabs stay honest.
+   */
+  private pinnedId: string | undefined;
+  private readonly pinnedRequestState = signal<PenNameRequestDto | undefined>(undefined);
+
+  /** Bumps on every list fetch; stale responses are ignored. */
+  private listGeneration = 0;
 
   private poller: ReturnType<typeof setInterval> | undefined;
 
@@ -50,6 +63,13 @@ export class RequestsStore {
   /** How many requests the current search matches on each tab. */
   readonly queueMatchCount = this.queueMatchesState.asReadonly();
   readonly historyMatchCount = this.historyMatchesState.asReadonly();
+
+  /** Total matching rows before the client page ceiling; used when items are truncated. */
+  readonly listTotal = this.totalState.asReadonly();
+  readonly listLimit = this.limitState.asReadonly();
+
+  /** True when the API has more matching rows than this load returned. */
+  readonly listTruncated = computed(() => this.totalState() > this.requestsState().length);
 
   /** True while at least one request is mid-generation. */
   readonly hasPendingGeneration = computed(() =>
@@ -77,7 +97,53 @@ export class RequestsStore {
   }
 
   byId(id: string): PenNameRequestDto | undefined {
-    return this.requestsState().find((request) => request.id === id);
+    const fromList = this.requestsState().find((request) => request.id === id);
+    if (fromList) {
+      return fromList;
+    }
+    return this.pinnedId === id ? this.pinnedRequestState() : undefined;
+  }
+
+  /** Keep this id resolvable across search/list refreshes while the edit page is open. */
+  pin(id: string): void {
+    this.pinnedId = id;
+  }
+
+  unpin(id: string): void {
+    if (this.pinnedId !== id) {
+      return;
+    }
+    this.pinnedId = undefined;
+    this.pinnedRequestState.set(undefined);
+  }
+
+  /**
+   * Resolve a request by id, fetching from the API when it is not already in
+   * the list (deep link, search filter, or past the 200-row ceiling).
+   */
+  async ensure(id: string): Promise<boolean> {
+    const existing = this.byId(id);
+    if (existing) {
+      if (this.pinnedId === id) {
+        this.pinnedRequestState.set(existing);
+      }
+      return true;
+    }
+
+    try {
+      const request = await firstValueFrom(this.api.getRequest(id));
+      if (this.pinnedId === id) {
+        this.pinnedRequestState.set(request);
+      } else {
+        this.upsert(request);
+      }
+      return true;
+    } catch {
+      if (this.pinnedId === id) {
+        this.pinnedRequestState.set(undefined);
+      }
+      return false;
+    }
   }
 
   setQuery(query: string): void {
@@ -102,6 +168,7 @@ export class RequestsStore {
 
   /** Re-reads the list without showing the loading state — used by the poller. */
   async refresh(): Promise<void> {
+    const generation = ++this.listGeneration;
     const result = await firstValueFrom(
       this.api.listRequests({
         view: 'all',
@@ -109,9 +176,50 @@ export class RequestsStore {
         limit: 200,
       }),
     );
+    if (generation !== this.listGeneration) {
+      return;
+    }
+
     this.requestsState.set(result.items);
     this.queueMatchesState.set(result.queueMatchCount);
     this.historyMatchesState.set(result.historyMatchCount);
+    this.totalState.set(result.total);
+    this.limitState.set(result.limit);
+    await this.syncPinned(result.items, generation);
+  }
+
+  /**
+   * After a list replace, keep the edit page's open request in sync — from the
+   * new page when present, otherwise via getRequest so search/limit drops do
+   * not surface as “Request not found”.
+   */
+  private async syncPinned(
+    items: readonly PenNameRequestDto[],
+    generation: number,
+  ): Promise<void> {
+    const pinnedId = this.pinnedId;
+    if (!pinnedId) {
+      return;
+    }
+
+    const fromList = items.find((request) => request.id === pinnedId);
+    if (fromList) {
+      this.pinnedRequestState.set(fromList);
+      return;
+    }
+
+    try {
+      const request = await firstValueFrom(this.api.getRequest(pinnedId));
+      if (generation !== this.listGeneration || this.pinnedId !== pinnedId) {
+        return;
+      }
+      this.pinnedRequestState.set(request);
+    } catch {
+      if (generation !== this.listGeneration || this.pinnedId !== pinnedId) {
+        return;
+      }
+      this.pinnedRequestState.set(undefined);
+    }
   }
 
   async create(payload: CreateRequestPayload): Promise<PenNameRequestDto> {
@@ -127,6 +235,9 @@ export class RequestsStore {
   async remove(id: string): Promise<void> {
     await firstValueFrom(this.api.deleteRequest(id));
     this.requestsState.update((requests) => requests.filter((request) => request.id !== id));
+    if (this.pinnedId === id) {
+      this.pinnedRequestState.set(undefined);
+    }
   }
 
   async generate(
@@ -163,6 +274,9 @@ export class RequestsStore {
   }
 
   private upsert(request: PenNameRequestDto): void {
+    if (this.pinnedId === request.id) {
+      this.pinnedRequestState.set(request);
+    }
     this.requestsState.update((requests) => {
       const index = requests.findIndex((candidate) => candidate.id === request.id);
       if (index === -1) {

@@ -185,7 +185,7 @@ describe('Authentication (integration)', () => {
       expect(response.headers['location']).toBe('http://localhost:4200?auth=expired');
     });
 
-    it('refuses to issue a session when the exchange fails', async () => {
+    it('sends the browser back with a marker when the exchange fails', async () => {
       const login = await http().get(`${API}/auth/login`).expect(302);
       const transactionCookie = cookieValue(
         toCookieList(login.headers['set-cookie']),
@@ -196,9 +196,10 @@ describe('Authentication (integration)', () => {
 
       const response = await http()
         .get(`${API}/auth/callback?code=abc&state=state-value`)
-        .set('Cookie', transactionCookie ?? '');
+        .set('Cookie', transactionCookie ?? '')
+        .expect(302);
 
-      expect(response.status).toBeGreaterThanOrEqual(400);
+      expect(response.headers['location']).toBe('http://localhost:4200?auth=failed');
       expect(
         cookieValue(toCookieList(response.headers['set-cookie']), 'nym_session'),
       ).toBeUndefined();

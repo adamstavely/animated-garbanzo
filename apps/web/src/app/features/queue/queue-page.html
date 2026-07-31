@@ -21,6 +21,12 @@
     <p class="page__error" role="alert">{{ error() }}</p>
   }
 
+  @if (listTruncated()) {
+    <p class="page__notice" role="status">
+      Showing {{ shownCount() }} of {{ listTotal() }} requests. Narrow the search to see the rest.
+    </p>
+  }
+
   <div class="table-card">
     @if (requests().length) {
       <nym-queue-table [requests]="requests()" (approve)="approve($event)" (retry)="retry($event)" />

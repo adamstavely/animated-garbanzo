@@ -82,6 +82,9 @@ export class BriefFormComponent {
     refine: [''],
   });
 
+  /** Last brief values written into the form — used to ignore poll-only updates. */
+  private seededBrief: BriefSeed | undefined;
+
   protected readonly busy = computed(() => this.request().status === RequestStatus.Generating);
 
   protected readonly generateLabel = computed(() => {
@@ -116,17 +119,23 @@ export class BriefFormComponent {
   );
 
   constructor() {
-    // Re-seed the form whenever a different request (or a fresh server copy)
-    // arrives, without echoing that back out as an edit.
+    // Re-seed when the request id or brief fields change. Generation polling
+    // replaces the whole row every few seconds (status / candidates only) —
+    // those must not clobber mid-edit / pre-debounce local values.
     effect(() => {
       const request = this.request();
+      const brief = briefSeedFrom(request);
+      if (sameBriefSeed(this.seededBrief, brief)) {
+        return;
+      }
+      this.seededBrief = brief;
       this.form.setValue(
         {
-          legalName: request.legalName,
-          presentation: request.presentation,
-          origin: request.origin,
-          notes: request.notes,
-          refine: request.refine,
+          legalName: brief.legalName,
+          presentation: brief.presentation,
+          origin: brief.origin,
+          notes: brief.notes,
+          refine: brief.refine,
         },
         { emitEvent: false },
       );
@@ -140,4 +149,36 @@ export class BriefFormComponent {
   protected onRegenerate(): void {
     this.regenerate.emit(this.form.getRawValue().refine);
   }
+}
+
+interface BriefSeed {
+  id: string;
+  legalName: string;
+  presentation: Presentation;
+  origin: string;
+  notes: string;
+  refine: string;
+}
+
+function briefSeedFrom(request: PenNameRequestDto): BriefSeed {
+  return {
+    id: request.id,
+    legalName: request.legalName,
+    presentation: request.presentation,
+    origin: request.origin,
+    notes: request.notes,
+    refine: request.refine,
+  };
+}
+
+function sameBriefSeed(a: BriefSeed | undefined, b: BriefSeed): boolean {
+  return (
+    a !== undefined &&
+    a.id === b.id &&
+    a.legalName === b.legalName &&
+    a.presentation === b.presentation &&
+    a.origin === b.origin &&
+    a.notes === b.notes &&
+    a.refine === b.refine
+  );
 }

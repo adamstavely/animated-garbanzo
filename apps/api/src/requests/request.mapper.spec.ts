@@ -23,6 +23,8 @@ function request(over: Partial<PenNameRequestEntity> = {}): PenNameRequestEntity
     origin: 'Anglo-Irish',
     notes: '',
     refine: '',
+    systemOverride: null,
+    promptOverride: null,
     status: RequestStatus.Ready,
     candidates: [candidate('Bridget C. ASHWORTH', 0), candidate('Nella P. QUINTRELL', 1)],
     chosenName: '',

@@ -51,6 +51,13 @@
   color: var(--ink-2);
 }
 
+.rail__notice {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-relaxed);
+  color: var(--muted-on-rail);
+}
+
 .rail__list {
   display: flex;
   flex-direction: column;

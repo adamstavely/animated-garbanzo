@@ -149,23 +149,21 @@ export class RequestsController {
 
   @Patch(':id/prompt')
   @RequireAdmin()
-  @ApiOperation({ summary: 'Saves an edited prompt, sent verbatim on later runs.' })
+  @ApiOperation({
+    summary: 'Saves an edited prompt for this request only, sent verbatim on later runs.',
+  })
   updatePrompt(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePromptSettingsDto,
-    @CurrentUser() user: AuthenticatedUser,
   ): Promise<PromptSettingsDto> {
-    return this.requests.updatePromptSettings(id, dto, user);
+    return this.requests.updatePromptSettings(id, dto);
   }
 
   @Delete(':id/prompt')
   @RequireAdmin()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Resets the prompt to the brief-driven default.' })
-  resetPrompt(
-    @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<PromptSettingsDto> {
-    return this.requests.resetPromptSettings(id, user);
+  @ApiOperation({ summary: 'Resets this request’s prompt to the brief-driven default.' })
+  resetPrompt(@Param('id', ParseUUIDPipe) id: string): Promise<PromptSettingsDto> {
+    return this.requests.resetPromptSettings(id);
   }
 }

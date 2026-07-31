@@ -67,9 +67,16 @@ export class AuthController {
     const incoming = new URL(request.originalUrl, 'http://127.0.0.1');
     currentUrl.search = incoming.search;
 
-    const profile = await this.oidc.exchange(currentUrl.href, transaction);
-    const user = await this.users.upsertFromProfile(profile);
-    await this.sessions.issue(response, user);
+    try {
+      const profile = await this.oidc.exchange(currentUrl.href, transaction);
+      const user = await this.users.upsertFromProfile(profile);
+      await this.sessions.issue(response, user);
+    } catch {
+      // Match the expired-TX path: send the browser home with a marker rather
+      // than leaving it on the API host staring at UnauthorizedException JSON.
+      response.redirect(`${this.webAppUrl}?auth=failed`);
+      return;
+    }
 
     response.redirect(this.webAppUrl);
   }

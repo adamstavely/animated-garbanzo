@@ -40,7 +40,7 @@
   }
 
   <div class="candidate__checks">
-    @for (check of clearedChecks; track check.id) {
+    @for (check of checks(); track check.id) {
       <nym-check-line [check]="check" layout="inline" />
     }
   </div>

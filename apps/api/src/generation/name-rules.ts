@@ -8,17 +8,14 @@
  */
 
 import {
-  composeLegalName,
-  nameInitials,
   nameKey,
   nameParts,
-  nameWords,
   normaliseName,
-  singleLetterParts,
+  overlapsLegalName,
 } from '@nym/shared';
 
-// Tokenisation is shared with the client so the "Excluded from results" chips an
-// assistant reads are exactly the words screening compares against.
+// Tokenisation and overlap live in @nym/shared so refine cards and the Checks
+// column use the same rules the API screens with.
 export {
   composeLegalName,
   nameInitials,
@@ -26,8 +23,9 @@ export {
   nameParts,
   nameWords,
   normaliseName,
+  overlapsLegalName,
   singleLetterParts,
-};
+} from '@nym/shared';
 
 /** Why a candidate was discarded. Surfaced in logs and counted, never shown per-name. */
 export enum RejectionReason {
@@ -45,55 +43,6 @@ export enum RejectionReason {
 
 /** Longest name we will accept from the model, guarding the varchar(255) column. */
 const MAX_NAME_LENGTH = 120;
-
-/**
- * True when a candidate shares too much with the author's legal name.
- *
- * A candidate is rejected when any part of it:
- *  - is a single letter matching any initial of the legal name; or
- *  - starts with the same letter as any part of the legal name; or
- *  - equals a legal name word; or
- *  - shares its first three letters with a legal name word (phonetic stem); or
- *  - contains, or is contained by, a legal name word (for parts over three letters).
- *
- * Comparison is case-insensitive and ignores punctuation.
- */
-export function overlapsLegalName(candidate: string, legalName: string): boolean {
-  const legalWords = nameWords(legalName).map((word) => word.toLowerCase());
-  const legalInitials = nameInitials(legalName);
-  const candidateWords = nameWords(candidate);
-
-  if (legalWords.length === 0 || candidateWords.length === 0) {
-    return false;
-  }
-
-  const candidateInitials = singleLetterParts(candidate).map((part) => part.toUpperCase());
-  if (candidateInitials.some((initial) => legalInitials.includes(initial))) {
-    return true;
-  }
-
-  for (const word of candidateWords) {
-    const lower = word.toLowerCase();
-
-    if (legalInitials.includes((word[0] ?? '').toUpperCase())) {
-      return true;
-    }
-
-    for (const legalWord of legalWords) {
-      if (lower === legalWord) {
-        return true;
-      }
-      if (lower.slice(0, 3) === legalWord.slice(0, 3)) {
-        return true;
-      }
-      if (lower.length > 3 && (legalWord.includes(lower) || lower.includes(legalWord))) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
 
 /**
  * True when a name is "Given M. Surname" — at least three parts with a
