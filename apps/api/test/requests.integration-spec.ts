@@ -149,11 +149,13 @@ describe('Requests (integration)', () => {
     });
 
     it('records a failure when the model call itself fails, and allows a retry', async () => {
-      harness.generator.queueFailure(new Error('The naming model is unavailable. Try again.'));
+      const upstream = 'upstream Anthropic detail that must not leak';
+      harness.generator.queueFailure(new Error(upstream));
 
       const created = await createRequest();
       expect(created.status).toBe(RequestStatus.Failed);
-      expect(created.errorMessage).toContain('Generation failed');
+      expect(created.errorMessage).toBe('Generation failed — try again.');
+      expect(created.errorMessage).not.toContain(upstream);
 
       await auth(http().post(`${API}/requests/${created.id}/generate`))
         .send({})

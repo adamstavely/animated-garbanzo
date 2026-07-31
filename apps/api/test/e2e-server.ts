@@ -218,7 +218,7 @@ class TestSupportController {
         presentation: 'Male',
         notes: 'Techno-thriller, US mass market.',
         status: RequestStatus.Failed,
-        errorMessage: 'Generation failed — the naming model is unavailable.',
+        errorMessage: 'Generation failed — try again.',
         createdById: user.id,
         createdAt: new Date(now - 3 * HOUR),
       }),

@@ -187,6 +187,7 @@ export async function createTestHarness(): Promise<TestHarness> {
     name: saved.name,
     email: saved.email,
     role: saved.role,
+    canAdminister: true,
   };
 
   const jwt = app.get(JwtService);

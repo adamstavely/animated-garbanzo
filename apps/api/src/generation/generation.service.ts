@@ -32,6 +32,7 @@ export interface GenerationHandle {
   completion: Promise<void>;
 }
 
+/** Fixed copy for the desk — never interpolate upstream exception text into the row. */
 const USER_FACING_FAILURE = 'Generation failed — try again.';
 const STALE_FAILURE = 'Generation timed out — try again.';
 const RECLAIM_INTERVAL_MS = 60_000;

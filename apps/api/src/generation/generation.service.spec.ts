@@ -308,18 +308,21 @@ describe('GenerationService', () => {
   });
 
   it('records a fixed user-facing reason when the model call fails', async () => {
+    const upstream = 'upstream Anthropic detail that must not leak';
     const { service, request, written } = buildHarness({
-      generatorError: new Error('upstream Anthropic detail that must not leak'),
+      generatorError: new Error(upstream),
     });
 
     await (
       await service.start(request)
     ).completion;
 
-    expect(written.updates.at(-1)).toMatchObject({
+    const failure = written.updates.at(-1);
+    expect(failure).toMatchObject({
       status: RequestStatus.Failed,
       errorMessage: 'Generation failed — try again.',
     });
+    expect(failure?.errorMessage).not.toContain(upstream);
   });
 
   it('never leaves a failed run as an unhandled rejection', async () => {
