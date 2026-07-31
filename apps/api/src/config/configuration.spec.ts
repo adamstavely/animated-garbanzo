@@ -69,28 +69,30 @@ describe('loadConfiguration', () => {
   });
 
   it('marks production explicitly', () => {
-    expect(loadConfiguration({ ...validEnv, NODE_ENV: 'production' }).isProduction).toBe(true);
+    expect(
+      loadConfiguration({
+        ...validEnv,
+        NODE_ENV: 'production',
+        DATABASE_SSL: 'true',
+      }).isProduction,
+    ).toBe(true);
     expect(loadConfiguration(validEnv).isProduction).toBe(false);
   });
 
   it.each([
     ['DATABASE_SYNCHRONIZE', 'true', /DATABASE_SYNCHRONIZE/],
     ['SESSION_COOKIE_SECURE', 'false', /SESSION_COOKIE_SECURE/],
+    ['DATABASE_SSL', 'false', /DATABASE_SSL/],
+    ['DATABASE_SSL_REJECT_UNAUTHORIZED', 'false', /DATABASE_SSL_REJECT_UNAUTHORIZED/],
   ])('refuses %s=%s in production', (key, value, pattern) => {
-    expect(() =>
-      loadConfiguration({ ...validEnv, NODE_ENV: 'production', [key]: value }),
-    ).toThrow(pattern);
-  });
-
-  it('refuses unverified database TLS in production', () => {
     expect(() =>
       loadConfiguration({
         ...validEnv,
         NODE_ENV: 'production',
         DATABASE_SSL: 'true',
-        DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+        [key]: value,
       }),
-    ).toThrow(/DATABASE_SSL_REJECT_UNAUTHORIZED/);
+    ).toThrow(pattern);
   });
 
   it('boots production with synchronize off, secure cookie, and verified TLS', () => {
