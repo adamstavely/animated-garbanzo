@@ -1,0 +1,27 @@
+@if (label()) {
+  <label class="field__label" [attr.for]="controlId">
+    {{ label() }}
+    @if (optional()) {
+      <span class="field__optional">optional</span>
+    }
+  </label>
+}
+
+<input
+  class="field__control"
+  [class.field__control--center]="align() === 'center'"
+  [id]="controlId"
+  [value]="value() ?? ''"
+  [placeholder]="placeholder()"
+  [attr.maxlength]="maxLength()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-describedby]="describedBy()"
+  [attr.autocomplete]="autocomplete()"
+  [disabled]="disabled()"
+  (input)="onInput($event)"
+  (blur)="touch()"
+/>
+
+@if (hint()) {
+  <span class="field__hint" [id]="hintId">{{ hint() }}</span>
+}

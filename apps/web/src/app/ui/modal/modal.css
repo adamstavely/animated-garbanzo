@@ -1,0 +1,103 @@
+.modal__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-19);
+  background: var(--scrim);
+  backdrop-filter: blur(var(--scrim-blur));
+  overflow-y: auto;
+}
+
+.modal__scrim--elevated {
+  z-index: var(--z-delete-modal);
+}
+
+.modal__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  width: 100%;
+  max-height: 100%;
+  padding: var(--space-17);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-modal);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.modal__panel--sm {
+  max-width: 440px;
+  gap: var(--space-10);
+  padding: var(--space-16);
+}
+
+.modal__panel--md {
+  max-width: 540px;
+}
+
+.modal__panel--lg {
+  max-width: 780px;
+}
+
+.modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-13);
+}
+
+.modal__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.modal__eyebrow {
+  margin: 0;
+  font-size: var(--text-eyebrow);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.modal__heading {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-modal-title);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-display);
+  color: var(--ink);
+}
+
+.modal__heading--display {
+  font-family: var(--font-display);
+  font-size: var(--text-candidate);
+}
+
+/* The close glyph sits on the surface without a box of its own. */
+.modal__close {
+  color: var(--ink-3);
+}
+
+.modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-9);
+}
+
+.modal__footer:empty {
+  display: none;
+}

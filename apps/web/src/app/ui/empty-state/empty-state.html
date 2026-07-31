@@ -1,0 +1,9 @@
+<div class="empty" [class.empty--dashed]="variant() === 'dashed'">
+  <p class="empty__heading">{{ heading() }}</p>
+  @if (description()) {
+    <p class="empty__description">{{ description() }}</p>
+  }
+  @if (note()) {
+    <p class="empty__note">{{ note() }}</p>
+  }
+</div>

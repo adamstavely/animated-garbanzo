@@ -1,0 +1,56 @@
+/** Shared page measure and title stack for the queue and history views. */
+
+.page {
+  width: 100%;
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: var(--space-21) var(--page-padding-x) var(--space-23);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.page__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-17);
+  flex-wrap: wrap;
+}
+
+.page__titles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* One of the three places the serif is allowed. */
+.page__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-page-title);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-title);
+  letter-spacing: var(--tracking-title);
+  color: var(--ink);
+}
+
+.page__description {
+  margin: 0;
+  max-width: 560px;
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  color: var(--muted);
+}
+
+.page__error {
+  margin: 0;
+  font-size: var(--text-body);
+  color: var(--fail);
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: var(--space-15) var(--space-11) var(--space-21);
+  }
+}

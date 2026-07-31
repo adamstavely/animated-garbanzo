@@ -1,0 +1,33 @@
+<section class="page">
+  <div class="page__header">
+    <div class="page__titles">
+      <h1 class="page__title">Pen name requests</h1>
+      <p class="page__description">
+        Generated automatically on intake, screened for name overlap and prior use.
+        <br />
+        Approve the proposed, or click 'edit' on a request to review and refine.
+      </p>
+    </div>
+
+    <button nymButton variant="primary" size="lg" class="page__bulk" (click)="approveAll()">
+      <svg lucideCheckCheck class="nym-icon" [size]="14" aria-hidden="true"></svg>
+      <span>{{ approveAllLabel() }}</span>
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="page__error" role="alert">{{ error() }}</p>
+  }
+
+  <div class="table-card">
+    @if (requests().length) {
+      <nym-queue-table [requests]="requests()" (approve)="approve($event)" (retry)="retry($event)" />
+    } @else {
+      <nym-empty-state
+        heading="Queue clear"
+        description="Every request has been approved. Completed ones live in History."
+        [note]="crossTabNote()"
+      />
+    }
+  </div>
+</section>

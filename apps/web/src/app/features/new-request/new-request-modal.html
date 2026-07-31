@@ -1,0 +1,57 @@
+<nym-modal heading="Submit Request" size="md" (dismissed)="close()">
+  <form class="intake" [formGroup]="form" (ngSubmit)="submit()">
+    <fieldset class="intake__name">
+      <legend class="intake__legend">Legal name</legend>
+      <div class="intake__name-grid">
+        <nym-text-field
+          formControlName="firstName"
+          ariaLabel="First name"
+          placeholder="First name"
+          autocomplete="given-name"
+        />
+        <nym-text-field
+          formControlName="middleInitial"
+          ariaLabel="Middle initial"
+          placeholder="M."
+          align="center"
+          [maxLength]="1"
+          [forceUppercase]="true"
+        />
+        <nym-text-field
+          formControlName="lastName"
+          ariaLabel="Last name"
+          placeholder="Last name"
+          autocomplete="family-name"
+        />
+      </div>
+    </fieldset>
+
+    <nym-segmented-control
+      formControlName="presentation"
+      label="Presentation of pen name"
+      [options]="presentationOptions"
+    />
+
+    <nym-select-field formControlName="origin" label="Language / cultural origin" [options]="originOptions" />
+
+    <nym-textarea-field
+      formControlName="notes"
+      label="Notes"
+      [optional]="true"
+      [rows]="3"
+      placeholder="Genre, era, market, anything to avoid…"
+    />
+
+    @if (error()) {
+      <p class="intake__error" role="alert">{{ error() }}</p>
+    }
+  </form>
+
+  <div modalFooter class="intake__footer">
+    <button nymButton (click)="close()">Cancel</button>
+    <button nymButton variant="primary" [disabled]="submitting()" (click)="submit()">
+      <svg lucideSparkles class="nym-icon" [size]="13" aria-hidden="true"></svg>
+      <span>Create &amp; run</span>
+    </button>
+  </div>
+</nym-modal>

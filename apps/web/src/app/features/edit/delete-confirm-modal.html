@@ -1,0 +1,18 @@
+<nym-modal
+  eyebrow="Delete request"
+  heading="Are you sure?"
+  size="sm"
+  headingStyle="display"
+  [elevated]="true"
+  (dismissed)="cancelled.emit()"
+>
+  <p class="delete__note">{{ note() }}</p>
+
+  <div modalFooter class="delete__footer">
+    <button nymButton (click)="cancelled.emit()">Keep it</button>
+    <button nymButton variant="dangerSolid" (click)="confirmed.emit()">
+      <svg lucideTrash2 class="nym-icon" [size]="13" aria-hidden="true"></svg>
+      <span>Delete request</span>
+    </button>
+  </div>
+</nym-modal>

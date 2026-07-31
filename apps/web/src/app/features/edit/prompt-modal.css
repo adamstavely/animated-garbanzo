@@ -1,0 +1,32 @@
+.prompt__note {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  color: var(--muted);
+}
+
+.prompt__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+  min-height: 0;
+}
+
+.prompt__error {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  color: var(--fail);
+}
+
+.prompt__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-9);
+  width: 100%;
+}
+
+.prompt__footer-actions {
+  display: flex;
+  gap: var(--space-6);
+}

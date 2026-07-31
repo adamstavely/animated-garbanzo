@@ -1,0 +1,5 @@
+.page__bulk {
+  white-space: nowrap;
+  padding: var(--space-7) var(--space-12) var(--space-7) var(--space-10);
+  font-size: var(--text-base);
+}

@@ -1,0 +1,10 @@
+<div class="toast-region" role="status" aria-live="polite">
+  @if (message()) {
+    <div class="toast">
+      <span class="toast__glyph" aria-hidden="true">
+        <svg lucideCheck [size]="11"></svg>
+      </span>
+      <span class="toast__message">{{ message() }}</span>
+    </div>
+  }
+</div>

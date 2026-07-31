@@ -1,0 +1,38 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: var(--control-size);
+  height: var(--control-size);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing),
+    border-color var(--duration-fast) var(--easing),
+    color var(--duration-fast) var(--easing);
+}
+
+/* Never below the 24px target-size minimum (2.5.8). */
+:host(.nym-icon-button--sm) {
+  width: var(--target-min);
+  height: var(--target-min);
+}
+
+:host(:hover:not(:disabled)) {
+  background: var(--surface-sunken);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+:host(.nym-icon-button--sunken:hover:not(:disabled)) {
+  background: var(--rail);
+}
+
+:host(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}

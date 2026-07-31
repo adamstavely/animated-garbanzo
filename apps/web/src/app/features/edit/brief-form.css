@@ -1,0 +1,103 @@
+.brief {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+  min-width: 0;
+  padding: var(--space-18) var(--space-17);
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.brief__heading {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-panel-title);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-display);
+  color: var(--ink);
+}
+
+.exclusions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-10);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  background: var(--surface-sunken);
+}
+
+.exclusions__title {
+  margin: 0;
+  font-size: var(--text-eyebrow);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.exclusions__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exclusions__chip {
+  padding: var(--space-1) var(--space-6);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  background: var(--surface);
+  font-size: var(--text-meta);
+  color: var(--ink);
+}
+
+.exclusions__note {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: var(--leading-relaxed);
+  color: var(--muted);
+}
+
+.brief__actions {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.brief__prompt-button {
+  flex: 0 0 auto;
+  padding: var(--space-9) var(--space-10);
+  font-weight: var(--weight-medium);
+}
+
+.regenerate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-13);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.regenerate__button {
+  margin-top: var(--space-1);
+}
+
+.brief__error {
+  margin: 0;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--fail-text-soft);
+}
+
+/* Pinned to the bottom of the pane, away from the constructive actions. */
+.brief__delete {
+  margin-top: auto;
+}
+
+@media (max-width: 1180px) {
+  .brief {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}

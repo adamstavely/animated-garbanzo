@@ -1,0 +1,32 @@
+:host {
+  display: inline-flex;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-size);
+  height: var(--control-size);
+  padding: 0;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing);
+}
+
+.avatar:hover {
+  background: var(--ink-raised);
+  border-color: var(--ink-raised);
+}
+
+.menu__item--simple {
+  flex-direction: row;
+  align-items: center;
+  font-size: var(--text-body);
+}

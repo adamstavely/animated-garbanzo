@@ -1,0 +1,108 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-15);
+  height: var(--header-height);
+  padding: 0 var(--header-padding-x);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.header__brand {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-20);
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.header__tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-15);
+}
+
+.header__tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-1);
+  font-size: var(--text-nav);
+  letter-spacing: var(--tracking-normal);
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--easing);
+}
+
+.header__tab:hover {
+  color: var(--ink);
+}
+
+.header__tab--active {
+  color: var(--ink);
+}
+
+/* The active view is underlined as well as darkened, so the state is never
+   carried by colour alone. */
+.header__tab--active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--ink);
+}
+
+.header__search {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-9);
+}
+
+.header__divider {
+  width: 1px;
+  height: var(--space-15);
+  background: var(--border);
+}
+
+.main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Programmatic focus on the main region must not draw a ring. */
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    padding: var(--space-9) var(--space-11);
+    row-gap: var(--space-9);
+  }
+
+  .header__search {
+    order: 3;
+    flex-basis: 100%;
+  }
+}

@@ -1,0 +1,14 @@
+/**
+ * Global stylesheet entry point.
+ *
+ * Fonts are self-hosted (no third-party requests at runtime); Inter carries the
+ * whole interface and Newsreader is reserved for the wordmark, page H1s and pen
+ * names, exactly as the style guide specifies.
+ */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/newsreader/400.css';
+
+@import './styles/tokens.css';
+@import './styles/base.css';

@@ -1,0 +1,289 @@
+/**
+ * Nym design tokens.
+ *
+ * Section 7 of the Nym style guide, expressed as CSS custom properties, plus the
+ * typography, spacing, sizing and motion scales the components need. This is the
+ * only file in the app that contains literal colour, size or shadow values —
+ * every component stylesheet reads from here through var().
+ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Surfaces ------------------------------------------------------- */
+  --canvas: #efefed;
+  --surface: #fafaf9;
+  --surface-sunken: #f2f2f0;
+  --surface-hover: #f0f0ee;
+  --rail: #e7e7e4;
+  --rail-hover: #dededa;
+
+  /* ---- Borders -------------------------------------------------------- */
+  --border: #d8d8d4;
+  --border-subtle: #e6e6e2;
+  /* Clears 3:1 against the surface, as non-text contrast (1.4.11) requires. */
+  --border-control: #8c8c87;
+  --border-strong: #c9c9c4;
+  --border-inverse: #3b3b37;
+
+  /* ---- Ink ------------------------------------------------------------ */
+  --ink: #1a1a19;
+  --ink-hover: #0e0e0d;
+  --ink-raised: #2e2e2c;
+  --ink-2: #33332f;
+  --ink-3: #55554f;
+  /* The lightest permitted muted tone on canvas; do not lighten. */
+  --muted: #696961;
+  /* The rail is darker than the canvas, so the standard muted tone drops to
+     4.47:1 there. This one clears 4.5:1 against --rail. */
+  --muted-on-rail: #5f5f58;
+  --faint: #71716a;
+  --on-ink: #efefed;
+  --on-ink-muted: #9a9a92;
+
+  /* ---- Semantic status ------------------------------------------------ */
+  --pass: #2e6b4f;
+  --pass-border: #c4dccb;
+  --pass-fill: #f1f8f3;
+
+  --wait: #8a5a22;
+  --wait-border: #e5d3b4;
+  --wait-fill: #fbf5ea;
+  --wait-dot: #b07c2e;
+
+  --fail: #9c3b2b;
+  --fail-border: #e8ccc5;
+  --fail-fill: #fbf1ef;
+  --fail-outline: #c9a39b;
+  --fail-hover: #822f22;
+  --fail-text-soft: #8a4a3e;
+  --on-fail: #fbf1ef;
+
+  --neutral-dot: #b4b4ac;
+
+  /* The Regenerate button reads as an outline in light and as the light primary
+     in dark, so its fill and label are their own role rather than a variant. */
+  --button-alt-bg: var(--surface);
+  --button-alt-fg: var(--ink);
+  --button-alt-border: var(--ink);
+  --button-alt-bg-hover: var(--ink);
+  --button-alt-fg-hover: var(--on-ink);
+
+  /* ---- Radii ---------------------------------------------------------- */
+  --radius-chip: 4px;
+  --radius-control: 6px;
+  --radius-segment: 5px;
+  --radius-rail-item: 7px;
+  --radius-panel: 8px;
+  --radius-card: 10px;
+  --radius-modal: 12px;
+  --radius-pill: 999px;
+
+  /* ---- Type families -------------------------------------------------- */
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Reserved for the wordmark, page H1s and pen names only. */
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  /* ---- Type scale ----------------------------------------------------- */
+  --text-eyebrow: 9px;
+  --text-micro: 9.5px;
+  --text-caption: 10.5px;
+  --text-meta: 11px;
+  --text-small: 11.5px;
+  --text-body-sm: 12px;
+  --text-body: 12.5px;
+  --text-base: 13px;
+  --text-nav: 13.5px;
+  --text-field: 14px;
+  --text-name: 19px;
+  --text-pen-name: 20px;
+  --text-section: 23px;
+  --text-panel-title: 26px;
+  --text-modal-title: 27px;
+  --text-candidate: 25px;
+  --text-results-title: 30px;
+  --text-page-title: 38px;
+
+  --leading-tight: 1.2;
+  --leading-title: 1.05;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.55;
+  --leading-loose: 1.6;
+  --leading-body: 1.65;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  --tracking-eyebrow: 0.18em;
+  --tracking-label: 0.16em;
+  --tracking-status: 0.1em;
+  --tracking-lock: 0.12em;
+  --tracking-wide: 0.04em;
+  --tracking-loose: 0.02em;
+  --tracking-normal: 0.01em;
+  --tracking-tight: -0.01em;
+  --tracking-display: -0.015em;
+  --tracking-title: -0.02em;
+
+  /* ---- Spacing -------------------------------------------------------- */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 5px;
+  --space-4: 6px;
+  --space-5: 7px;
+  --space-6: 8px;
+  --space-7: 10px;
+  --space-8: 11px;
+  --space-9: 12px;
+  --space-10: 14px;
+  --space-11: 16px;
+  --space-12: 18px;
+  --space-13: 20px;
+  --space-14: 22px;
+  --space-15: 24px;
+  --space-16: 26px;
+  --space-17: 28px;
+  --space-18: 30px;
+  --space-19: 32px;
+  --space-20: 34px;
+  --space-21: 40px;
+  --space-22: 44px;
+  --space-23: 64px;
+
+  /* ---- Layout --------------------------------------------------------- */
+  --header-height: 64px;
+  --header-padding-x: 28px;
+  --page-max-width: 1560px;
+  --page-padding-x: 32px;
+  --search-max-width: 520px;
+  --rail-width: 268px;
+  --brief-width: 376px;
+  --menu-width: 224px;
+  --app-menu-width: 260px;
+  --candidate-min-width: 280px;
+
+  /* Queue table tracks — six columns with an even gutter. */
+  --queue-columns: minmax(150px, 1.15fr) minmax(170px, 1fr) 180px 132px 118px 178px;
+  --queue-gap: 22px;
+  /* History table tracks. */
+  --history-columns: minmax(150px, 1fr) minmax(210px, 1.4fr) 176px 118px minmax(160px, auto);
+  --history-gap: 16px;
+  --row-padding-y: 20px;
+  --row-padding-x: 24px;
+
+  /* Every interactive control clears the 24px target-size minimum (2.5.8). */
+  --target-min: 26px;
+  --control-size: 34px;
+  --icon-size-sm: 12px;
+  --icon-size: 13px;
+  --icon-size-md: 14px;
+
+  /* ---- Elevation ------------------------------------------------------ */
+  --shadow-button: 0 1px 2px rgba(20, 20, 18, 0.16);
+  --shadow-raised: 0 1px 2px rgba(20, 20, 18, 0.07);
+  --shadow-hairline: 0 1px 2px rgba(20, 20, 18, 0.05);
+  --shadow-card: 0 1px 2px rgba(20, 20, 18, 0.04), 0 28px 56px -40px rgba(20, 20, 18, 0.5);
+  --shadow-lift: 0 14px 28px -18px rgba(20, 20, 18, 0.55);
+  --shadow-menu: 0 20px 44px -20px rgba(20, 20, 18, 0.35);
+  --shadow-modal: 0 40px 80px -30px rgba(20, 20, 18, 0.7);
+  --shadow-bar: 0 20px 44px -24px rgba(20, 20, 18, 0.8);
+
+  /* ---- Focus ---------------------------------------------------------- */
+  --focus-ring-color: var(--ink);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* ---- Motion --------------------------------------------------------- */
+  --duration-fast: 0.18s;
+  --duration-base: 0.24s;
+  --duration-slow: 0.3s;
+  --easing: ease;
+  --spin-duration: 0.8s;
+
+  /* ---- Overlays ------------------------------------------------------- */
+  --scrim: rgba(20, 20, 18, 0.5);
+  --scrim-blur: 2px;
+  --selected-tint: rgba(20, 20, 18, 0.04);
+
+  --z-menu: 50;
+  --z-modal: 40;
+  --z-delete-modal: 45;
+  --z-toast: 60;
+
+  /* ---- Canvas texture -------------------------------------------------
+     Out-of-register ghost names: each label is drawn twice, offset by 4px, so
+     the field reads as a misprinted proof sheet. */
+  --ghost-names-light: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22860%22 height=%22740%22><g font-family=%22Georgia,serif%22 fill=%22%231A1A19%22><text x=%2236%22 y=%2284%22 font-size=%2223%22 fill-opacity=%220.07%22>Margaret Voss</text><text x=%2240%22 y=%2288%22 font-size=%2223%22 fill-opacity=%220.07%22>Margaret Voss</text><text x=%22486%22 y=%2252%22 font-size=%2220%22 fill-opacity=%220.07%22>E. Marchetti</text><text x=%22490%22 y=%2256%22 font-size=%2220%22 fill-opacity=%220.07%22>E. Marchetti</text><text x=%22236%22 y=%22168%22 font-size=%2226%22 fill-opacity=%220.07%22>Iris Haldane</text><text x=%22240%22 y=%22172%22 font-size=%2226%22 fill-opacity=%220.07%22>Iris Haldane</text><text x=%2292%22 y=%22322%22 font-size=%2219%22 fill-opacity=%220.07%22>Cora Winterly</text><text x=%2296%22 y=%22326%22 font-size=%2219%22 fill-opacity=%220.07%22>Cora Winterly</text><text x=%22556%22 y=%22268%22 font-size=%2224%22 fill-opacity=%220.07%22>Ash Fennimore</text><text x=%22560%22 y=%22272%22 font-size=%2224%22 fill-opacity=%220.07%22>Ash Fennimore</text><text x=%22330%22 y=%22402%22 font-size=%2221%22 fill-opacity=%220.07%22>Bridget Ashworth</text><text x=%22334%22 y=%22406%22 font-size=%2221%22 fill-opacity=%220.07%22>Bridget Ashworth</text><text x=%22610%22 y=%22470%22 font-size=%2222%22 fill-opacity=%220.07%22>Marcus Holloway</text><text x=%22614%22 y=%22474%22 font-size=%2222%22 fill-opacity=%220.07%22>Marcus Holloway</text><text x=%2260%22 y=%22520%22 font-size=%2225%22 fill-opacity=%220.07%22>Nella Quintrell</text><text x=%2264%22 y=%22524%22 font-size=%2225%22 fill-opacity=%220.07%22>Nella Quintrell</text><text x=%22380%22 y=%22596%22 font-size=%2219%22 fill-opacity=%220.07%22>Thomas Ashby</text><text x=%22384%22 y=%22600%22 font-size=%2219%22 fill-opacity=%220.07%22>Thomas Ashby</text><text x=%22660%22 y=%22660%22 font-size=%2223%22 fill-opacity=%220.07%22>Wren Calloway</text><text x=%22664%22 y=%22664%22 font-size=%2223%22 fill-opacity=%220.07%22>Wren Calloway</text></g></svg>');
+  --ghost-names-dark: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22860%22 height=%22740%22><g font-family=%22Georgia,serif%22 fill=%22%23E8E8E4%22><text x=%2236%22 y=%2284%22 font-size=%2223%22 fill-opacity=%220.1%22>Margaret Voss</text><text x=%2240%22 y=%2288%22 font-size=%2223%22 fill-opacity=%220.1%22>Margaret Voss</text><text x=%22486%22 y=%2252%22 font-size=%2220%22 fill-opacity=%220.1%22>E. Marchetti</text><text x=%22490%22 y=%2256%22 font-size=%2220%22 fill-opacity=%220.1%22>E. Marchetti</text><text x=%22236%22 y=%22168%22 font-size=%2226%22 fill-opacity=%220.1%22>Iris Haldane</text><text x=%22240%22 y=%22172%22 font-size=%2226%22 fill-opacity=%220.1%22>Iris Haldane</text><text x=%2292%22 y=%22322%22 font-size=%2219%22 fill-opacity=%220.1%22>Cora Winterly</text><text x=%2296%22 y=%22326%22 font-size=%2219%22 fill-opacity=%220.1%22>Cora Winterly</text><text x=%22556%22 y=%22268%22 font-size=%2224%22 fill-opacity=%220.1%22>Ash Fennimore</text><text x=%22560%22 y=%22272%22 font-size=%2224%22 fill-opacity=%220.1%22>Ash Fennimore</text><text x=%22330%22 y=%22402%22 font-size=%2221%22 fill-opacity=%220.1%22>Bridget Ashworth</text><text x=%22334%22 y=%22406%22 font-size=%2221%22 fill-opacity=%220.1%22>Bridget Ashworth</text><text x=%22610%22 y=%22470%22 font-size=%2222%22 fill-opacity=%220.1%22>Marcus Holloway</text><text x=%22614%22 y=%22474%22 font-size=%2222%22 fill-opacity=%220.1%22>Marcus Holloway</text><text x=%2260%22 y=%22520%22 font-size=%2225%22 fill-opacity=%220.1%22>Nella Quintrell</text><text x=%2264%22 y=%22524%22 font-size=%2225%22 fill-opacity=%220.1%22>Nella Quintrell</text><text x=%22380%22 y=%22596%22 font-size=%2219%22 fill-opacity=%220.1%22>Thomas Ashby</text><text x=%22384%22 y=%22600%22 font-size=%2219%22 fill-opacity=%220.1%22>Thomas Ashby</text><text x=%22660%22 y=%22660%22 font-size=%2223%22 fill-opacity=%220.1%22>Wren Calloway</text><text x=%22664%22 y=%22664%22 font-size=%2223%22 fill-opacity=%220.1%22>Wren Calloway</text></g></svg>');
+}
+
+/**
+ * Dark theme. Neutral-cool slate rather than warm grey: the client rejected the
+ * yellow/brown undertones of the first pass.
+ */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --canvas: #121417;
+  --surface: #1b1d20;
+  --surface-sunken: #21242a;
+  --surface-hover: #24272c;
+  --rail: #141619;
+  --rail-hover: #1e2126;
+
+  --border: #343a40;
+  --border-subtle: #262b31;
+  --border-control: #6a6a64;
+  --border-strong: #3e3e38;
+  --border-inverse: #6c7279;
+
+  --ink: #e6e8ea;
+  --ink-hover: #f2f4f6;
+  --ink-raised: #f2f4f6;
+  --ink-2: #dadde1;
+  --ink-3: #bcc1c7;
+  --muted: #a3a8ae;
+  --muted-on-rail: #a3a8ae;
+  --faint: #91969c;
+  --on-ink: #121417;
+  --on-ink-muted: #91969c;
+
+  --pass: #7fc3a1;
+  --pass-border: #31503c;
+  --pass-fill: #16241f;
+
+  --wait: #e0b173;
+  --wait-border: #454039;
+  --wait-fill: #20242a;
+  --wait-dot: #e0b173;
+
+  --fail: #e39a8b;
+  --fail-border: #4a3634;
+  --fail-fill: #231e20;
+  --fail-outline: #7a4a42;
+  --fail-hover: #b4442f;
+  --fail-text-soft: #d89a8c;
+  --on-fail: #fbf1ef;
+
+  --neutral-dot: #6a6a63;
+
+  --button-alt-bg: var(--ink);
+  --button-alt-fg: var(--on-ink);
+  --button-alt-border: var(--ink);
+  --button-alt-bg-hover: var(--ink-hover);
+  --button-alt-fg-hover: var(--on-ink);
+
+  --focus-ring-color: #e6e8ea;
+
+  /* Black drop shadows are invisible on dark, so cards also get a top highlight. */
+  --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 24px 48px -34px rgba(0, 0, 0, 0.9);
+  --shadow-menu: 0 20px 44px -20px rgba(0, 0, 0, 0.8);
+  --shadow-modal: 0 40px 80px -30px rgba(0, 0, 0, 0.9);
+  --shadow-lift: 0 14px 28px -18px rgba(0, 0, 0, 0.85);
+  --shadow-bar: 0 20px 44px -24px rgba(0, 0, 0, 0.9);
+
+  --scrim: rgba(0, 0, 0, 0.62);
+  --selected-tint: rgba(230, 232, 234, 0.08);
+}

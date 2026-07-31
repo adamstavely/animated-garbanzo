@@ -1,0 +1,131 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border-control);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-family: var(--font-ui);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  letter-spacing: var(--tracking-normal);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  min-height: var(--target-min);
+  transition:
+    background-color var(--duration-fast) var(--easing),
+    border-color var(--duration-fast) var(--easing),
+    color var(--duration-fast) var(--easing);
+}
+
+:host(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---- Sizes -------------------------------------------------------------- */
+
+:host(.nym-button--sm) {
+  padding: var(--space-6) var(--space-10) var(--space-6) var(--space-8);
+  font-size: var(--text-body);
+}
+
+:host(.nym-button--md) {
+  padding: var(--space-7) var(--space-11) var(--space-7) var(--space-10);
+  font-size: var(--text-base);
+}
+
+:host(.nym-button--lg) {
+  padding: var(--space-9);
+  font-size: var(--text-nav);
+  font-weight: var(--weight-semibold);
+}
+
+:host(.nym-button--block) {
+  display: flex;
+  width: 100%;
+}
+
+/* ---- Variants ----------------------------------------------------------- */
+
+:host(.nym-button--primary) {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+  font-weight: var(--weight-medium);
+  box-shadow: var(--shadow-button);
+}
+
+:host(.nym-button--primary:hover:not(:disabled)) {
+  background: var(--ink-hover);
+  border-color: var(--ink-hover);
+}
+
+:host(.nym-button--secondary:hover:not(:disabled)) {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+:host(.nym-button--ghost) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+:host(.nym-button--ghost:hover:not(:disabled)) {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+:host(.nym-button--danger) {
+  border-color: var(--fail-outline);
+  background: transparent;
+  color: var(--fail);
+  font-weight: var(--weight-medium);
+}
+
+:host(.nym-button--danger:hover:not(:disabled)) {
+  border-color: var(--fail);
+  background: var(--fail-fill);
+  color: var(--fail);
+}
+
+:host(.nym-button--dangerSolid) {
+  border-color: var(--fail);
+  background: var(--fail);
+  color: var(--on-fail);
+  font-weight: var(--weight-semibold);
+}
+
+:host(.nym-button--dangerSolid:hover:not(:disabled)) {
+  background: var(--fail-hover);
+  border-color: var(--fail-hover);
+}
+
+/* Light fill on the ink approve bar; in dark mode this is the light primary. */
+:host(.nym-button--inverse) {
+  border-color: var(--on-ink);
+  background: var(--on-ink);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+:host(.nym-button--inverse:hover:not(:disabled)) {
+  background: var(--surface);
+  border-color: var(--surface);
+}
+
+:host(.nym-button--alt) {
+  border-color: var(--button-alt-border);
+  background: var(--button-alt-bg);
+  color: var(--button-alt-fg);
+  font-weight: var(--weight-medium);
+}
+
+:host(.nym-button--alt:hover:not(:disabled)) {
+  background: var(--button-alt-bg-hover);
+  color: var(--button-alt-fg-hover);
+}

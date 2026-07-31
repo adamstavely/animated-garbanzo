@@ -1,0 +1,10 @@
+.field__textarea {
+  line-height: var(--leading-normal);
+  resize: vertical;
+}
+
+.field__textarea--compact {
+  padding: var(--space-9);
+  font-size: var(--text-small);
+  line-height: var(--leading-body);
+}

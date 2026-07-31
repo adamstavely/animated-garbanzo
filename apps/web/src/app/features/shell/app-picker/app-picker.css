@@ -1,0 +1,12 @@
+:host {
+  display: inline-flex;
+}
+
+.app-picker__trigger {
+  color: var(--muted);
+}
+
+/* Anchors inside the menu are navigation, not prose. */
+a.menu__item {
+  text-decoration: none;
+}

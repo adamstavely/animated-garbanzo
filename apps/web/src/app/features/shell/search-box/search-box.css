@@ -1,0 +1,49 @@
+.search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: var(--search-max-width);
+}
+
+.search__icon {
+  position: absolute;
+  left: var(--space-7);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  padding: var(--space-6) var(--space-18) var(--space-6) 31px;
+  border: 1px solid var(--border-control);
+  border-radius: var(--radius-control);
+  background: var(--surface-sunken);
+  color: var(--ink);
+  font-size: var(--text-base);
+  transition:
+    border-color var(--duration-fast) var(--easing),
+    background-color var(--duration-fast) var(--easing);
+}
+
+.search__input:focus {
+  outline: none;
+  border-color: var(--ink);
+  background: var(--surface);
+}
+
+.search__input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The platform's own clear affordance would duplicate the button beside it. */
+.search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search__clear {
+  position: absolute;
+  right: var(--space-3);
+  color: var(--muted);
+}

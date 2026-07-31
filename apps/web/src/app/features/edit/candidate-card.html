@@ -1,0 +1,47 @@
+<div class="candidate" [class.candidate--selected]="selected()">
+  <div class="candidate__top">
+    <p class="candidate__name">
+      <!-- The button's ::after covers the card, so the whole tile is clickable
+           while there is still exactly one accessible name for the action. -->
+      <button
+        type="button"
+        class="candidate__select"
+        [attr.aria-pressed]="selected()"
+        [attr.aria-label]="'Select ' + candidate().name + ' as the pen name'"
+        (click)="choose.emit(candidate())"
+      >
+        {{ candidate().name }}
+      </button>
+    </p>
+
+    <button
+      type="button"
+      class="candidate__lock"
+      [class.candidate__lock--on]="candidate().locked"
+      [attr.aria-pressed]="candidate().locked"
+      [attr.aria-label]="(candidate().locked ? 'Unlock ' : 'Lock ') + candidate().name + ' against regeneration'"
+      (click)="onToggleLock($event)"
+    >
+      @if (candidate().locked) {
+        <svg lucideLock class="nym-icon" [size]="11" aria-hidden="true"></svg>
+        <span>Locked</span>
+      } @else {
+        <svg lucideLockOpen class="nym-icon" [size]="11" aria-hidden="true"></svg>
+        <span>Lock</span>
+      }
+    </button>
+  </div>
+
+  @if (candidate().pronunciation) {
+    <p class="candidate__pronunciation">{{ candidate().pronunciation }}</p>
+  }
+  @if (candidate().origin) {
+    <p class="candidate__origin">{{ candidate().origin }}</p>
+  }
+
+  <div class="candidate__checks">
+    @for (check of clearedChecks; track check.id) {
+      <nym-check-line [check]="check" layout="inline" />
+    }
+  </div>
+</div>

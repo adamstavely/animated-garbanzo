@@ -1,0 +1,24 @@
+<section class="page">
+  <div class="page__titles">
+    <h1 class="page__title">History</h1>
+    <p class="page__description">
+      Approved pen names and the checks they cleared. Reopen a request to revisit the alternates.
+    </p>
+  </div>
+
+  @if (error()) {
+    <p class="page__error" role="alert">{{ error() }}</p>
+  }
+
+  <div class="table-card">
+    @if (requests().length) {
+      <nym-history-table [requests]="requests()" (reopen)="reopen($event)" />
+    } @else {
+      <nym-empty-state
+        heading="No completed requests"
+        description="Approved pen names move here automatically."
+        [note]="crossTabNote()"
+      />
+    }
+  </div>
+</section>

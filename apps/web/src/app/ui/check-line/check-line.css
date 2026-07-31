@@ -1,0 +1,23 @@
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-small);
+  line-height: var(--leading-snug);
+}
+
+.check--inline {
+  gap: var(--space-3);
+}
+
+.check--pass {
+  color: var(--pass);
+}
+
+.check--fail {
+  color: var(--fail);
+}
+
+.check__glyph {
+  stroke-width: 2.4;
+}
