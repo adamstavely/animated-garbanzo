@@ -33,6 +33,8 @@ function buildHarness(options: {
     origin: '',
     notes: '',
     refine: '',
+    systemOverride: null,
+    promptOverride: null,
     status: RequestStatus.Queued,
     candidates: [],
     chosenName: '',
@@ -155,8 +157,8 @@ function buildHarness(options: {
   };
 
   const promptSettings = {
-    resolveSystemInstruction: jest.fn(() => Promise.resolve('system')),
-    resolvePrompt: jest.fn(() => Promise.resolve('prompt')),
+    resolveSystemInstruction: jest.fn(() => 'system'),
+    resolvePrompt: jest.fn(() => 'prompt'),
   } as unknown as PromptSettingsService;
 
   const configService = {

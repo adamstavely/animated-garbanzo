@@ -530,6 +530,38 @@ describe('Requests (integration)', () => {
       expect(body.isCustom).toBe(false);
       expect(body.prompt).toContain('Author legal name: Margaret E. Voss');
     });
+
+    it('keeps an override scoped to the request it was saved on', async () => {
+      const overridden = await createRequest();
+      const other = await createRequest({
+        firstName: 'James',
+        middleInitial: 'T',
+        lastName: 'Harlow',
+        presentation: 'Male',
+        origin: '',
+        notes: '',
+      });
+
+      await auth(http().patch(`${API}/requests/${overridden.id}/prompt`))
+        .send({ system: 'Custom system.', prompt: 'Custom prompt, only for this brief.' })
+        .expect(200);
+
+      const otherPrompt = await auth(http().get(`${API}/requests/${other.id}/prompt`)).expect(200);
+      expect((otherPrompt.body as { isCustom: boolean; prompt: string }).isCustom).toBe(false);
+      expect((otherPrompt.body as { prompt: string }).prompt).toContain(
+        'Author legal name: James T. Harlow',
+      );
+
+      await auth(http().post(`${API}/requests/${other.id}/generate`)).send({}).expect(202);
+      await settle(other.id);
+
+      expect(harness.generator.calls.at(-1)?.prompt).toContain(
+        'Author legal name: James T. Harlow',
+      );
+      expect(harness.generator.calls.at(-1)?.prompt).not.toBe(
+        'Custom prompt, only for this brief.',
+      );
+    });
   });
 
   describe('deletion', () => {

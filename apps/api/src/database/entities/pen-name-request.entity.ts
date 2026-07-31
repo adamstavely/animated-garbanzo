@@ -39,6 +39,14 @@ export class PenNameRequestEntity {
   @Column({ type: 'text', default: '' })
   refine: string;
 
+  /** Null means "use the built-in default system instruction". */
+  @Column({ type: 'text', nullable: true })
+  systemOverride: string | null;
+
+  /** Null means "compose the prompt from the brief". */
+  @Column({ type: 'text', nullable: true })
+  promptOverride: string | null;
+
   @Column({ type: 'varchar', length: 16, default: RequestStatus.Queued })
   status: RequestStatus;
 

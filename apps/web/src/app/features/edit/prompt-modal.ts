@@ -22,9 +22,9 @@ import { ModalComponent } from '../../ui/modal/modal';
  * The prompt panel.
  *
  * Shows the live, auto-composed prompt plus the system instruction, both
- * editable. Saving text that differs from the default sends it verbatim from then
- * on; saving the default text back, or resetting, restores brief-driven
- * composition.
+ * editable. Saving text that differs from the default sends it verbatim for
+ * this request from then on; saving the default text back, or resetting,
+ * restores brief-driven composition.
  */
 @Component({
   selector: 'nym-prompt-modal',
@@ -46,7 +46,7 @@ export class PromptModalComponent {
 
   readonly requestId = input.required<string>();
   readonly settings = input.required<PromptSettingsDto>();
-  /** Saving or resetting the global override requires a desk-admin role. */
+  /** Saving or resetting this request’s override requires a desk-admin role. */
   readonly canAdminister = input(false);
 
   readonly saved = output<PromptSettingsDto>();
@@ -62,11 +62,11 @@ export class PromptModalComponent {
 
   protected readonly note = computed(() => {
     if (!this.canAdminister()) {
-      return 'View only — rewriting the shared prompt requires a desk-admin role from the identity provider.';
+      return 'View only — rewriting this request’s prompt requires a desk-admin role from the identity provider.';
     }
     return this.settings().isCustom
-      ? 'Custom prompt in use — sent verbatim, so brief fields no longer flow into it.'
-      : 'Auto-composed from the brief. Edit and save to send this text verbatim instead.';
+      ? 'Custom prompt in use — sent verbatim for this request, so brief fields no longer flow into it.'
+      : 'Auto-composed from the brief. Edit and save to send this text verbatim for this request.';
   });
 
   constructor() {

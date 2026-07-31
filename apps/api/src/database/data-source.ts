@@ -4,13 +4,13 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import {
   CandidateEntity,
   PenNameRequestEntity,
-  PromptSettingsEntity,
   RateLimitHitEntity,
   UserEntity,
 } from './entities';
 import { InitialSchema1753920000000 } from './migrations/1753920000000-InitialSchema';
 import { RateLimitHits1753980000000 } from './migrations/1753980000000-RateLimitHits';
 import { AddGenerationRunId1754000000000 } from './migrations/1754000000000-AddGenerationRunId';
+import { PerRequestPromptOverrides1754010000000 } from './migrations/1754010000000-PerRequestPromptOverrides';
 
 // `quiet` keeps the CLI and test output free of dotenv's banner.
 loadDotenv({ quiet: true });
@@ -19,7 +19,6 @@ export const ENTITIES = [
   UserEntity,
   PenNameRequestEntity,
   CandidateEntity,
-  PromptSettingsEntity,
   RateLimitHitEntity,
 ] as const;
 
@@ -27,6 +26,7 @@ export const MIGRATIONS = [
   InitialSchema1753920000000,
   RateLimitHits1753980000000,
   AddGenerationRunId1754000000000,
+  PerRequestPromptOverrides1754010000000,
 ] as const;
 
 /**

@@ -184,13 +184,11 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
     const keptNames = kept.map((candidate) => candidate.name);
 
     try {
-      const [system, prompt] = await Promise.all([
-        this.promptSettings.resolveSystemInstruction(),
-        this.promptSettings.resolvePrompt(request, {
-          refine: regenerate ? options.refine : undefined,
-          lockedNames: keptNames,
-        }),
-      ]);
+      const system = this.promptSettings.resolveSystemInstruction(request);
+      const prompt = this.promptSettings.resolvePrompt(request, {
+        refine: regenerate ? options.refine : undefined,
+        lockedNames: keptNames,
+      });
 
       const raw = await this.generator.generate({ system, prompt });
       if (!this.isCurrentRun(request.id, runId)) {

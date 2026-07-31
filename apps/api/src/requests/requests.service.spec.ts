@@ -19,6 +19,8 @@ function entity(overrides: Partial<PenNameRequestEntity> = {}): PenNameRequestEn
     origin: '',
     notes: '',
     refine: '',
+    systemOverride: null,
+    promptOverride: null,
     status: RequestStatus.Ready,
     candidates: [
       {

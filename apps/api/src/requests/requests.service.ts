@@ -333,13 +333,12 @@ export class RequestsService {
   async updatePromptSettings(
     id: string,
     dto: UpdatePromptSettingsDto,
-    user: AuthenticatedUser,
   ): Promise<PromptSettingsDto> {
-    return this.promptSettings.update(await this.requireRequest(id), dto, user.id);
+    return this.promptSettings.update(await this.requireRequest(id), dto);
   }
 
-  async resetPromptSettings(id: string, user: AuthenticatedUser): Promise<PromptSettingsDto> {
-    return this.promptSettings.reset(await this.requireRequest(id), user.id);
+  async resetPromptSettings(id: string): Promise<PromptSettingsDto> {
+    return this.promptSettings.reset(await this.requireRequest(id));
   }
 
   private approvalFields(
