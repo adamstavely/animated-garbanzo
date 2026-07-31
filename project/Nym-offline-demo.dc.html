@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#EFEFED">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#EFEFED"/>
+    <rect x="392" y="228" width="216" height="216" rx="34" fill="none" stroke="#A9B4AB" stroke-width="10"/>
+    <rect x="496" y="332" width="216" height="216" rx="34" fill="#1A1A19"/>
+    <text x="604" y="486" font-family="Georgia, serif" font-size="140" fill="#EFEFED" text-anchor="middle">N</text>
+    <text x="600" y="672" font-family="Georgia, serif" font-size="76" fill="#1A1A19" text-anchor="middle">Nym</text>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&amp;family=Inter:wght@400;500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #EFEFED; color: #1A1A19; font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  * { box-sizing: border-box; }
+  a { color: #1A1A19; text-decoration: none; }
+  a:hover { color: #1A1A19; }
+  input, textarea, button, select { font-family: inherit; }
+  ::placeholder { color: #71716A; }
+  @keyframes cph-spin { to { transform: rotate(360deg); } }
+  input[style*="solid rgb(216, 216, 212)"], select[style*="solid rgb(216, 216, 212)"], textarea[style*="solid rgb(216, 216, 212)"], button[style*="solid rgb(216, 216, 212)"] { border-color: #8C8C87 !important; }
+  #cph-shell { background-image: linear-gradient(115deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.55) 34%, rgba(255,255,255,0.12) 56%, rgba(255,255,255,0) 72%), linear-gradient(295deg, rgba(26,26,25,0.11) 0%, rgba(26,26,25,0.035) 38%, rgba(26,26,25,0) 66%), linear-gradient(180deg, rgba(239,239,237,0.5) 0%, rgba(239,239,237,0.34) 100%), url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22860%22 height=%22740%22><g font-family=%22Georgia,serif%22 fill=%22%231A1A19%22><text x=%2236%22 y=%2284%22 font-size=%2223%22 fill-opacity=%220.07%22>Margaret Voss</text><text x=%2240%22 y=%2288%22 font-size=%2223%22 fill-opacity=%220.07%22>Margaret Voss</text><text x=%22486%22 y=%2252%22 font-size=%2220%22 fill-opacity=%220.07%22>E. Marchetti</text><text x=%22490%22 y=%2256%22 font-size=%2220%22 fill-opacity=%220.07%22>E. Marchetti</text><text x=%22236%22 y=%22168%22 font-size=%2226%22 fill-opacity=%220.07%22>Iris Haldane</text><text x=%22240%22 y=%22172%22 font-size=%2226%22 fill-opacity=%220.07%22>Iris Haldane</text><text x=%2292%22 y=%22322%22 font-size=%2219%22 fill-opacity=%220.07%22>Cora Winterly</text><text x=%2296%22 y=%22326%22 font-size=%2219%22 fill-opacity=%220.07%22>Cora Winterly</text><text x=%22556%22 y=%22268%22 font-size=%2224%22 fill-opacity=%220.07%22>Ash Fennimore</text><text x=%22560%22 y=%22272%22 font-size=%2224%22 fill-opacity=%220.07%22>Ash Fennimore</text><text x=%22330%22 y=%22402%22 font-size=%2221%22 fill-opacity=%220.07%22>Bridget Ashworth</text><text x=%22334%22 y=%22406%22 font-size=%2221%22 fill-opacity=%220.07%22>Bridget Ashworth</text><text x=%22610%22 y=%22470%22 font-size=%2222%22 fill-opacity=%220.07%22>Marcus Holloway</text><text x=%22614%22 y=%22474%22 font-size=%2222%22 fill-opacity=%220.07%22>Marcus Holloway</text><text x=%2260%22 y=%22520%22 font-size=%2225%22 fill-opacity=%220.07%22>Nella Quintrell</text><text x=%2264%22 y=%22524%22 font-size=%2225%22 fill-opacity=%220.07%22>Nella Quintrell</text><text x=%22380%22 y=%22596%22 font-size=%2219%22 fill-opacity=%220.07%22>Thomas Ashby</text><text x=%22384%22 y=%22600%22 font-size=%2219%22 fill-opacity=%220.07%22>Thomas Ashby</text><text x=%22660%22 y=%22660%22 font-size=%2223%22 fill-opacity=%220.07%22>Wren Calloway</text><text x=%22664%22 y=%22664%22 font-size=%2223%22 fill-opacity=%220.07%22>Wren Calloway</text></g></svg>') !important; background-size: 100% 100%, 100% 100%, 100% 100%, 860px 740px !important; background-position: 0 0, 0 0, 0 0, 0 0 !important; background-repeat: no-repeat, no-repeat, no-repeat, repeat !important; background-attachment: fixed, fixed, fixed, fixed !important; }
+  #cph-shell[data-theme="dark"] { background-image: linear-gradient(115deg, rgb(18,20,23) 0%, rgba(18,20,23,0.94) 26%, rgba(18,20,23,0.55) 48%, rgba(18,20,23,0.12) 68%, rgba(18,20,23,0) 82%), linear-gradient(295deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 46%), linear-gradient(180deg, rgba(18,20,23,0.22) 0%, rgba(18,20,23,0.3) 100%), url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22860%22 height=%22740%22><g font-family=%22Georgia,serif%22 fill=%22%23E8E8E4%22><text x=%2236%22 y=%2284%22 font-size=%2223%22 fill-opacity=%220.1%22>Margaret Voss</text><text x=%2240%22 y=%2288%22 font-size=%2223%22 fill-opacity=%220.1%22>Margaret Voss</text><text x=%22486%22 y=%2252%22 font-size=%2220%22 fill-opacity=%220.1%22>E. Marchetti</text><text x=%22490%22 y=%2256%22 font-size=%2220%22 fill-opacity=%220.1%22>E. Marchetti</text><text x=%22236%22 y=%22168%22 font-size=%2226%22 fill-opacity=%220.1%22>Iris Haldane</text><text x=%22240%22 y=%22172%22 font-size=%2226%22 fill-opacity=%220.1%22>Iris Haldane</text><text x=%2292%22 y=%22322%22 font-size=%2219%22 fill-opacity=%220.1%22>Cora Winterly</text><text x=%2296%22 y=%22326%22 font-size=%2219%22 fill-opacity=%220.1%22>Cora Winterly</text><text x=%22556%22 y=%22268%22 font-size=%2224%22 fill-opacity=%220.1%22>Ash Fennimore</text><text x=%22560%22 y=%22272%22 font-size=%2224%22 fill-opacity=%220.1%22>Ash Fennimore</text><text x=%22330%22 y=%22402%22 font-size=%2221%22 fill-opacity=%220.1%22>Bridget Ashworth</text><text x=%22334%22 y=%22406%22 font-size=%2221%22 fill-opacity=%220.1%22>Bridget Ashworth</text><text x=%22610%22 y=%22470%22 font-size=%2222%22 fill-opacity=%220.1%22>Marcus Holloway</text><text x=%22614%22 y=%22474%22 font-size=%2222%22 fill-opacity=%220.1%22>Marcus Holloway</text><text x=%2260%22 y=%22520%22 font-size=%2225%22 fill-opacity=%220.1%22>Nella Quintrell</text><text x=%2264%22 y=%22524%22 font-size=%2225%22 fill-opacity=%220.1%22>Nella Quintrell</text><text x=%22380%22 y=%22596%22 font-size=%2219%22 fill-opacity=%220.1%22>Thomas Ashby</text><text x=%22384%22 y=%22600%22 font-size=%2219%22 fill-opacity=%220.1%22>Thomas Ashby</text><text x=%22660%22 y=%22660%22 font-size=%2223%22 fill-opacity=%220.1%22>Wren Calloway</text><text x=%22664%22 y=%22664%22 font-size=%2223%22 fill-opacity=%220.1%22>Wren Calloway</text></g></svg>') !important; }
+  :focus-visible { outline: 2px solid #1A1A19 !important; outline-offset: 2px !important; border-radius: 4px; }
+  [data-theme="dark"] :focus-visible { outline-color: #E6E8EA !important; }
+  [data-theme="dark"] { color-scheme: dark; color: #E6E8EA !important; }
+  [data-theme="dark"] input[style*="solid rgb(216, 216, 212)"], [data-theme="dark"] select[style*="solid rgb(216, 216, 212)"], [data-theme="dark"] textarea[style*="solid rgb(216, 216, 212)"], [data-theme="dark"] button[style*="solid rgb(216, 216, 212)"] { border-color: #6A6A64 !important; }
+  [data-theme="dark"][style*="background: rgb(239, 239, 237)"], [data-theme="dark"] [style*="background: rgb(239, 239, 237)"] { background: #121417 !important; }
+  [data-theme="dark"] [style*="background: rgb(250, 250, 249)"] { background: #1B1D20 !important; }
+  [data-theme="dark"] [style*="background: rgb(242, 242, 240)"] { background: #21242A !important; }
+  [data-theme="dark"] [style*="background: rgb(231, 231, 228)"] { background: #141619 !important; }
+  [data-theme="dark"] [style*="background: rgb(26, 26, 25)"] { background: #E6E8EA !important; color: #121417 !important; border-color: #E6E8EA !important; }
+  [data-theme="dark"] [style*="background: rgb(180, 180, 172)"] { background: #6A6A63 !important; }
+  [data-theme="dark"] [style*="solid rgb(216, 216, 212)"] { border-color: #343A40 !important; }
+  [data-theme="dark"] [style*="solid rgb(230, 230, 226)"] { border-color: #262B31 !important; }
+  [data-theme="dark"] [style*="solid rgb(201, 201, 196)"] { border-color: #3E3E38 !important; }
+  [data-theme="dark"] [style*="solid rgb(180, 180, 172)"] { border-color: #4A4A44 !important; }
+  [data-theme="dark"] [style*="color: rgb(26, 26, 25)"] { color: #E6E8EA !important; }
+  [data-theme="dark"] [style*="color: rgb(51, 51, 47)"] { color: #DADDE1 !important; }
+  [data-theme="dark"] [style*="color: rgb(85, 85, 79)"] { color: #BCC1C7 !important; }
+  [data-theme="dark"] [style*="color: rgb(106, 106, 99)"] { color: #AAB0B6 !important; }
+  [data-theme="dark"] [style*="color: rgb(105, 105, 97)"] { color: #A3A8AE !important; }
+  [data-theme="dark"] [style*="color: rgb(113, 113, 106)"] { color: #91969C !important; }
+  [data-theme="dark"] [style*="color: rgb(154, 154, 146)"] { color: #91969C !important; }
+  [data-theme="dark"] [style*="color: rgb(239, 239, 237)"] { color: #121417 !important; }
+  [data-theme="dark"] [style*="color: rgb(138, 74, 62)"] { color: #D89A8C !important; }
+  [data-theme="dark"] [style*="color: rgb(46, 107, 79)"] { color: #7FC3A1 !important; }
+  [data-theme="dark"] [style*="color: rgb(156, 59, 43)"] { color: #E39A8B !important; }
+  [data-theme="dark"] [style*="color: rgb(138, 90, 34)"] { color: #E0B173 !important; }
+  [data-theme="dark"] [style*="background: rgb(241, 248, 243)"] { background: #16241F !important; }
+  [data-theme="dark"] [style*="background: rgb(251, 245, 234)"] { background: #20242A !important; }
+  [data-theme="dark"] [style*="background: rgb(251, 241, 239)"] { background: #231E20 !important; }
+  [data-theme="dark"] [style*="solid rgb(196, 220, 203)"] { border-color: #31503C !important; }
+  [data-theme="dark"] [style*="solid rgb(229, 211, 180)"] { border-color: #454039 !important; }
+  [data-theme="dark"] [style*="solid rgb(232, 204, 197)"] { border-color: #4A3634 !important; }
+  [data-theme="dark"] [style*="background: rgb(46, 107, 79)"] { background: #7FC3A1 !important; }
+  [data-theme="dark"] [style*="background: rgb(176, 124, 46)"] { background: #E0B173 !important; }
+  [data-theme="dark"] [style*="background: rgb(156, 59, 43)"] { background: #E39A8B !important; }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select { color: #E6E8EA !important; }
+  [data-theme="dark"] input:focus, [data-theme="dark"] textarea:focus, [data-theme="dark"] select:focus { background: #24272C !important; border-color: #E6E8EA !important; }
+  [data-theme="dark"] button:hover { color: #EEF1F3 !important; border-color: #6C7279 !important; }
+  [data-theme="dark"] [style*="background: rgb(26, 26, 25)"]:hover { background: #F2F4F6 !important; color: #121417 !important; border-color: #F2F4F6 !important; }
+  [data-theme="dark"] button[style*="solid rgb(26, 26, 25)"][style*="background: rgb(250, 250, 249)"] { background: #E6E8EA !important; color: #121417 !important; border-color: #E6E8EA !important; }
+  [data-theme="dark"] button[style*="solid rgb(26, 26, 25)"][style*="background: rgb(250, 250, 249)"]:hover { background: #F2F4F6 !important; color: #121417 !important; border-color: #F2F4F6 !important; }
+  [data-theme="dark"] #cph-table > div:hover, [data-theme="dark"] #cph-history > div:hover, [data-theme="dark"] #cph-rail div:hover { background: #24272C !important; }
+  [data-theme="dark"] header { background: #16181B !important; border-bottom-color: #262B31 !important; }
+  [data-theme="dark"] #cph-table, [data-theme="dark"] #cph-history { box-shadow: inset 0 1px 0 rgba(255,255,255,0.045), 0 24px 48px -34px rgba(0,0,0,0.9) !important; }
+  [data-theme="dark"] #cph-brief, [data-theme="dark"] #cph-rail { border-color: #262B31 !important; }
+  [data-theme="dark"] ::placeholder { color: #91969C !important; }
+  [data-theme="dark"] button[aria-label^="Switch to"] span { border-color: #AAB0B6 !important; }
+  [data-theme="dark"] button[aria-label^="Switch to"] span span { background: #AAB0B6 !important; }
+  [data-theme="dark"] button[aria-label^="Switch to"]:hover span { border-color: #E6E8EA !important; }
+  [data-theme="dark"] button[aria-label^="Switch to"]:hover span span { background: #E6E8EA !important; }
+  [data-theme="dark"] button[aria-label="Switch app"] span span { background: #AAB0B6 !important; }
+  [data-theme="dark"] button[aria-label="Switch app"]:hover span span { background: #E6E8EA !important; }
+  [data-theme="dark"] button[aria-label^="Switch to"]:hover, [data-theme="dark"] button[aria-label="Switch app"]:hover { background: #24272C !important; border-color: #343A40 !important; }
+  [data-theme="dark"] button[style*="background: transparent"]:hover { background: #24272C !important; color: #E6E8EA !important; }
+  [data-theme="dark"] [style*="color: rgb(156, 59, 43)"], [data-theme="dark"] [style*="solid rgb(201, 163, 155)"] { color: #E39A8B !important; border-color: #7A4A42 !important; }
+  [data-theme="dark"] [style*="background: rgb(156, 59, 43)"] { background: #B4442F !important; color: #FBF1EF !important; border-color: #B4442F !important; }
+  [data-theme="dark"] button[style*="solid rgb(201, 163, 155)"]:hover { background: #2A1E1C !important; border-color: #E39A8B !important; color: #E39A8B !important; }
+  @keyframes cph-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 1180px) {
+    #cph-root { grid-template-columns: 268px 1fr !important; }
+    #cph-rail { grid-row: span 2; }
+    #cph-brief { border-right: none !important; border-bottom: 1px solid #D8D8D4; }
+  }
+  @media (max-width: 1220px) {
+    #cph-table > div, #cph-history > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important; row-gap: 14px !important; }
+    #cph-table > div > *, #cph-history > div > * { grid-column: auto !important; }
+    #cph-table > div:first-child, #cph-history > div:first-child { display: none !important; }
+  }
+  @media (max-width: 820px) {
+    #cph-root { grid-template-columns: 1fr !important; }
+    #cph-rail { grid-row: auto; border-right: none !important; border-bottom: 1px solid #D8D8D4; }
+  }
+</style>
+</helmet>
+
+<div id="cph-shell" data-theme="{{ theme }}" style="min-height: 100vh; display: flex; flex-direction: column; background: #EFEFED;">
+
+<header style="display: flex; align-items: stretch; justify-content: space-between; gap: 24px; height: 64px; padding: 0 28px; border-bottom: 1px solid #D8D8D4; background: #FAFAF9;">
+  <div style="display: flex; align-items: stretch; gap: 34px; min-width: 0; flex: 0 1 auto;">
+    <div style="display: flex; align-items: center; gap: 11px;">
+      <span style="position: relative; width: 30px; height: 30px; flex: 0 0 auto;">
+        <span style="position: absolute; left: 0; top: 0; width: 22px; height: 22px; border: 1.2px solid #B4B4AC; border-radius: 5px;"></span>
+        <span style="position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; border-radius: 5px; background: #1A1A19; color: #EFEFED; display: flex; align-items: center; justify-content: center; font-family: 'Newsreader', serif; font-size: 12px; line-height: 1; padding-bottom: 1px;">N</span>
+      </span>
+      <span style="font-family: 'Newsreader', serif; font-size: 22px; letter-spacing: -0.015em;">Nym</span>
+    </div>
+    <nav style="display: flex; align-items: stretch; gap: 24px;">
+      <button onClick="{{ goQueue }}" style="position: relative; border: none; background: transparent; padding: 0 2px; font-size: 13.5px; letter-spacing: 0.01em; color: #6A6A63; cursor: pointer;" style-hover="color: #1A1A19;">
+        <span>Queue</span>
+        <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ true }}">
+          <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #1A1A19;"></span>
+        </sc-if>
+      </button>
+      <button onClick="{{ goHistory }}" style="position: relative; border: none; background: transparent; padding: 0 2px; font-size: 13.5px; letter-spacing: 0.01em; color: #6A6A63; cursor: pointer;" style-hover="color: #1A1A19;">
+        <span>{{ historyTabLabel }}</span>
+        <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+          <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: #1A1A19;"></span>
+        </sc-if>
+      </button>
+    </nav>
+  </div>
+
+  <div style="flex: 1 1 0; display: flex; align-items: center; justify-content: center; min-width: 0;">
+    <div style="position: relative; display: flex; align-items: center; width: 100%; max-width: 520px;">
+      <svg viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" style="position: absolute; left: 10px; color: #696961; pointer-events: none;"><circle cx="6" cy="6" r="4.3"></circle><path d="M9.2 9.2 L12.3 12.3"></path></svg>
+      <input value="{{ query }}" onChange="{{ setQuery }}" aria-label="Search requests and history" placeholder="Search requests and history" style="width: 100%; padding: 8px 30px 8px 31px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 13px; background: #F2F2F0; color: #1A1A19; outline: none;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+      <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ clearQuery }}" title="Clear search" aria-label="Clear search" style="position: absolute; right: 5px; width: 26px; height: 26px; border: none; background: transparent; border-radius: 4px; color: #696961; font-size: 14px; line-height: 1; cursor: pointer; padding: 0;" style-hover="color: #1A1A19;">×</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <button onClick="{{ openNew }}" style="display: flex; align-items: center; gap: 7px; padding: 9px 16px 9px 13px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13px; font-weight: 500; letter-spacing: 0.01em; cursor: pointer; box-shadow: 0 1px 2px rgba(20,20,18,0.16);" style-hover="background: #2E2E2C; border-color: #2E2E2C;">
+      <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" style="flex: 0 0 auto;"><path d="M6 1.6v8.8"></path><path d="M1.6 6h8.8"></path></svg>
+      <span>New request</span>
+    </button>
+
+    <button onClick="{{ toggleTheme }}" title="{{ themeLabel }}" aria-label="{{ themeLabel }}" style="width: 34px; height: 34px; border: 1px solid transparent; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;" style-hover="background: #F2F2F0; border-color: #D8D8D4;">
+      <span style="position: relative; width: 15px; height: 15px; border: 1.4px solid #55554F; border-radius: 50%; overflow: hidden; display: block;">
+        <span style="position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background: #55554F;"></span>
+      </span>
+    </button>
+
+    <span style="width: 1px; height: 24px; background: #D8D8D4;"></span>
+
+    <div style="position: relative; display: flex; align-items: center;">
+      <button onClick="{{ toggleApps }}" title="Switch app" aria-label="Switch app" style="width: 34px; height: 34px; border: 1px solid transparent; background: transparent; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0;" style-hover="background: #E7E7E4; border-color: #D8D8D4;">
+        <span style="display: grid; grid-template-columns: repeat(3, 3px); gap: 3.5px;">
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+          <span style="width: 3px; height: 3px; background: #6A6A63; border-radius: 50%;"></span>
+        </span>
+      </button>
+      <sc-if value="{{ appsOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; top: 44px; right: 0; width: 260px; background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 10px; box-shadow: 0 20px 44px -20px rgba(20,20,18,0.35); padding: 8px; z-index: 50; display: flex; flex-direction: column; gap: 2px;">
+          <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961; padding: 8px 10px 6px;">Publishing suite</div>
+          <sc-for list="{{ apps }}" as="app" hint-placeholder-count="4">
+            <button onClick="{{ closeApps }}" style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 9px 10px; border: none; background: transparent; border-radius: 6px; cursor: pointer;" style-hover="background: #F0F0EE;">
+              <span style="font-size: 13px; font-weight: 500; color: #1A1A19;">{{ app.name }}</span>
+              <span style="font-size: 11.5px; color: #696961;">{{ app.desc }}</span>
+              <sc-if value="{{ app.current }}" hint-placeholder-val="{{ false }}">
+                <span style="position: absolute; top: 11px; right: 10px; font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #696961;">Current</span>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="position: relative; display: flex; align-items: center;">
+      <button onClick="{{ toggleUser }}" aria-label="Account menu" style="width: 34px; height: 34px; border-radius: 50%; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; padding: 0;" style-hover="background: #2E2E2C;">{{ userInitials }}</button>
+      <sc-if value="{{ userOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; top: 44px; right: 0; width: 224px; background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 10px; box-shadow: 0 20px 44px -20px rgba(20,20,18,0.35); padding: 8px; z-index: 50; display: flex; flex-direction: column; gap: 2px;">
+          <div style="padding: 9px 10px; display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid #E6E6E2; margin-bottom: 4px;">
+            <span style="font-size: 13px; font-weight: 500;">{{ userName }}</span>
+            <span style="font-size: 11.5px; color: #696961;">{{ userRole }}</span>
+          </div>
+          <sc-for list="{{ userMenu }}" as="m" hint-placeholder-count="3">
+            <button onClick="{{ closeUser }}" style="text-align: left; padding: 8px 10px; border: none; background: transparent; border-radius: 6px; font-size: 12.5px; color: #55554F; cursor: pointer;" style-hover="background: #F0F0EE; color: #1A1A19;">{{ m.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</header>
+
+<sc-if value="{{ isQueue }}" hint-placeholder-val="{{ true }}">
+  <section style="width: 100%; max-width: 1560px; margin: 0 auto; padding: 40px 32px 64px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        
+        <div style="font-family: 'Newsreader', serif; font-size: 38px; font-weight: 400; line-height: 1.05; letter-spacing: -0.02em;">Pen name requests</div>
+        <div style="font-size: 13px; color: #696961; max-width: 560px; line-height: 1.55;">Generated automatically on intake, screened for name overlap and prior use. <br>Approve the proposed, or click 'edit' on a request to review and refine.</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        
+        <button onClick="{{ approveAll }}" style="display: flex; align-items: center; gap: 7px; padding: 10px 18px 10px 14px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; white-space: nowrap; box-shadow: 0 1px 2px rgba(20,20,18,0.14);" style-hover="background: #0E0E0D; border-color: #0E0E0D;">
+          <svg viewBox="0 0 14 12" width="14" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M1 6.4 3.3 8.7l4.2-5"></path><path d="M6.3 8 7.9 9.6l4.4-5.8"></path></svg>
+          <span>{{ approveAllLabel }}</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="cph-table" style="border: 1px solid #D8D8D4; border-radius: 10px; background: #FAFAF9; overflow: hidden; box-shadow: 0 1px 2px rgba(20,20,18,0.04), 0 28px 56px -40px rgba(20,20,18,0.5);">
+      <div style="display: grid; grid-template-columns: minmax(150px, 1.15fr) minmax(170px, 1fr) 180px 132px 118px 178px; column-gap: 22px; padding: 13px 24px; border-bottom: 1px solid #D8D8D4; background: #F2F2F0; font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961;">
+        <div><b style="color: #2F2F2F">LEGAL NAME</b></div>
+        <div><b style="color: #2F2F2F">Proposed pen name</b></div>
+        <div><b style="color: #2F2F2F">Checks</b></div>
+        <div><b style="color: #2F2F2F">Requested</b></div>
+        <div><b style="color: #2F2F2F">Status</b></div>
+        <div style="text-align: center;"><b style="color: #2F2F2F">Action</b></div>
+      </div>
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: minmax(150px, 1.15fr) minmax(170px, 1fr) 180px 132px 118px 178px; column-gap: 22px; padding: 20px 24px; border-bottom: 1px solid #E6E6E2; align-items: center;" style-hover="background: #F0F0EE;">
+          <div style="grid-column: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+            <div style="font-size: 19px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em;">{{ r.author }}</div>
+            <div style="font-size: 11.5px; color: #696961;">{{ r.meta }}</div>
+          </div>
+          <div style="grid-column: 2; display: flex; flex-direction: column; gap: 7px; min-width: 0;">
+            <div style="font-family: 'Newsreader', serif; font-size: 20px; font-weight: 400; line-height: 1.2; letter-spacing: -0.015em;">{{ r.penName }}</div>
+
+            <sc-if value="{{ r.errText }}" hint-placeholder-val="">
+              <div style="font-size: 11.5px; line-height: 1.45; color: #8A4A3E;">{{ r.errText }}</div>
+            </sc-if>
+          </div>
+          <div style="grid-column: 3; display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+            <sc-if value="{{ r.showChecks }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ r.overlapOk }}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; line-height: 1.35; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No name overlap</span>
+              </sc-if>
+              <sc-if value="{{ r.overlapFail }}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; line-height: 1.35; color: #9C3B2B;"><span style="font-size: 10px;">✕</span>Overlaps legal name</span>
+              </sc-if>
+              <sc-if value="{{ r.priorOk }}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; line-height: 1.35; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No prior use</span>
+              </sc-if>
+              <sc-if value="{{ r.famousOk }}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; line-height: 1.35; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>Not a famous name</span>
+              </sc-if>
+              <sc-if value="{{ r.safeOk }}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; line-height: 1.35; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No offensive terms</span>
+              </sc-if>
+            </sc-if>
+            <sc-if value="{{ r.checksPending }}" hint-placeholder-val="{{ false }}">
+              <span style="font-size: 11.5px; color: #71716A;">—</span>
+            </sc-if>
+          </div>
+          <div style="grid-column: 4; font-family: 'Inter', system-ui, sans-serif; font-size: 11px; letter-spacing: 0.02em; color: #696961; line-height: 1.5; white-space: nowrap;">{{ r.requested }}</div>
+          <div style="grid-column: 5; display: flex; align-items: center; gap: 7px; font-size: 12px;">
+            <sc-if value="{{ r.busy }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: center; gap: 8px; color: #696961;">
+                <div style="width: 13px; height: 13px; border: 1.5px solid #D8D8D4; border-top-color: #1A1A19; border-radius: 50%; animation: cph-spin 0.8s linear infinite;"></div>
+                <span style="font-size: 12.5px;">Generating…</span>
+              </div>
+            </sc-if>
+            <sc-if value="{{ r.ready }}" hint-placeholder-val="{{ false }}">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #8A5A22; border: 1px solid #E5D3B4; background: #FBF5EA; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #B07C2E;"></span>Ready</span>
+            </sc-if>
+            <sc-if value="{{ r.approvedRow }}" hint-placeholder-val="{{ false }}">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #2E6B4F; border: 1px solid #C4DCCB; background: #F1F8F3; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #2E6B4F;"></span>Approved</span>
+            </sc-if>
+            <sc-if value="{{ r.queued }}" hint-placeholder-val="{{ false }}">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #696961; border: 1px solid #D8D8D4; background: #F2F2F0; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #B4B4AC;"></span>Queued</span>
+            </sc-if>
+            <sc-if value="{{ r.failed }}" hint-placeholder-val="{{ false }}">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #9C3B2B; border: 1px solid #E8CCC5; background: #FBF1EF; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #9C3B2B;"></span>Failed</span>
+            </sc-if>
+          </div>
+          <div style="grid-column: 6; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <sc-if value="{{ r.canRetry }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ r.rerun }}" title="Run generation again" style="padding: 8px 12px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; cursor: pointer; white-space: nowrap;" style-hover="border-color: #1A1A19; color: #1A1A19;">Retry</button>
+            </sc-if>
+            <button onClick="{{ r.edit }}" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px 8px 11px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;">
+              <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M8.2 1.6l2.2 2.2-6 6H2.2v-2z"></path></svg>
+              <span>Edit</span>
+            </button>
+            <sc-if value="{{ r.canApprove }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ r.approve }}" style="display: flex; align-items: center; gap: 6px; padding: 8px 15px 8px 12px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer;" style-hover="background: #2E2E2C; border-color: #2E2E2C;">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M1.8 6.4 4.4 9l5.8-6"></path></svg>
+                <span>Approve</span>
+              </button>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ showQueueEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 64px 24px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+          <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 23px; color: #33332F;">Queue clear</div>
+          <div style="font-size: 13px; color: #696961;">Every request has been approved. Completed ones live in History.</div>
+        <sc-if value="{{ crossNote }}" hint-placeholder-val="">
+          <div style="font-size: 12.5px; color: #696961;">{{ crossNote }}</div>
+        </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+</sc-if>
+
+<sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+  <section style="width: 100%; max-width: 1560px; margin: 0 auto; padding: 40px 32px 64px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-family: 'Newsreader', serif; font-size: 38px; font-weight: 400; line-height: 1.05; letter-spacing: -0.02em;">History</div>
+      <div style="font-size: 13px; color: #696961; max-width: 560px; line-height: 1.55; width: 340px; height: 41px">Approved pen names and the checks they cleared. Reopen a request to revisit the alternates.</div>
+    </div>
+
+    <div id="cph-history" style="border: 1px solid #D8D8D4; border-radius: 10px; background: #FAFAF9; overflow: hidden; box-shadow: 0 1px 2px rgba(20,20,18,0.04), 0 28px 56px -40px rgba(20,20,18,0.5);">
+      <div style="display: grid; grid-template-columns: minmax(150px, 1fr) minmax(210px, 1.4fr) 176px 118px minmax(160px, auto); gap: 16px; padding: 13px 24px; border-bottom: 1px solid #D8D8D4; background: #F2F2F0; font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961;">
+        <div><b style="color: #2F2F2F">Legal name</b></div>
+        <div><b style="color: #2F2F2F">Approved pen name</b></div>
+        <div><b style="color: #2F2F2F">Approved by</b></div>
+        <div><b style="color: #2F2F2F">Status</b></div>
+        <div style="text-align: center;"><b style="color: #2F2F2F">Action</b></div>
+      </div>
+      <sc-for list="{{ historyRows }}" as="r" hint-placeholder-count="2">
+        <div style="display: grid; grid-template-columns: minmax(150px, 1fr) minmax(210px, 1.4fr) 176px 118px minmax(160px, auto); gap: 16px; padding: 20px 24px; border-bottom: 1px solid #E6E6E2; align-items: center;" style-hover="background: #F0F0EE;">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+            <div style="font-size: 19px; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em;">{{ r.author }}</div>
+            <div style="font-size: 11.5px; color: #696961;">{{ r.meta }}</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 7px; min-width: 0;">
+            <div style="font-family: 'Newsreader', serif; font-size: 20px; font-weight: 400; line-height: 1.2; letter-spacing: -0.015em;">{{ r.penName }}</div>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+              <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No overlap with legal name</span>
+              <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #2E6B4F;"><span style="font-size: 10px;">✓</span>No prior use</span>
+            </div>
+            
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0;">
+            <div style="font-size: 13px; color: #33332F;">{{ r.approvedBy }}</div>
+            <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 10.5px; letter-spacing: 0.02em; color: #696961; white-space: nowrap;">{{ r.approvedAt }}</div>
+          </div>
+          <div>
+            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: #2E6B4F; border: 1px solid #C4DCCB; background: #F1F8F3; border-radius: 999px; padding: 4px 10px 4px 8px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #2E6B4F;"></span>Approved</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <button onClick="{{ r.reopen }}" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px 8px 11px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><circle cx="5" cy="6" r="3"></circle><path d="M5 9v12"></path><path d="m15 9-3-3 3-3"></path><path d="M12 6h5a2 2 0 0 1 2 2v7"></path><circle cx="19" cy="18" r="3"></circle></svg><span>Reopen</span></button>
+            <button onClick="{{ r.edit }}" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px 8px 11px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;"><svg viewBox="0 0 14 12" width="13" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M1 6s2.2-3.6 6-3.6S13 6 13 6s-2.2 3.6-6 3.6S1 6 1 6z"></path><circle cx="7" cy="6" r="1.5"></circle></svg><span>View</span></button>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ showHistoryEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="padding: 64px 24px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center;">
+          <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 23px; color: #33332F;">No completed requests</div>
+          <div style="font-size: 13px; color: #696961;">Approved pen names move here automatically.</div>
+        <sc-if value="{{ crossNote }}" hint-placeholder-val="">
+          <div style="font-size: 12.5px; color: #696961;">{{ crossNote }}</div>
+        </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </section>
+</sc-if>
+
+<sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+<div id="cph-root" style="display: grid; grid-template-columns: 268px 376px minmax(0, 1fr); flex: 1 1 auto; background: #EFEFED;">
+
+  <aside id="cph-rail" style="min-width: 0; border-right: 1px solid #D8D8D4; background: #E7E7E4; display: flex; flex-direction: column; gap: 26px; padding: 26px 20px;">
+    <button onClick="{{ goQueue }}" style="align-self: flex-start; border: none; background: transparent; padding: 0; font-size: 12.5px; color: #1A1A19; cursor: pointer;" style-hover="color: #1A1A19;">← Back to queue</button>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961;"><b style="color: #2F2F2F">All requests</b></div>
+      <div style="display: flex; flex-direction: column; gap: 3px;">
+        <sc-for list="{{ queue }}" as="row" hint-placeholder-count="3">
+          <div onClick="{{ row.open }}" style="position: relative; padding: 11px 12px; border-radius: 7px; cursor: pointer; display: flex; flex-direction: column; gap: 5px;" style-hover="background: #DEDEDA;">
+            <sc-if value="{{ row.active }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; inset: 0; border: 1px solid #D8D8D4; border-radius: 7px; background: #FAFAF9; box-shadow: 0 1px 2px rgba(20,20,18,0.05); pointer-events: none;"></div>
+            </sc-if>
+            <div style="position: relative; font-size: 13.5px; font-weight: 500; line-height: 1.3;">{{ row.title }}</div>
+            <div style="position: relative; font-family: 'Inter', system-ui, sans-serif; font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #696961;">{{ row.status }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+  </aside>
+
+  <section id="cph-brief" style="min-width: 0; border-right: 1px solid #D8D8D4; background: #FAFAF9; padding: 30px 28px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      
+      <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 26px; letter-spacing: -0.015em; position: relative">Request details</div>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Legal name</span>
+      <input value="{{ form.name }}" onChange="{{ setName }}" placeholder="e.g. Margaret Ellen Voss" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+      <span style="font-size: 11px; color: #696961;">Full name including middle initial</span>
+    </label>
+
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Presentation of pen name</span>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; border: 1px solid #D8D8D4; border-radius: 7px; background: #F2F2F0;">
+        <sc-for list="{{ genders }}" as="g" hint-placeholder-count="3">
+          <button onClick="{{ g.pick }}" style="position: relative; padding: 9px 4px; border: none; border-radius: 5px; background: transparent; font-size: 12.5px; color: #55554F; cursor: pointer;" style-hover="color: #1A1A19;">
+            <sc-if value="{{ g.on }}" hint-placeholder-val="{{ false }}">
+              <div style="position: absolute; inset: 0; border-radius: 5px; background: #FAFAF9; border: 1px solid #C9C9C4; box-shadow: 0 1px 2px rgba(20,20,18,0.07); pointer-events: none;"></div>
+            </sc-if>
+            <span style="position: relative;">{{ g.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <label style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Language / cultural origin <span style="color: #71716A; font-weight: 400;">optional</span></span>
+      <select value="{{ form.origin }}" onChange="{{ setOrigin }}" style="appearance: none; padding: 11px 32px 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none; cursor: pointer; background-image: url('data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22&gt;&lt;path d=%22M1 1l4 4 4-4%22 fill=%22none%22 stroke=%22%23696961%22 stroke-width=%221.4%22/&gt;&lt;/svg&gt;'); background-repeat: no-repeat; background-position: right 12px center;" style-focus="border-color: #1A1A19; background-color: #FAFAF9;">
+        <sc-for list="{{ originOptions }}" as="o" hint-placeholder-count="8">
+          <option value="{{ o.value }}">{{ o.label }}</option>
+        </sc-for>
+      </select>
+    </label>
+
+    <label style="display: flex; flex-direction: column; gap: 7px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Notes to steer the list <span style="color: #71716A; font-weight: 400;">optional</span></span>
+      <textarea value="{{ form.notes }}" onChange="{{ setNotes }}" rows="4" placeholder="Genre, era, market, anything to avoid…" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; line-height: 1.5; background: #F2F2F0; color: #1A1A19; outline: none; resize: vertical;" style-focus="border-color: #1A1A19; background: #FAFAF9;"></textarea>
+    </label>
+
+    <div style="border: 1px solid #D8D8D4; border-radius: 8px; background: #F2F2F0; padding: 14px; display: flex; flex-direction: column; gap: 9px;">
+      <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #696961;">Excluded from results</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+        <sc-for list="{{ constraints }}" as="c" hint-placeholder-count="4">
+          <span style="font-family: 'Inter', system-ui, sans-serif; font-size: 11px; padding: 3px 8px; border: 1px solid #D8D8D4; border-radius: 4px; background: #FAFAF9; color: #1A1A19;">{{ c.label }}</span>
+        </sc-for>
+      </div>
+      <div style="font-size: 11.5px; color: #696961; line-height: 1.55;">{{ constraintNote }}</div>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button onClick="{{ generate }}" disabled="{{ busy }}" style="flex: 1 1 auto; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13.5px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; box-shadow: 0 1px 2px rgba(20,20,18,0.14);" style-hover="background: #0E0E0D; border-color: #0E0E0D;"><svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M4.4 1.4l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"></path><path d="M9.7 6.6l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z"></path></svg><span>{{ generateLabel }}</span></button>
+      <button onClick="{{ openPrompt }}" style="flex: 0 0 auto; display: flex; align-items: center; gap: 7px; padding: 13px 14px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer; white-space: nowrap;" style-hover="border-color: #1A1A19; color: #1A1A19;">
+        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M2.4 1.4h7.2v9.2H2.4z"></path><path d="M4.2 4h3.6"></path><path d="M4.2 6.2h3.6"></path><path d="M4.2 8.4h2.2"></path></svg>
+        <span>{{ promptButtonLabel }}</span>
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px; border-top: 1px solid #E6E6E2; padding-top: 20px;">
+      <span style="font-size: 12px; font-weight: 500; color: #33332F;">Refine and regenerate</span>
+      <input value="{{ refine }}" onChange="{{ setRefine }}" aria-label="Refine the candidate list" placeholder="e.g. more British, shorter surnames" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 13.5px; background: #F2F2F0; color: #1A1A19; outline: none;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+      <button onClick="{{ regenerate }}" disabled="{{ busy }}" style="margin-top: 3px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border: 1px solid #1A1A19; background: #FAFAF9; color: #1A1A19; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background: #1A1A19; color: #EFEFED;">
+        <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M10.4 6a4.4 4.4 0 1 1-1.4-3.2"></path><path d="M10.8 1.2v2.8H8"></path></svg>
+        <span>{{ regenLabel }}</span>
+      </button>
+    </div>
+
+    <sc-if value="{{ error }}" hint-placeholder-val="">
+      <div style="font-size: 12px; color: #8A4A3E; line-height: 1.55;">{{ error }}</div>
+    </sc-if>
+
+    <button onClick="{{ askDelete }}" style="margin-top: auto; padding-top: 11px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; border: 1px solid #C9A39B; background: transparent; color: #9C3B2B; border-radius: 6px; font-size: 12.5px; font-weight: 500; cursor: pointer;" style-hover="border-color: #9C3B2B; background: #FBF1EF;">
+      <svg viewBox="0 0 12 13" width="12" height="13" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M1.6 3.4h8.8"></path><path d="M4.6 3.4V2.1h2.8v1.3"></path><path d="M2.7 3.4l.5 7.5h5.6l.5-7.5"></path><path d="M5 5.6v3.2"></path><path d="M7 5.6v3.2"></path></svg>
+      <span>Delete request</span>
+    </button>
+  </section>
+
+  <section id="cph-results" style="padding: 30px 34px 44px; display: flex; flex-direction: column; gap: 22px; min-width: 0; overflow-x: hidden;">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+        <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #696961;"><b style="color: #2F2F2F">CANDIDATES For</b></div>
+        <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 30px; line-height: 1.1; letter-spacing: -0.02em;">{{ resultsTitle }}</div>
+      </div>
+    </div>
+
+    <sc-if value="{{ showEmpty }}" hint-placeholder-val="{{ true }}">
+      <div style="border: 1px dashed #C9C9C4; border-radius: 10px; padding: 76px 30px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; background: #F0F0EE;">
+        <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 24px; color: #33332F;">No candidates yet</div>
+        <div style="font-size: 13px; color: #696961; max-width: 400px; line-height: 1.6;">Fill in the brief and generate. Every returned name is screened for overlap with the legal name and for prior use by a published author.</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+      <div style="border: 1px solid #D8D8D4; border-radius: 10px; padding: 58px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; background: #FAFAF9;">
+        <div style="width: 22px; height: 22px; border: 2px solid #D8D8D4; border-top-color: #1A1A19; border-radius: 50%; animation: cph-spin 0.8s linear infinite;"></div>
+        <div style="font-size: 13px; color: #696961;">{{ busyNote }}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px; font-size: 12.5px; color: #696961; border-bottom: 1px solid #D8D8D4; padding-bottom: 12px; flex-wrap: wrap;">
+          
+          
+          <span>Candidates that overlap the legal name or match a known person are filtered out before review.</span>
+          <span style="margin-left: auto; text-align: right;">Locked names are kept when you regenerate; everything else is replaced.</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+          <sc-for list="{{ results }}" as="c" hint-placeholder-count="6">
+            <div onClick="{{ c.choose }}" style="position: relative; background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; cursor: pointer; box-shadow: 0 1px 2px rgba(20,20,18,0.04); transition: box-shadow 0.18s ease, transform 0.18s ease; animation: cph-rise 0.3s ease both;" style-hover="box-shadow: 0 14px 28px -18px rgba(20,20,18,0.55); transform: translateY(-2px);">
+              <sc-if value="{{ c.chosen }}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; inset: -1px; border: 1.5px solid #1A1A19; border-radius: 10px; background: rgba(20,20,18,0.04); pointer-events: none;"></div>
+              </sc-if>
+              <div style="position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;">
+                <div style="font-family: 'Newsreader', serif; font-size: 25px; line-height: 1.15; letter-spacing: -0.015em;">{{ c.name }}</div>
+                <button onClick="{{ c.toggleLock }}" style="display: flex; align-items: center; gap: 5px; border: 1px solid #D8D8D4; background: #F2F2F0; border-radius: 4px; padding: 6px 9px; min-height: 26px; font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: #696961; cursor: pointer; white-space: nowrap;" style-hover="border-color: #1A1A19; color: #1A1A19;">
+                  <svg viewBox="0 0 10 12" width="9" height="11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" style="flex: 0 0 auto;"><rect x="1" y="5.2" width="8" height="6.1" rx="1.3"></rect><path d="M3 5.2V3.4a2 2 0 0 1 4 0v1.8"></path></svg>
+                  <span>{{ c.lockLabel }}</span>
+                </button>
+              </div>
+              <div style="position: relative; font-family: 'Inter', system-ui, sans-serif; font-size: 11px; letter-spacing: 0.04em; color: #696961;">{{ c.pronunciation }}</div>
+              <div style="position: relative; font-size: 12.5px; line-height: 1.6; color: #55554F;">{{ c.origin }}</div>
+              <div style="position: relative; display: flex; gap: 14px; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid #E6E6E2; margin-top: 2px;">
+                <span style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #2E6B4F; padding-top: 6px;"><span style="font-size: 10px;">✓</span>No overlap</span>
+                <span style="display: flex; align-items: center; gap: 5px; font-size: 11px; color: #2E6B4F; padding-top: 6px;"><span style="font-size: 10px;">✓</span>No prior use</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ chosen }}" hint-placeholder-val="">
+      <div style="position: sticky; bottom: 0; margin-top: auto; background: #1A1A19; color: #EFEFED; border-radius: 10px; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; box-shadow: 0 20px 44px -24px rgba(20,20,18,0.8);">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #9A9A92;">Selected</span>
+          <span style="font-family: 'Newsreader', serif; font-size: 25px; letter-spacing: -0.015em;">{{ chosen }}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button onClick="{{ clearChoice }}" style="padding: 10px 14px; border: 1px solid #3B3B37; background: transparent; color: #EFEFED; border-radius: 6px; font-size: 13px; cursor: pointer;" style-hover="border-color: #EFEFED;">Clear</button>
+          <button onClick="{{ approve }}" style="padding: 10px 18px; border: 1px solid #EFEFED; background: #EFEFED; color: #1A1A19; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;" style-hover="background: #FAFAF9; border-color: #FAFAF9;">{{ approveLabel }}</button>
+        </div>
+      </div>
+    </sc-if>
+
+  </section>
+</div>
+</sc-if>
+
+  <sc-if value="{{ toastMsg }}" hint-placeholder-val="">
+    <div role="status" aria-live="polite" style="position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 11px; background: #1A1A19; color: #EFEFED; border-radius: 8px; padding: 13px 20px 13px 16px; box-shadow: 0 20px 44px -20px rgba(20,20,18,0.8); animation: cph-rise 0.24s ease both;">
+      <span style="width: 18px; height: 18px; border-radius: 50%; background: #1A1A19; color: #EFEFED; font-size: 10px; display: flex; align-items: center; justify-content: center;">✓</span>
+      <span style="font-size: 13px; letter-spacing: 0.01em;">{{ toastMsg }}</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ deleteOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(20,20,18,0.5); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 32px; z-index: 45;">
+      <div style="background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 12px; width: min(440px, 100%); display: flex; flex-direction: column; gap: 14px; padding: 26px; box-shadow: 0 40px 80px -30px rgba(20,20,18,0.7);">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #9C3B2B;">Delete request</div>
+          <div style="font-family: 'Newsreader', serif; font-size: 25px; letter-spacing: -0.015em;">Are you sure?</div>
+        </div>
+        <div style="font-size: 13px; color: #55554F; line-height: 1.6;">{{ deleteNote }}</div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 4px;">
+          <button onClick="{{ cancelDelete }}" style="padding: 10px 15px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 13px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;">Keep it</button>
+          <button onClick="{{ confirmDelete }}" style="display: flex; align-items: center; gap: 7px; padding: 10px 16px; border: 1px solid #9C3B2B; background: #9C3B2B; color: #FBF1EF; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;" style-hover="background: #822F22; border-color: #822F22;">
+            <svg viewBox="0 0 12 13" width="12" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M1.6 3.4h8.8"></path><path d="M4.6 3.4V2.1h2.8v1.3"></path><path d="M2.7 3.4l.5 7.5h5.6l.5-7.5"></path></svg>
+            <span>Delete request</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ promptOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(20,20,18,0.5); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 32px; z-index: 40;">
+      <div style="background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 12px; width: min(780px, 100%); max-height: 100%; display: flex; flex-direction: column; gap: 18px; padding: 28px; box-shadow: 0 40px 80px -30px rgba(20,20,18,0.7);">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #2F2F2F; font-weight: 700">Model instructions</div>
+            <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 27px; letter-spacing: -0.015em;">Prompt</div>
+          </div>
+          <button onClick="{{ closePrompt }}" aria-label="Close" style="border: none; background: transparent; border-radius: 6px; width: 32px; height: 32px; font-size: 22px; line-height: 1; color: #55554F; cursor: pointer;" style-hover="color: #1A1A19;">×</button>
+        </div>
+
+        <div style="font-size: 12.5px; color: #696961; line-height: 1.55;">{{ promptNote }}</div>
+
+        <label style="display: flex; flex-direction: column; gap: 7px;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">System instruction</span>
+          <textarea value="{{ systemDraft }}" onChange="{{ setSystemDraft }}" rows="4" style="padding: 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-family: 'Inter', system-ui, sans-serif; font-size: 11.5px; line-height: 1.65; background: #F2F2F0; color: #1A1A19; outline: none; resize: vertical;" style-focus="border-color: #1A1A19; background: #FAFAF9;"></textarea>
+        </label>
+
+        <label style="display: flex; flex-direction: column; gap: 7px; min-height: 0;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">Generation prompt</span>
+          <textarea value="{{ promptDraft }}" onChange="{{ setPromptDraft }}" rows="15" style="padding: 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-family: 'Inter', system-ui, sans-serif; font-size: 11.5px; line-height: 1.65; background: #F2F2F0; color: #1A1A19; outline: none; resize: vertical;" style-focus="border-color: #1A1A19; background: #FAFAF9;"></textarea>
+        </label>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <button onClick="{{ resetPrompt }}" style="display: flex; align-items: center; gap: 7px; padding: 10px 14px; border: 1px solid #D8D8D4; background: #F2F2F0; color: #55554F; border-radius: 6px; font-size: 13px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg><span>Reset to default</span></button>
+          <div style="display: flex; gap: 8px;">
+            <button onClick="{{ closePrompt }}" style="padding: 10px 14px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 13px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;">Cancel</button>
+            <button onClick="{{ savePrompt }}" style="display: flex; align-items: center; gap: 7px; padding: 10px 18px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;" style-hover="background: #2E2E2C; border-color: #2E2E2C;"><svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M2 2.6h7.2l2.8 2.8v6h-10z"></path><path d="M4.4 2.6v3.2h5V4"></path><path d="M4.4 11.4V8.6h5.2v2.8"></path></svg><span>Save prompt</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ newOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(20,20,18,0.5); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; padding: 32px; z-index: 40;">
+      <div style="background: #FAFAF9; border: 1px solid #D8D8D4; border-radius: 12px; width: min(540px, 100%); display: flex; flex-direction: column; gap: 18px; padding: 28px; box-shadow: 0 40px 80px -30px rgba(20,20,18,0.7);">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;">
+          <div style="display: flex; flex-direction: column; gap: 5px;">
+            
+            <div style="font-family: 'Inter', system-ui, sans-serif; font-size: 27px; letter-spacing: -0.015em;">Submit Request</div>
+          </div>
+          <button onClick="{{ closeNew }}" aria-label="Close" style="border: none; background: transparent; border-radius: 6px; width: 32px; height: 32px; font-size: 22px; line-height: 1; color: #55554F; cursor: pointer;" style-hover="color: #1A1A19;">×</button>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 7px;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">Legal name</span>
+          <div style="display: grid; grid-template-columns: 1fr 74px 1fr; gap: 8px;">
+            <input value="{{ draft.first }}" onChange="{{ setDraftFirst }}" aria-label="First name" placeholder="First name" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none; min-width: 0;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+            <input value="{{ draft.middle }}" onChange="{{ setDraftMiddle }}" aria-label="Middle initial" maxLength="1" placeholder="M." style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none; min-width: 0; text-align: center;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+            <input value="{{ draft.last }}" onChange="{{ setDraftLast }}" aria-label="Last name" placeholder="Last name" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none; min-width: 0;" style-focus="border-color: #1A1A19; background: #FAFAF9;">
+          </div>
+        </label>
+
+        <div style="display: flex; flex-direction: column; gap: 7px;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">Presentation of pen name</span>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; border: 1px solid #D8D8D4; border-radius: 7px; background: #F2F2F0;">
+            <sc-for list="{{ draftGenders }}" as="g" hint-placeholder-count="3">
+              <button onClick="{{ g.pick }}" style="position: relative; padding: 9px 4px; border: none; border-radius: 5px; background: transparent; font-size: 12.5px; color: #55554F; cursor: pointer;" style-hover="color: #1A1A19;">
+                <sc-if value="{{ g.on }}" hint-placeholder-val="{{ false }}">
+                  <div style="position: absolute; inset: 0; border-radius: 5px; background: #FAFAF9; border: 1px solid #C9C9C4; box-shadow: 0 1px 2px rgba(20,20,18,0.07); pointer-events: none;"></div>
+                </sc-if>
+                <span style="position: relative;">{{ g.label }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+
+        <label style="display: flex; flex-direction: column; gap: 7px;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">Language / cultural origin</span>
+          <select value="{{ draft.origin }}" onChange="{{ setDraftOrigin }}" style="appearance: none; padding: 11px 32px 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; background: #F2F2F0; color: #1A1A19; outline: none; cursor: pointer; background-image: url('data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22&gt;&lt;path d=%22M1 1l4 4 4-4%22 fill=%22none%22 stroke=%22%23696961%22 stroke-width=%221.4%22/&gt;&lt;/svg&gt;'); background-repeat: no-repeat; background-position: right 12px center;" style-focus="border-color: #1A1A19; background-color: #FAFAF9;">
+            <sc-for list="{{ originOptions }}" as="o" hint-placeholder-count="8">
+              <option value="{{ o.value }}">{{ o.label }}</option>
+            </sc-for>
+          </select>
+        </label>
+
+        <label style="display: flex; flex-direction: column; gap: 7px;">
+          <span style="font-size: 12px; font-weight: 500; color: #33332F;">Notes <span style="color: #71716A; font-weight: 400;">optional</span></span>
+          <textarea value="{{ draft.notes }}" onChange="{{ setDraftNotes }}" rows="3" placeholder="Genre, era, market, anything to avoid…" style="padding: 11px 12px; border: 1px solid #D8D8D4; border-radius: 6px; font-size: 14px; line-height: 1.5; background: #F2F2F0; color: #1A1A19; outline: none; resize: vertical;" style-focus="border-color: #1A1A19; background: #FAFAF9;"></textarea>
+        </label>
+
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
+          <div style="display: flex; gap: 8px;">
+            <button onClick="{{ closeNew }}" style="padding: 10px 14px; border: 1px solid #D8D8D4; background: #FAFAF9; color: #55554F; border-radius: 6px; font-size: 13px; cursor: pointer;" style-hover="border-color: #1A1A19; color: #1A1A19;">Cancel</button>
+            <button onClick="{{ submitNew }}" style="display: flex; align-items: center; gap: 7px; padding: 10px 18px; border: 1px solid #1A1A19; background: #1A1A19; color: #EFEFED; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;" style-hover="background: #0E0E0D; border-color: #0E0E0D;"><svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="flex: 0 0 auto;"><path d="M4.4 1.4l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z"></path><path d="M9.7 6.6l.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7z"></path></svg><span>Create &amp; run</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+const USER = 'Rosa Marchetti';
+
+const OFFLINE_POOL = {
+  Female: [
+    ['Bridget','Ashworth','BRIJ-it ASH-worth','Anglo-Irish, quiet literary register'],
+    ['Clemency','Underhill','KLEM-en-see UN-der-hil','English, period-plausible'],
+    ['Rosalind','Petrie','ROZ-uh-lind PEE-tree','Scots-English, spare and dignified'],
+    ['Harriet','Vance','HAIR-ee-ut VANSS','American, commercial and clean'],
+    ['Delphine','Rochford','del-FEEN ROCH-furd','Franco-English, faintly grand'],
+    ['Nella','Quintrell','NEL-uh KWIN-trel','Cornish surname, unusual but readable'],
+    ['Constance','Bramble','KON-stanss BRAM-bul','English pastoral register'],
+    ['Wren','Calloway','REN KAL-uh-way','Modern American, short and current'],
+    ['Josephine','Marchmont','JOH-se-feen MARCH-mont','English, drawing-room formality'],
+    ['Iris','Donovan','EYE-riss DON-uh-vun','Irish surname, plain given name'],
+    ['Sylvia','Renshaw','SIL-vee-uh REN-shaw','Northern English, mid-century feel'],
+    ['Georgia','Thorne','JOR-juh THORN','Transatlantic, jacket-friendly'],
+    ['Cordelia','Wexford','kor-DEE-lee-uh WEKS-furd','English, literary weight'],
+    ['Maeve','Sutcliffe','MAYV SUT-klif','Irish-English pairing'],
+    ['Beatrix','Ellwood','BEE-uh-triks EL-wood','English, botanical undertone'],
+    ['Frances','Halloran','FRAN-siss HAL-uh-run','Anglo-Irish, understated'],
+    ['Verity','Godwin','VAIR-i-tee GOD-win','Old English, virtue-name tradition']
+  ],
+  Male: [
+    ['Marcus','Whitfield','MAR-kus WHIT-feeld','English, thriller-appropriate'],
+    ['Elias','Thornbury','ee-LY-us THORN-ber-ee','English, slightly antique'],
+    ['Desmond','Kilbride','DEZ-mund KIL-bryd','Irish, hard consonants'],
+    ['Julian','Pryce','JOOL-ee-un PRYSS','Welsh surname, literary given name'],
+    ['Gideon','Larkspur','GID-ee-un LARK-spur','English, distinctive without novelty'],
+    ['Rupert','Vane','ROO-purt VAYN','English, patrician'],
+    ['Theodore','Ashby','THEE-uh-dor ASH-bee','Transatlantic, warm'],
+    ['Callum','Redgrave','KAL-um RED-grayv','Scots-English'],
+    ['Hollis','Bramwell','HOL-iss BRAM-wel','American, spare'],
+    ['Alistair','Penhale','AL-iss-tair pen-HAYL','Scots given, Cornish surname'],
+    ['Emmett','Sandringham','EM-it SAN-dring-um','English, weighty surname'],
+    ['Silas','Truscott','SY-luss TRUSS-kot','English West Country'],
+    ['Anton','Weatherly','AN-ton WETH-er-lee','Continental given, English surname'],
+    ['Peregrine','Shawcross','PAIR-uh-grin SHAW-kross','English, high formality'],
+    ['Nathaniel','Quill','nuh-THAN-yul KWIL','English, faintly bookish'],
+    ['Ambrose','Halliwell','AM-brohz HAL-i-wel','English, ecclesiastical trace']
+  ],
+  Unisex: [
+    ['Ash','Fennimore','ASH FEN-i-mor','English, androgynous and modern'],
+    ['Rowan','Blackwood','ROH-un BLAK-wood','Celtic, works across categories'],
+    ['Quinn','Halloway','KWIN HAL-uh-way','Irish surname as given name'],
+    ['Sasha','Merrick','SASH-uh MEH-rik','Slavic given, English surname'],
+    ['Emery','Vaughn','EM-uh-ree VAWN','Welsh surname, soft given'],
+    ['Blythe','Kenner','BLYTHE KEN-ur','English, brisk'],
+    ['Marlow','Ashgrove','MAR-loh ASH-grohv','English, allusion-free'],
+    ['Sy','Winterbourne','SY WIN-ter-born','Short given, long surname contrast'],
+    ['Frankie','Delisle','FRANK-ee duh-LEEL','Franco-English, contemporary'],
+    ['Alden','Rooke','AWL-den ROOK','Old English, one-syllable surname'],
+    ['Remy','Castellan','REM-ee KAS-tuh-lan','Franco-Spanish blend'],
+    ['Bell','Trevanion','BEL treh-VAN-yun','Cornish surname, crisp given'],
+    ['Kit','Farraday','KIT FAIR-uh-day','English, energetic'],
+    ['Noor','Ellery','NOOR EL-uh-ree','Arabic given, English surname'],
+    ['Tam','Ravensworth','TAM RAY-venz-worth','Scots given, northern surname']
+  ]
+};
+
+const MIDDLES = 'ABCDEFGHJKLMNPRSTVW'.split('');
+
+function offlineCandidates(brief) {
+  const key = OFFLINE_POOL[brief.gender] ? brief.gender : 'Unisex';
+  const src = OFFLINE_POOL[key].slice();
+  for (let i = src.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = src[i]; src[i] = src[j]; src[j] = t; }
+  return src.slice(0, 18).map(function (row) {
+    const mid = MIDDLES[Math.floor(Math.random() * MIDDLES.length)];
+    return {
+      name: row[0] + ' ' + mid + '. ' + row[1],
+      pronunciation: row[2],
+      origin: brief.origin ? row[3] + ' · leaning ' + brief.origin : row[3],
+      priorUse: false
+    };
+  });
+}
+
+
+const DEFAULT_SYSTEM = 'You are a naming assistant for a publishing house. You never suggest a name that is offensive, obscene, or derogatory in any language, and never a name belonging to or closely resembling a real famous person, published author, brand, or well-known fictional character. Safety and non-infringement outrank creativity. You output JSON only.';
+
+const blank = (over) => Object.assign({
+  id: uid(), name: '', gender: 'Unisex', origin: '', notes: '',
+  results: [], filtered: 0, chosen: '', approved: '', refine: '', locked: [],
+  busy: false, err: '', requested: Date.now()
+}, over || {});
+
+const capLast = (n) => {
+  const parts = (n || '').trim().split(/\s+/);
+  if (parts.length < 2) return n;
+  parts[parts.length - 1] = parts[parts.length - 1].toUpperCase();
+  return parts.join(' ');
+};
+
+const fmtStamp = (ts) => {
+  const d = new Date(ts);
+  const day = d.getDate();
+  const mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return day + ' ' + mon + ' ' + d.getFullYear() + ' · ' + hh + ':' + mm;
+};
+
+class Component extends DCLogic {
+  state = (() => {
+    const now = Date.now();
+    const a = blank({ name: 'Margaret Ellen Voss', gender: 'Female', origin: 'Anglo-Irish', notes: 'Literary historical fiction, UK market. Wants something quiet and period-plausible.', requested: now - 52 * 60000 });
+    const b = blank({ name: 'Daniel Okonkwo-Reyes', gender: 'Male', origin: '', notes: 'Techno-thriller, US mass market.', requested: now - 3 * 3600000 });
+    const c = blank({ name: 'Priya Raman', gender: 'Unisex', origin: '', notes: 'YA fantasy debut.', approved: 'Ash FENNIMORE', chosen: 'Ash FENNIMORE', requested: now - 26 * 3600000, approvedBy: USER, approvedAt: now - 25 * 3600000 });
+    return {
+      authors: [a, b, c], activeId: a.id, view: 'queue',
+      busyNote: '', promptOpen: false, promptDraft: '', systemDraft: '', customPrompt: '', customSystem: '',
+      newOpen: false, draft: { first: '', middle: '', last: '', gender: 'Unisex', origin: '', notes: '' },
+      appsOpen: false, userOpen: false, toast: '', query: '', theme: 'light', deleteOpen: false
+    };
+  })();
+
+  async componentDidMount() {
+    for (const x of this.state.authors) {
+      if (!x.results.length && !x.approved && x.name.trim()) await this.run(false, x.id);
+    }
+  }
+
+  active() { return this.state.authors.find(a => a.id === this.state.activeId) || this.state.authors[0]; }
+
+  toast(msg) {
+    clearTimeout(this._toastT);
+    this.setState({ toast: msg });
+    this._toastT = setTimeout(() => this.setState({ toast: '' }), 3600);
+  }
+
+  patchId(id, p) {
+    this.setState(s => ({ authors: s.authors.map(a => a.id === id ? Object.assign({}, a, p) : a) }));
+  }
+
+  patch(p) { this.patchId(this.state.activeId, p); }
+
+  byId(id) { return this.state.authors.find(a => a.id === id); }
+
+  tokens(name) {
+    return (name || '').split(/[\s\-']+/).map(t => t.replace(/[^A-Za-z]/g, '')).filter(t => t.length > 1);
+  }
+
+  initials(name) {
+    return this.tokens(name).map(t => t[0].toUpperCase());
+  }
+
+  // A candidate is rejected if it shares a name token, an initial, a 3-letter stem,
+  // or a surname-length anagram-ish match with the legal name.
+  overlaps(candidate, legal) {
+    const lt = this.tokens(legal).map(t => t.toLowerCase());
+    const li = this.initials(legal);
+    const ct = this.tokens(candidate);
+    if (!lt.length || !ct.length) return false;
+    // middle initial (single letter, dropped by tokens()) must not collide either
+    const singles = (candidate || '').split(/[\s\-']+/).map(t => t.replace(/[^A-Za-z]/g, '')).filter(t => t.length === 1);
+    if (singles.some(t => li.includes(t.toUpperCase()))) return true;
+    for (const t of ct) {
+      const low = t.toLowerCase();
+      if (li.includes(t[0].toUpperCase())) return true;
+      for (const l of lt) {
+        if (low === l) return true;
+        if (low.slice(0, 3) === l.slice(0, 3)) return true;
+        if (low.length > 3 && (l.includes(low) || low.includes(l))) return true;
+      }
+    }
+    return false;
+  }
+
+  buildPrompt(a, isRegen, kept) {
+    const avoid = this.tokens(a.name).join(', ');
+    return [
+      'You generate pen names for a publishing house. Return ONLY valid JSON, no prose, no code fence.',
+      'Shape: {"candidates":[{"name":"First M. Last","pronunciation":"MAR-go SEL-den","origin":"one short clause on linguistic origin and register","priorUse":true|false,"priorUseWho":"who, if any"}]}',
+      '',
+      'Author legal name: ' + a.name,
+      'Pen name should read as: ' + a.gender,
+      a.origin ? 'Language / cultural origin to lean on: ' + a.origin : '',
+      a.notes ? 'Editorial notes: ' + a.notes : '',
+      a.refine && isRegen ? 'Refinement for this pass: ' + a.refine : '',
+      kept.length ? 'Names already locked (do NOT repeat, but match their register): ' + kept.map(k => k.name).join(', ') : '',
+      '',
+      'Hard rules:',
+      '- Produce 20 candidates so some can be discarded.',
+      '- Share NO name part, no starting letter, and no phonetic stem with any part of: ' + avoid + '.',
+      '- Set priorUse true if the full name, or the given-name + surname pair ignoring the middle initial, belongs to or closely resembles ANY published author, public figure (living or historical), celebrity, politician, brand, or well-known fictional character; name them in priorUseWho. When in doubt, mark it true.',
+      '- Do not propose names that are famous, iconic, or instantly recognisable, and do not near-miss a famous name by one letter or a homophone.',
+      '- Do not propose names that are offensive, obscene, slurs, or vulgar in any language; nothing scatological, sexual, or derogatory; no names that read as a joke, pun, or innuendo when spoken aloud.',
+      '- Avoid names of religious or sacred figures, and names strongly tied to atrocities, extremist movements, or notorious criminals.',
+      '- Do not appropriate a cultural or ethnic identity beyond the requested origin; if no origin is given, stay neutral.',
+      '- Each name must be plausible, pronounceable, and unremarkable on a book jacket.',
+      '- Every name MUST be given name + middle initial with a period + surname, e.g. "Margot A. Selden". Never omit the middle initial.',
+      '- The middle initial must not match any initial of the legal name.',
+      '- No titles, no other abbreviations.'
+    ].filter(Boolean).join('\n');
+  }
+
+  async run(isRegen, id) {
+    const a = id ? this.byId(id) : this.active();
+    if (!a) return;
+    if (!a.name.trim()) { this.patchId(a.id, { err: 'Add the author’s legal name first.' }); return; }
+    const kept = isRegen ? a.results.filter(r => a.locked.includes(r.name)) : [];
+    this.patchId(a.id, Object.assign({ busy: true, err: '' }, isRegen ? {} : { results: [], filtered: 0, chosen: '', locked: [] }));
+    this.setState({ busyNote: isRegen ? 'Regenerating around your locked names…' : 'Drafting and screening candidates…' });
+
+    const prompt = this.state.customPrompt || this.buildPrompt(a, isRegen, kept);
+
+    const offline = !(window.claude && typeof window.claude.complete === 'function');
+
+    try {
+      let data;
+      if (offline) {
+        await new Promise(function (res) { setTimeout(res, 900 + Math.random() * 700); });
+        data = { candidates: offlineCandidates(a) };
+      } else {
+      const raw = await window.claude.complete({
+        system: this.state.customSystem || DEFAULT_SYSTEM,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 3000
+      });
+      const m = raw.match(/\{[\s\S]*\}/);
+      data = JSON.parse(m ? m[0] : raw);
+      }
+      const list = Array.isArray(data.candidates) ? data.candidates : [];
+      let filtered = 0;
+      const clean = [];
+      const seen = new Set(kept.map(k => k.name.toLowerCase()));
+      for (const c of list) {
+        const name = (c.name || '').trim();
+        if (!name || seen.has(name.toLowerCase())) continue;
+        if (c.priorUse === true || this.overlaps(name, a.name)) { filtered++; continue; }
+        seen.add(name.toLowerCase());
+        clean.push({
+          name: capLast(name),
+          pronunciation: c.pronunciation || '',
+          origin: c.origin || ''
+        });
+        if (clean.length >= 15 - kept.length) break;
+      }
+      if (!clean.length && !kept.length) {
+        this.patchId(a.id, { busy: false, filtered, err: 'Every candidate was filtered out. Regenerate or loosen the notes.' });
+        return;
+      }
+      this.patchId(a.id, {
+        busy: false, err: '',
+        results: kept.concat(clean),
+        filtered: (isRegen ? a.filtered : 0) + filtered,
+        chosen: kept.length ? a.chosen : ''
+      });
+    } catch (e) {
+      this.patchId(a.id, { busy: false, err: 'Generation failed — ' + (e && e.message ? e.message : 'try again.') });
+    }
+  }
+
+  matches(x, q) {
+    const s = (q || '').trim().toLowerCase();
+    if (!s) return true;
+    const hay = [x.name, x.approved, x.chosen, x.origin, x.notes, x.gender]
+      .concat(x.results.map(r => r.name)).join(' ').toLowerCase();
+    return hay.includes(s);
+  }
+
+  rowsFor(list) {
+    return list.map(x => {
+      const top = x.approved || x.chosen || (x.results[0] && x.results[0].name) || '';
+      return {
+        id: x.id,
+        author: x.name.trim() || 'Untitled request',
+        meta: [x.gender, x.origin || 'No origin set'].join(' · '),
+        requested: fmtStamp(x.requested),
+        approvedBy: x.approvedBy || '—',
+        approvedAt: x.approvedAt ? fmtStamp(x.approvedAt) : '',
+        penName: top || '—',
+        alt: x.approved ? 'Approved from ' + (x.results.length || 1) + ' cleared candidates'
+          : (x.results.length > 1 ? '+' + (x.results.length - 1) + ' alternates' : (x.results.length ? 'only candidate' : '')),
+        showChecks: !x.busy && !x.err && !!top,
+        overlapOk: !top || !this.overlaps(top, x.name),
+        overlapFail: !!top && this.overlaps(top, x.name),
+        priorOk: true,
+        checksPending: !(!x.busy && !x.err && !!top),
+        famousOk: true,
+        safeOk: true,
+        errText: x.err,
+        canRetry: !x.busy && !!x.err,
+        screened: x.filtered ? x.filtered + ' discarded in screening' : 'all candidates cleared',
+        busy: x.busy,
+        failed: !!x.err && !x.busy,
+        ready: !x.busy && !x.err && !x.approved && !!x.results.length,
+        approvedRow: !!x.approved,
+        queued: !x.busy && !x.err && !x.approved && !x.results.length,
+        canApprove: !x.approved && !!top,
+        edit: () => this.setState({ activeId: x.id, view: 'edit' }),
+        approve: () => {
+          this.patchId(x.id, { approved: top, chosen: top, approvedBy: USER, approvedAt: Date.now() });
+          this.toast(top + ' approved for ' + (x.name.trim() || 'this author') + '.');
+        },
+        reopen: () => this.patchId(x.id, { approved: '', approvedBy: '', approvedAt: 0 }),
+        rerun: () => this.run(false, x.id)
+      };
+    });
+  }
+
+  renderVals() {
+    const a = this.active();
+    const s = this.state;
+    const legalTokens = this.tokens(a.name);
+
+    return {
+      queue: s.authors.map(x => ({
+        title: x.name.trim() || 'Untitled brief',
+        status: x.approved ? 'Approved · ' + x.approved : (x.results.length ? x.results.length + ' candidates' : 'Draft'),
+        active: x.id === s.activeId,
+        open: () => this.setState({ activeId: x.id, error: '' })
+      })),
+      newAuthor: () => { const n = blank(); this.setState(st => ({ authors: st.authors.concat([n]), activeId: n.id, error: '' })); },
+
+      form: { name: a.name, origin: a.origin, notes: a.notes },
+      setName: (e) => this.patch({ name: e.target.value }),
+      setOrigin: (e) => this.patch({ origin: e.target.value }),
+      setNotes: (e) => this.patch({ notes: e.target.value }),
+      originOptions: [
+        { value: '', label: 'No preference' },
+        { value: 'English (British)', label: 'English — British' },
+        { value: 'English (American)', label: 'English — American' },
+        { value: 'Anglo-Irish', label: 'Anglo-Irish' },
+        { value: 'Scottish', label: 'Scottish' },
+        { value: 'Welsh', label: 'Welsh' },
+        { value: 'French', label: 'French' },
+        { value: 'Spanish', label: 'Spanish' },
+        { value: 'Portuguese / Brazilian', label: 'Portuguese / Brazilian' },
+        { value: 'Italian', label: 'Italian' },
+        { value: 'German', label: 'German' },
+        { value: 'Dutch / Flemish', label: 'Dutch / Flemish' },
+        { value: 'Nordic (Scandinavian)', label: 'Nordic / Scandinavian' },
+        { value: 'Finnish', label: 'Finnish' },
+        { value: 'Polish', label: 'Polish' },
+        { value: 'Czech / Slovak', label: 'Czech / Slovak' },
+        { value: 'Russian', label: 'Russian' },
+        { value: 'Ukrainian', label: 'Ukrainian' },
+        { value: 'Greek', label: 'Greek' },
+        { value: 'Turkish', label: 'Turkish' },
+        { value: 'Hebrew / Israeli', label: 'Hebrew / Israeli' },
+        { value: 'Arabic', label: 'Arabic' },
+        { value: 'Persian', label: 'Persian' },
+        { value: 'Hindi / North Indian', label: 'Hindi / North Indian' },
+        { value: 'Tamil / South Indian', label: 'Tamil / South Indian' },
+        { value: 'Bengali', label: 'Bengali' },
+        { value: 'Japanese', label: 'Japanese' },
+        { value: 'Korean', label: 'Korean' },
+        { value: 'Chinese (Mandarin)', label: 'Chinese — Mandarin' },
+        { value: 'Vietnamese', label: 'Vietnamese' },
+        { value: 'Filipino', label: 'Filipino' },
+        { value: 'Indonesian / Malay', label: 'Indonesian / Malay' },
+        { value: 'Swahili / East African', label: 'Swahili / East African' },
+        { value: 'Yoruba / West African', label: 'Yoruba / West African' },
+        { value: 'Afrikaans', label: 'Afrikaans' },
+        { value: 'Latin American Spanish', label: 'Latin American Spanish' },
+        { value: 'Caribbean', label: 'Caribbean' },
+        { value: 'Māori / Pacific', label: 'Māori / Pacific' }
+      ],
+      genders: ['Female', 'Male', 'Unisex'].map(g => ({ label: g, on: a.gender === g, pick: () => this.patch({ gender: g }) })),
+
+      constraints: legalTokens.length
+        ? legalTokens.map(t => ({ label: t })).concat([{ label: this.initials(a.name).join('.') + '.' }])
+        : [{ label: 'add a name' }],
+      constraintNote: legalTokens.length
+        ? 'Names sharing any of these words, initials, or phonetic stems are discarded, as are names already used by a published author.'
+        : 'Enter the legal name to set the exclusion list.',
+
+      generate: () => this.run(false),
+      regenerate: () => this.run(true),
+      generateLabel: a.busy ? 'Working…' : (a.results.length ? 'Start a fresh list' : 'Generate candidates'),
+      regenLabel: a.locked.length ? 'Regenerate (' + a.locked.length + ' locked)' : 'Regenerate',
+      busy: a.busy,
+      busyNote: s.busyNote,
+      error: a.err,
+
+      isQueue: s.view === 'queue',
+      isEdit: s.view === 'edit',
+      goQueue: () => this.setState({ view: 'queue' }),
+      queueCountLabel: (() => {
+        const n = s.authors.filter(x => !x.approved).length;
+        return n + ' open request' + (n === 1 ? '' : 's');
+      })(),
+      pendingLabel: (() => {
+        const n = s.authors.filter(x => !x.approved && x.results.length).length;
+        return n ? n + ' awaiting review' : 'Nothing awaiting review';
+      })(),
+      approveAllLabel: (() => {
+        const n = s.authors.filter(x => !x.approved && (x.chosen || x.results.length)).length;
+        return n ? 'Approve all ready (' + n + ')' : 'Approve all ready';
+      })(),
+      approveAll: () => {
+        const n = s.authors.filter(x => !x.approved && (x.chosen || x.results.length)).length;
+        if (!n) { this.toast('Nothing ready to approve.'); return; }
+        this.setState(st => ({
+          authors: st.authors.map(x => (!x.approved && (x.chosen || x.results.length))
+            ? Object.assign({}, x, { approved: x.chosen || x.results[0].name, chosen: x.chosen || x.results[0].name, approvedBy: USER, approvedAt: Date.now() })
+            : x)
+        }));
+        this.toast(n + ' pen name' + (n === 1 ? '' : 's') + ' approved and moved to History.');
+      },
+      toastMsg: s.toast,
+
+      theme: s.theme,
+      themeLabel: s.theme === 'dark' ? 'Switch to light' : 'Switch to dark',
+      toggleTheme: () => this.setState(st => ({ theme: st.theme === 'dark' ? 'light' : 'dark' })),
+      appsOpen: s.appsOpen,
+      userOpen: s.userOpen,
+      toggleApps: () => this.setState(st => ({ appsOpen: !st.appsOpen, userOpen: false })),
+      closeApps: () => this.setState({ appsOpen: false }),
+      toggleUser: () => this.setState(st => ({ userOpen: !st.userOpen, appsOpen: false })),
+      closeUser: () => this.setState({ userOpen: false }),
+      userInitials: 'RM',
+      userName: 'Rosa Marchetti',
+      userRole: 'Publishing assistant · Trade',
+      userMenu: [{ label: 'Team & permissions' }],
+      apps: [
+        { name: 'Nym', desc: 'Pen name desk', current: true },
+        { name: 'Manuscripts', desc: 'Submissions and reads' },
+        { name: 'Rights', desc: 'Territories and licensing' },
+        { name: 'Catalogue', desc: 'Seasonal lists and metadata' },
+        { name: 'Jackets', desc: 'Cover design workflow' }
+      ],
+
+      isHistory: s.view === 'history',
+      goHistory: () => this.setState({ view: 'history' }),
+      historyCountLabel: (() => {
+        const n = s.authors.filter(x => x.approved).length;
+        return n ? n + ' completed' : 'Nothing completed yet';
+      })(),
+      historyTabLabel: 'History',
+      showHistoryEmpty: !s.authors.some(x => x.approved && this.matches(x, s.query)),
+
+      query: s.query,
+      setQuery: (e) => this.setState({ query: e.target.value }),
+      clearQuery: () => this.setState({ query: '' }),
+      hasQuery: !!s.query.trim(),
+      crossNote: (() => {
+        if (!s.query.trim()) return '';
+        const other = s.authors.filter(x => this.matches(x, s.query) && (s.view === 'history' ? !x.approved : !!x.approved)).length;
+        if (!other) return '';
+        return other + ' match' + (other === 1 ? '' : 'es') + ' in ' + (s.view === 'history' ? 'the queue' : 'History');
+      })(),
+
+      rows: this.rowsFor(s.authors.filter(x => !x.approved && this.matches(x, s.query))),
+      historyRows: this.rowsFor(s.authors.filter(x => x.approved && this.matches(x, s.query))),
+      showQueueEmpty: !s.authors.some(x => !x.approved && this.matches(x, s.query)),
+
+      newOpen: s.newOpen,
+      draft: s.draft,
+      openNew: () => this.setState({ newOpen: true, draft: { first: '', middle: '', last: '', gender: 'Unisex', origin: '', notes: '' } }),
+      closeNew: () => this.setState({ newOpen: false }),
+      setDraftFirst: (e) => { const v = e.target.value; this.setState(st => ({ draft: Object.assign({}, st.draft, { first: v }) })); },
+      setDraftMiddle: (e) => { const v = e.target.value.replace(/[^A-Za-z]/g, '').slice(0, 1).toUpperCase(); this.setState(st => ({ draft: Object.assign({}, st.draft, { middle: v }) })); },
+      setDraftLast: (e) => { const v = e.target.value; this.setState(st => ({ draft: Object.assign({}, st.draft, { last: v }) })); },
+      setDraftOrigin: (e) => { const v = e.target.value; this.setState(st => ({ draft: Object.assign({}, st.draft, { origin: v }) })); },
+      setDraftNotes: (e) => { const v = e.target.value; this.setState(st => ({ draft: Object.assign({}, st.draft, { notes: v }) })); },
+      draftGenders: ['Female', 'Male', 'Unisex'].map(g => ({
+        label: g, on: s.draft.gender === g,
+        pick: () => this.setState(st => ({ draft: Object.assign({}, st.draft, { gender: g }) }))
+      })),
+      submitNew: () => {
+        const d = s.draft;
+        if (!d.first.trim() && !d.last.trim()) return;
+        const name = [d.first.trim(), d.middle ? d.middle + '.' : '', d.last.trim()].filter(Boolean).join(' ');
+        const n = blank({ name, gender: d.gender, origin: d.origin, notes: d.notes });
+        this.setState(st => ({ authors: [n].concat(st.authors), newOpen: false, view: 'queue' }), () => this.run(false, n.id));
+      },
+      refine: a.refine,
+      setRefine: (e) => this.patch({ refine: e.target.value }),
+
+      resultsTitle: a.name.trim() || 'Awaiting a brief',
+      showEmpty: !s.busy && a.results.length === 0,
+      hasResults: !s.busy && a.results.length > 0,
+      passCount: a.results.length,
+      filterNote: a.filtered ? a.filtered + ' discarded for name overlap or prior use' : 'No candidates discarded this pass',
+
+      results: a.results.map(r => ({
+        name: r.name,
+        pronunciation: r.pronunciation,
+        origin: r.origin,
+        chosen: a.chosen === r.name,
+        lockLabel: a.locked.includes(r.name) ? 'Locked' : 'Lock',
+        choose: () => this.patch({ chosen: a.chosen === r.name ? '' : r.name }),
+        toggleLock: (e) => {
+          e.stopPropagation();
+          this.patch({ locked: a.locked.includes(r.name) ? a.locked.filter(n => n !== r.name) : a.locked.concat([r.name]) });
+        }
+      })),
+
+      deleteOpen: s.deleteOpen,
+      deleteNote: 'This removes the request for ' + (a.name.trim() || 'this author') + ' and its generated candidates. It cannot be undone.',
+      askDelete: () => this.setState({ deleteOpen: true }),
+      cancelDelete: () => this.setState({ deleteOpen: false }),
+      confirmDelete: () => {
+        const label = a.name.trim() || 'Untitled request';
+        this.setState(st => {
+          const rest = st.authors.filter(x => x.id !== st.activeId);
+          const list = rest.length ? rest : [blank()];
+          return { authors: list, activeId: list[0].id, deleteOpen: false, view: 'queue' };
+        });
+        this.toast(label + ' deleted.');
+      },
+
+      promptOpen: s.promptOpen,
+      promptEdited: !!(s.customPrompt || s.customSystem),
+      promptButtonLabel: (s.customPrompt || s.customSystem) ? 'Prompt · edited' : 'View prompt',
+      promptDraft: s.promptDraft,
+      systemDraft: s.systemDraft,
+      promptNote: s.customPrompt
+        ? 'Custom prompt in use — sent verbatim, so brief fields no longer flow into it.'
+        : 'Auto-composed from the brief. Edit and save to send this text verbatim instead.',
+      openPrompt: () => this.setState({
+        promptOpen: true,
+        promptDraft: s.customPrompt || this.buildPrompt(a, false, []),
+        systemDraft: s.customSystem || DEFAULT_SYSTEM
+      }),
+      closePrompt: () => this.setState({ promptOpen: false }),
+      setPromptDraft: (e) => this.setState({ promptDraft: e.target.value }),
+      setSystemDraft: (e) => this.setState({ systemDraft: e.target.value }),
+      savePrompt: () => this.setState({
+        customPrompt: s.promptDraft.trim() === this.buildPrompt(a, false, []).trim() ? '' : s.promptDraft,
+        customSystem: s.systemDraft.trim() === DEFAULT_SYSTEM ? '' : s.systemDraft,
+        promptOpen: false
+      }),
+      resetPrompt: () => this.setState({
+        customPrompt: '', customSystem: '',
+        promptDraft: this.buildPrompt(a, false, []), systemDraft: DEFAULT_SYSTEM
+      }),
+
+      chosen: a.chosen,
+      clearChoice: () => this.patch({ chosen: '' }),
+      approve: () => { this.patch({ approved: a.chosen, approvedBy: USER, approvedAt: Date.now() }); this.toast(a.chosen + ' approved for ' + (a.name.trim() || 'this author') + '.'); },
+      approveLabel: a.approved && a.approved === a.chosen ? 'Approved ✓' : 'Approve pen name'
+    };
+  }
+}
+
+</script>
+</body>
+</html>
