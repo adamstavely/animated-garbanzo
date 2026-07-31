@@ -20,7 +20,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { AuthenticatedUser } from '../auth/authenticated-user';
-import { CurrentUser } from '../auth/decorators';
+import { CurrentUser, RequireAdmin } from '../auth/decorators';
 import {
   ApproveRequestDto,
   ChooseCandidateDto,
@@ -57,6 +57,7 @@ export class RequestsController {
    * Declared before `:id` routes so "approve-all" is never parsed as a UUID.
    */
   @Post('approve-all')
+  @RequireAdmin()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Approves the proposed name of every ready request.' })
   approveAll(@CurrentUser() user: AuthenticatedUser): Promise<BulkApproveResultDto> {
@@ -79,6 +80,7 @@ export class RequestsController {
   }
 
   @Delete(':id')
+  @RequireAdmin()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Deletes a request and its candidates.' })
   remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
@@ -93,8 +95,9 @@ export class RequestsController {
   generate(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: GenerateRequestDto,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<PenNameRequestDto> {
-    return this.requests.generate(id, dto);
+    return this.requests.generate(id, dto, user);
   }
 
   @Post(':id/choose')
@@ -142,6 +145,7 @@ export class RequestsController {
   }
 
   @Patch(':id/prompt')
+  @RequireAdmin()
   @ApiOperation({ summary: 'Saves an edited prompt, sent verbatim on later runs.' })
   updatePrompt(
     @Param('id', ParseUUIDPipe) id: string,
@@ -152,6 +156,7 @@ export class RequestsController {
   }
 
   @Delete(':id/prompt')
+  @RequireAdmin()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resets the prompt to the brief-driven default.' })
   resetPrompt(

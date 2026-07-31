@@ -103,7 +103,11 @@ export class RequestsStore {
   /** Re-reads the list without showing the loading state — used by the poller. */
   async refresh(): Promise<void> {
     const result = await firstValueFrom(
-      this.api.listRequests({ view: 'all', q: this.queryState().trim() || undefined }),
+      this.api.listRequests({
+        view: 'all',
+        q: this.queryState().trim() || undefined,
+        limit: 200,
+      }),
     );
     this.requestsState.set(result.items);
     this.queueMatchesState.set(result.queueMatchCount);

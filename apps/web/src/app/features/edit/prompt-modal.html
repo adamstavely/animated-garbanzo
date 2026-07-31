@@ -11,17 +11,23 @@
   }
 
   <div modalFooter class="prompt__footer">
-    <button nymButton class="prompt__reset" [disabled]="busy()" (click)="reset()">
-      <svg lucideRotateCcw class="nym-icon" [size]="13" aria-hidden="true"></svg>
-      <span>Reset to default</span>
-    </button>
+    @if (canAdminister()) {
+      <button nymButton class="prompt__reset" [disabled]="busy()" (click)="reset()">
+        <svg lucideRotateCcw class="nym-icon" [size]="13" aria-hidden="true"></svg>
+        <span>Reset to default</span>
+      </button>
+    } @else {
+      <span></span>
+    }
 
     <span class="prompt__footer-actions">
-      <button nymButton (click)="close()">Cancel</button>
-      <button nymButton variant="primary" [disabled]="busy()" (click)="save()">
-        <svg lucideSave class="nym-icon" [size]="13" aria-hidden="true"></svg>
-        <span>Save prompt</span>
-      </button>
+      <button nymButton (click)="close()">{{ canAdminister() ? 'Cancel' : 'Close' }}</button>
+      @if (canAdminister()) {
+        <button nymButton variant="primary" [disabled]="busy()" (click)="save()">
+          <svg lucideSave class="nym-icon" [size]="13" aria-hidden="true"></svg>
+          <span>Save prompt</span>
+        </button>
+      }
     </span>
   </div>
 </nym-modal>

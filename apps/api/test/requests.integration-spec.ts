@@ -124,7 +124,8 @@ describe('Requests (integration)', () => {
       const created = await createRequest();
 
       expect(created.checks).toHaveLength(4);
-      expect(created.checks.every((check) => check.passed)).toBe(true);
+      expect(created.checks[0]?.outcome).toBe('passed');
+      expect(created.checks.slice(1).every((check) => check.outcome === 'unknown')).toBe(true);
     });
 
     it('flips the overlap check when the brief is edited to a colliding name', async () => {

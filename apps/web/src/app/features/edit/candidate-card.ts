@@ -5,15 +5,26 @@ import { LucideLock, LucideLockOpen } from '@lucide/angular';
 import { CheckLineComponent } from '../../ui/check-line/check-line';
 
 /**
- * A candidate that has cleared screening.
+ * A candidate that has cleared the overlap screen.
  *
- * Every candidate on this pane passed the overlap and prior-use screens by
- * definition — anything that failed was discarded before review — so the two
- * statements are constants rather than per-name results.
+ * Prior use is model-flag only until a catalogue is wired, so that line stays
+ * unknown rather than a false green pass.
  */
 const CLEARED_CHECKS: readonly CheckResult[] = [
-  { id: CheckId.Overlap, passLabel: 'No overlap', failLabel: 'Overlaps legal name', passed: true },
-  { id: CheckId.PriorUse, passLabel: 'No prior use', failLabel: 'Prior use found', passed: true },
+  {
+    id: CheckId.Overlap,
+    passLabel: 'No overlap',
+    failLabel: 'Overlaps legal name',
+    unknownLabel: 'Overlap unchecked',
+    outcome: 'passed',
+  },
+  {
+    id: CheckId.PriorUse,
+    passLabel: 'No prior use',
+    failLabel: 'Prior use found',
+    unknownLabel: 'Prior use unverified',
+    outcome: 'unknown',
+  },
 ];
 
 @Component({

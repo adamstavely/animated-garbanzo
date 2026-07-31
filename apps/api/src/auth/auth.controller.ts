@@ -1,5 +1,5 @@
 import { CurrentUserDto, SuiteAppDto } from '@nym/shared';
-import { Controller, Get, HttpCode, HttpStatus, Post, Query, Req, Res } from '@nestjs/common';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
@@ -25,6 +25,8 @@ const SUITE_APPS: readonly SuiteAppDto[] = [
 export class AuthController {
   /** Where the browser lands once a session exists. */
   private readonly webAppUrl: string;
+  /** Configured OIDC redirect URI — the only host we trust for the code exchange. */
+  private readonly oidcRedirectUri: string;
 
   constructor(
     private readonly oidc: OidcService,
@@ -33,6 +35,7 @@ export class AuthController {
     configService: ConfigService<AppConfig, true>,
   ) {
     this.webAppUrl = configService.get('webAppUrl', { infer: true });
+    this.oidcRedirectUri = configService.get('oidc', { infer: true }).redirectUri;
   }
 
   @Public()
@@ -58,27 +61,17 @@ export class AuthController {
       return;
     }
 
-    const currentUrl = new URL(
-      request.originalUrl,
-      `${request.protocol}://${request.get('host') ?? 'localhost'}`,
-    ).href;
+    // Build the callback URL from the configured redirect URI + the query the
+    // IdP appended. Never trust Host / X-Forwarded-* for the code exchange.
+    const currentUrl = new URL(this.oidcRedirectUri);
+    const incoming = new URL(request.originalUrl, 'http://127.0.0.1');
+    currentUrl.search = incoming.search;
 
-    const profile = await this.oidc.exchange(currentUrl, transaction);
+    const profile = await this.oidc.exchange(currentUrl.href, transaction);
     const user = await this.users.upsertFromProfile(profile);
     await this.sessions.issue(response, user);
 
     response.redirect(this.webAppUrl);
-  }
-
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Clears the session and reports the IdP logout URL, if any.' })
-  async logout(
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<{ endSessionUrl: string | null }> {
-    this.sessions.clear(response);
-    const endSessionUrl = await this.oidc.endSessionUrl().catch(() => null);
-    return { endSessionUrl };
   }
 
   @Get('me')

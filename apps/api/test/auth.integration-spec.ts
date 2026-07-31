@@ -186,24 +186,6 @@ describe('Authentication (integration)', () => {
     });
   });
 
-  describe('sign-out', () => {
-    it('clears the session and reports the provider logout URL', async () => {
-      harness.oidc.endSession = 'https://issuer.test/logout';
-
-      const response = await http()
-        .post(`${API}/auth/logout`)
-        .set('Cookie', harness.sessionCookie)
-        .expect(200);
-
-      expect(response.body as { endSessionUrl: string }).toEqual({
-        endSessionUrl: 'https://issuer.test/logout',
-      });
-      expect(cookieValue(toCookieList(response.headers['set-cookie']), 'nym_session')).toContain(
-        'nym_session=;',
-      );
-    });
-  });
-
   describe('the app picker', () => {
     it('lists the suite with Nym marked current', async () => {
       const response = await http()

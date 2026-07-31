@@ -8,6 +8,7 @@ import { AppConfig } from '../config/configuration';
 import { UserEntity } from '../database/entities';
 import { AuthController } from './auth.controller';
 import { OidcService } from './oidc.service';
+import { RolesGuard } from './roles.guard';
 import { SessionAuthGuard } from './session-auth.guard';
 import { SessionService } from './session.service';
 import { UsersService } from './users.service';
@@ -34,6 +35,7 @@ import { UsersService } from './users.service';
     SessionService,
     UsersService,
     { provide: APP_GUARD, useClass: SessionAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
   exports: [SessionService, UsersService, OidcService],
 })

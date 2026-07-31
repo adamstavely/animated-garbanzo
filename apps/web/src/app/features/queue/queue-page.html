@@ -9,10 +9,12 @@
       </p>
     </div>
 
-    <button nymButton variant="primary" size="lg" class="page__bulk" (click)="approveAll()">
-      <svg lucideCheckCheck class="nym-icon" [size]="14" aria-hidden="true"></svg>
-      <span>{{ approveAllLabel() }}</span>
-    </button>
+    @if (canAdminister()) {
+      <button nymButton variant="primary" size="lg" class="page__bulk" (click)="approveAll()">
+        <svg lucideCheckCheck class="nym-icon" [size]="14" aria-hidden="true"></svg>
+        <span>{{ approveAllLabel() }}</span>
+      </button>
+    }
   </div>
 
   @if (error()) {

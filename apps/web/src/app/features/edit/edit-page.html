@@ -29,6 +29,7 @@
     <nym-brief-form
       [request]="request"
       [promptEdited]="promptEdited()"
+      [canAdminister]="canAdminister()"
       (briefChange)="onBriefChange($event)"
       (generate)="generate()"
       (regenerate)="regenerate($event)"
@@ -101,6 +102,7 @@
     <nym-prompt-modal
       [requestId]="request.id"
       [settings]="settings"
+      [canAdminister]="canAdminister()"
       (saved)="onPromptSaved($event)"
       (closed)="promptOpen.set(false)"
     />

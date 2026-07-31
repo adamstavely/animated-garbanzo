@@ -1,16 +1,16 @@
-import { CheckResult } from '@nym/shared';
+import { CheckOutcome, CheckResult } from '@nym/shared';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { LucideCheck, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideCircleHelp, LucideX } from '@lucide/angular';
 
 /**
- * One screening statement: a tick and green when it passed, a cross and red when
- * it did not. Both the glyph and the wording change with the outcome, so the
- * result never depends on colour (1.4.1).
+ * One screening statement. Glyph and wording both change with the outcome, so
+ * the result never depends on colour alone (1.4.1). Unknown means the desk has
+ * no catalogue to verify against — not a silent green pass.
  */
 @Component({
   selector: 'nym-check-line',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideCheck, LucideX],
+  imports: [LucideCheck, LucideCircleHelp, LucideX],
   templateUrl: './check-line.html',
   styleUrl: './check-line.css',
 })
@@ -19,7 +19,16 @@ export class CheckLineComponent {
   /** `inline` is the History row's side-by-side pair; `stacked` is the Checks column. */
   readonly layout = input<'stacked' | 'inline'>('stacked');
 
-  protected readonly label = computed(() =>
-    this.check().passed ? this.check().passLabel : this.check().failLabel,
-  );
+  protected readonly outcome = computed<CheckOutcome>(() => this.check().outcome);
+
+  protected readonly label = computed(() => {
+    const check = this.check();
+    if (check.outcome === 'passed') {
+      return check.passLabel;
+    }
+    if (check.outcome === 'failed') {
+      return check.failLabel;
+    }
+    return check.unknownLabel;
+  });
 }

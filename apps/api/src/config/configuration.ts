@@ -45,19 +45,41 @@ export const environmentSchema = z
     OIDC_CLIENT_SECRET: z.string().min(1),
     OIDC_REDIRECT_URI: z.string().url(),
     OIDC_SCOPES: z.string().default('openid profile email'),
-    OIDC_POST_LOGOUT_REDIRECT_URI: z.string().url().optional(),
     /** Claim names differ per IdP (Entra, Okta, Auth0, Keycloak), so they are configurable. */
     OIDC_NAME_CLAIM: z.string().default('name'),
     OIDC_EMAIL_CLAIM: z.string().default('email'),
     OIDC_ROLE_CLAIM: z.string().default('role'),
     OIDC_DEFAULT_ROLE: z.string().default('Publishing assistant'),
+    /**
+     * Comma-separated IdP role values that may delete requests, bulk-approve, and
+     * rewrite the global prompt. Empty in production means nobody can; empty
+     * outside production keeps the local desk open.
+     */
+    OIDC_ADMIN_ROLES: z.string().default(''),
 
     /** Signs the httpOnly session cookie issued after a successful OIDC exchange. */
     SESSION_SECRET: z.string().min(32),
     SESSION_COOKIE_NAME: z.string().default('nym_session'),
+    /** Session JWT and cookie lifetime; default 8 hours. There is no sign-out. */
     SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(28_800),
     SESSION_COOKIE_SECURE: booleanish.default('true'),
     SESSION_COOKIE_DOMAIN: z.string().optional(),
+
+    /**
+     * How long a request may stay in `generating` before being marked failed.
+     * Defaults to the model timeout plus a small grace window.
+     */
+    GENERATION_STALE_MS: z.coerce.number().int().positive().optional(),
+    /** Default / max page size for request lists. */
+    REQUESTS_LIST_DEFAULT_LIMIT: z.coerce.number().int().positive().default(100),
+    REQUESTS_LIST_MAX_LIMIT: z.coerce.number().int().positive().default(200),
+    /** Cap for a single Approve-all call. */
+    REQUESTS_APPROVE_ALL_LIMIT: z.coerce.number().int().positive().default(50),
+    /** Per-user sliding windows for create / generate / approve-all. */
+    RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+    RATE_LIMIT_CREATE: z.coerce.number().int().positive().default(30),
+    RATE_LIMIT_GENERATE: z.coerce.number().int().positive().default(20),
+    RATE_LIMIT_APPROVE_ALL: z.coerce.number().int().positive().default(5),
   })
   .superRefine((value, ctx) => {
     if (value.NODE_ENV !== 'production') {
@@ -118,11 +140,11 @@ export interface AppConfig {
     clientSecret: string;
     redirectUri: string;
     scopes: string;
-    postLogoutRedirectUri?: string;
     nameClaim: string;
     emailClaim: string;
     roleClaim: string;
     defaultRole: string;
+    adminRoles: string[];
   };
   session: {
     secret: string;
@@ -130,6 +152,20 @@ export interface AppConfig {
     ttlSeconds: number;
     secureCookie: boolean;
     cookieDomain?: string;
+  };
+  generation: {
+    staleMs: number;
+  };
+  requests: {
+    listDefaultLimit: number;
+    listMaxLimit: number;
+    approveAllLimit: number;
+  };
+  rateLimit: {
+    windowMs: number;
+    create: number;
+    generate: number;
+    approveAll: number;
   };
 }
 
@@ -148,6 +184,9 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
   }
 
   const value = parsed.data;
+  const adminRoles = value.OIDC_ADMIN_ROLES.split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
   return {
     nodeEnv: value.NODE_ENV,
@@ -176,11 +215,11 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
       clientSecret: value.OIDC_CLIENT_SECRET,
       redirectUri: value.OIDC_REDIRECT_URI,
       scopes: value.OIDC_SCOPES,
-      postLogoutRedirectUri: value.OIDC_POST_LOGOUT_REDIRECT_URI,
       nameClaim: value.OIDC_NAME_CLAIM,
       emailClaim: value.OIDC_EMAIL_CLAIM,
       roleClaim: value.OIDC_ROLE_CLAIM,
       defaultRole: value.OIDC_DEFAULT_ROLE,
+      adminRoles,
     },
     session: {
       secret: value.SESSION_SECRET,
@@ -188,6 +227,20 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
       ttlSeconds: value.SESSION_TTL_SECONDS,
       secureCookie: value.SESSION_COOKIE_SECURE,
       cookieDomain: value.SESSION_COOKIE_DOMAIN,
+    },
+    generation: {
+      staleMs: value.GENERATION_STALE_MS ?? value.ANTHROPIC_TIMEOUT_MS + 30_000,
+    },
+    requests: {
+      listDefaultLimit: value.REQUESTS_LIST_DEFAULT_LIMIT,
+      listMaxLimit: Math.max(value.REQUESTS_LIST_MAX_LIMIT, value.REQUESTS_LIST_DEFAULT_LIMIT),
+      approveAllLimit: value.REQUESTS_APPROVE_ALL_LIMIT,
+    },
+    rateLimit: {
+      windowMs: value.RATE_LIMIT_WINDOW_MS,
+      create: value.RATE_LIMIT_CREATE,
+      generate: value.RATE_LIMIT_GENERATE,
+      approveAll: value.RATE_LIMIT_APPROVE_ALL,
     },
   };
 }

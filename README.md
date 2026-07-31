@@ -90,8 +90,9 @@ Notable decisions:
   request is rejected with `409` via an atomic status claim, so overlapping
   API instances cannot both start model calls for one row.
 - **Sessions, not IdP tokens, reach the browser.** After the code exchange the API
-  mints a short-lived HS256 JWT in an httpOnly, SameSite=Lax cookie. No
-  server-side session store is needed and no provider token is exposed.
+  mints an HS256 JWT (default TTL 8 hours) in an httpOnly, SameSite=Lax cookie.
+  There is no sign-out; sessions expire with the token. No server-side session
+  store is needed and no provider token is exposed.
 - **Everything is closed by default.** `SessionAuthGuard` is registered globally;
   an endpoint opts out with `@Public()`, so a new controller cannot ship
   unauthenticated by accident.

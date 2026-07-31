@@ -107,21 +107,6 @@ export class OidcService implements OnModuleInit {
     }
   }
 
-  /** The IdP's RP-initiated logout URL, when the provider advertises one. */
-  async endSessionUrl(): Promise<string | null> {
-    const client = await this.discover();
-
-    if (!client.issuer.metadata.end_session_endpoint) {
-      return null;
-    }
-
-    return client.endSessionUrl(
-      this.settings.postLogoutRedirectUri
-        ? { post_logout_redirect_uri: this.settings.postLogoutRedirectUri }
-        : {},
-    );
-  }
-
   private async discover(): Promise<Client> {
     if (this.client) {
       return this.client;

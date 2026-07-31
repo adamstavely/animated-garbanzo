@@ -71,7 +71,7 @@ describe('resolveProposedName', () => {
 });
 
 describe('buildChecks', () => {
-  it('reports four passing checks for a cleared name', () => {
+  it('reports overlap as passed or failed and the rest as unknown', () => {
     const checks = buildChecks(request(), 'Bridget C. ASHWORTH');
 
     expect(checks.map((check) => check.id)).toEqual([
@@ -80,14 +80,15 @@ describe('buildChecks', () => {
       CheckId.Famous,
       CheckId.Offensive,
     ]);
-    expect(checks.every((check) => check.passed)).toBe(true);
+    expect(checks[0]).toMatchObject({ id: CheckId.Overlap, outcome: 'passed' });
+    expect(checks.slice(1).every((check) => check.outcome === 'unknown')).toBe(true);
   });
 
   it('fails the overlap check live when the legal name has since changed', () => {
     // An assistant edited the brief to a name the approved pen name now collides with.
     const checks = buildChecks(request({ legalName: 'Bridget A. Voss' }), 'Bridget C. ASHWORTH');
 
-    expect(checks[0]).toMatchObject({ id: CheckId.Overlap, passed: false });
+    expect(checks[0]).toMatchObject({ id: CheckId.Overlap, outcome: 'failed' });
   });
 
   it('reports nothing while a request is still generating or queued', () => {
