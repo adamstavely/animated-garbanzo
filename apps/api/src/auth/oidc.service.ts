@@ -31,12 +31,13 @@ export class OidcService implements OnModuleInit {
   }
 
   async onModuleInit(): Promise<void> {
-    // Discovery is attempted eagerly so a bad issuer shows up at boot, but a
-    // transient failure must not stop the API serving; it is retried lazily.
+    // Fail boot on a bad issuer / unreachable IdP — otherwise auth only breaks
+    // on the first login attempt while the rest of the API still looks healthy.
     try {
       await this.discover();
     } catch (error) {
       this.logger.error(`OIDC discovery failed for ${this.settings.issuerUrl}: ${describe(error)}`);
+      throw error;
     }
   }
 

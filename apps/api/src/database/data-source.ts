@@ -5,9 +5,12 @@ import {
   CandidateEntity,
   PenNameRequestEntity,
   PromptSettingsEntity,
+  RateLimitHitEntity,
   UserEntity,
 } from './entities';
 import { InitialSchema1753920000000 } from './migrations/1753920000000-InitialSchema';
+import { RateLimitHits1753980000000 } from './migrations/1753980000000-RateLimitHits';
+import { AddGenerationRunId1754000000000 } from './migrations/1754000000000-AddGenerationRunId';
 
 // `quiet` keeps the CLI and test output free of dotenv's banner.
 loadDotenv({ quiet: true });
@@ -17,9 +20,14 @@ export const ENTITIES = [
   PenNameRequestEntity,
   CandidateEntity,
   PromptSettingsEntity,
+  RateLimitHitEntity,
 ] as const;
 
-export const MIGRATIONS = [InitialSchema1753920000000] as const;
+export const MIGRATIONS = [
+  InitialSchema1753920000000,
+  RateLimitHits1753980000000,
+  AddGenerationRunId1754000000000,
+] as const;
 
 /**
  * Options shared by the running app and the TypeORM CLI, so migrations are

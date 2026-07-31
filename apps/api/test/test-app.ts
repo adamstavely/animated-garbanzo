@@ -162,7 +162,7 @@ export async function createTestHarness(): Promise<TestHarness> {
 
   const reset = async (): Promise<void> => {
     await dataSource.query(
-      'TRUNCATE TABLE "candidates", "pen_name_requests", "users" RESTART IDENTITY CASCADE',
+      'TRUNCATE TABLE "candidates", "pen_name_requests", "users", "rate_limit_hits" RESTART IDENTITY CASCADE',
     );
     await dataSource.query(
       `UPDATE "prompt_settings" SET "systemOverride" = NULL, "promptOverride" = NULL WHERE id = 'default'`,

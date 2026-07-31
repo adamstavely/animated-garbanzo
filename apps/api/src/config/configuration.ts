@@ -23,6 +23,7 @@ export const environmentSchema = z
     WEB_APP_URL: z.string().url().default('http://localhost:4200'),
 
     DATABASE_URL: z.string().min(1),
+    /** Required true in production; plaintext DB traffic is refused there. */
     DATABASE_SSL: booleanish.default('false'),
     /**
      * Verify the database TLS certificate when DATABASE_SSL is on.
@@ -82,8 +83,9 @@ export const environmentSchema = z
     REQUESTS_LIST_MAX_LIMIT: z.coerce.number().int().positive().default(200),
     /** Cap for a single Approve-all call. */
     REQUESTS_APPROVE_ALL_LIMIT: z.coerce.number().int().positive().default(50),
-    /** Per-user sliding windows for create / generate / approve-all. */
+    /** Per-user sliding windows for list / create / generate / approve-all. */
     RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+    RATE_LIMIT_LIST: z.coerce.number().int().positive().default(120),
     RATE_LIMIT_CREATE: z.coerce.number().int().positive().default(30),
     RATE_LIMIT_GENERATE: z.coerce.number().int().positive().default(20),
     RATE_LIMIT_APPROVE_ALL: z.coerce.number().int().positive().default(5),
@@ -109,11 +111,19 @@ export const environmentSchema = z
       });
     }
 
-    if (value.DATABASE_SSL && !value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
+    if (!value.DATABASE_SSL) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['DATABASE_SSL'],
+        message: 'must be true in production',
+      });
+    }
+
+    if (!value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['DATABASE_SSL_REJECT_UNAUTHORIZED'],
-        message: 'must be true in production when DATABASE_SSL is enabled',
+        message: 'must be true in production',
       });
     }
   });
@@ -172,6 +182,7 @@ export interface AppConfig {
   };
   rateLimit: {
     windowMs: number;
+    list: number;
     create: number;
     generate: number;
     approveAll: number;
@@ -248,6 +259,7 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
     },
     rateLimit: {
       windowMs: value.RATE_LIMIT_WINDOW_MS,
+      list: value.RATE_LIMIT_LIST,
       create: value.RATE_LIMIT_CREATE,
       generate: value.RATE_LIMIT_GENERATE,
       approveAll: value.RATE_LIMIT_APPROVE_ALL,

@@ -194,17 +194,12 @@ export class RequestsStore {
   }
 }
 
-/** Pulls a readable message out of an HttpErrorResponse-shaped failure. */
-export function describeError(error: unknown, fallback: string): string {
-  if (typeof error === 'object' && error !== null) {
-    const body = (error as { error?: { message?: string | string[] } }).error;
-    const message = body?.message;
-    if (Array.isArray(message) && message.length > 0) {
-      return message.join(' ');
-    }
-    if (typeof message === 'string' && message) {
-      return message;
-    }
-  }
+/**
+ * User-facing copy for a failed API call.
+ *
+ * Always returns `fallback` — Nest validation arrays and unexpected 5xx bodies
+ * must not reach toasts/alerts. Call sites supply action-specific safe copy.
+ */
+export function describeError(_error: unknown, fallback: string): string {
   return fallback;
 }

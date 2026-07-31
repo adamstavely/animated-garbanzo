@@ -40,8 +40,11 @@ export class RequestsController {
 
   @Get()
   @ApiOperation({ summary: 'Lists requests for the queue or history, with optional search.' })
-  list(@Query() query: ListRequestsQueryDto): Promise<RequestListDto> {
-    return this.requests.list(query);
+  list(
+    @Query() query: ListRequestsQueryDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<RequestListDto> {
+    return this.requests.list(query, user);
   }
 
   @Post()
