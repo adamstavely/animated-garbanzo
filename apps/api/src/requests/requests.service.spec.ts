@@ -252,7 +252,7 @@ describe('RequestsService concurrency', () => {
     expect(result.requests.map((row) => row.id)).toEqual(['r1']);
     expect(requests.update).toHaveBeenCalledTimes(1);
     expect(requests.update).toHaveBeenCalledWith(
-      { id: 'r1', status: RequestStatus.Ready },
+      { id: 'r1', status: RequestStatus.Ready, legalName: 'Margaret E. Voss' },
       expect.objectContaining({ approvedName: 'Bridget C. Ashworth' }),
     );
   });
@@ -273,20 +273,44 @@ describe('RequestsService concurrency', () => {
     expect(requests.save).not.toHaveBeenCalled();
   });
 
-  it('approves with a status-conditional UPDATE, not a full-row save', async () => {
+  it('approves with a status-and-legalName conditional UPDATE, not a full-row save', async () => {
     const request = entity({ status: RequestStatus.Ready });
     const { service, requests } = buildService(request);
 
     await service.approve('r1', { penName: 'Bridget C. Ashworth' }, user);
 
     expect(requests.update).toHaveBeenCalledWith(
-      { id: 'r1', status: RequestStatus.Ready },
+      { id: 'r1', status: RequestStatus.Ready, legalName: 'Margaret E. Voss' },
       expect.objectContaining({
         approvedName: 'Bridget C. Ashworth',
         status: RequestStatus.Approved,
       }),
     );
     expect(requests.save).not.toHaveBeenCalled();
+  });
+
+  it('pins legalName on choose so a concurrent brief edit cannot flip overlap', async () => {
+    const request = entity({ status: RequestStatus.Ready });
+    const { service, requests } = buildService(request);
+
+    await service.chooseCandidate('r1', { penName: 'Bridget C. Ashworth' });
+
+    expect(requests.update).toHaveBeenCalledWith(
+      { id: 'r1', status: RequestStatus.Ready, legalName: 'Margaret E. Voss' },
+      { chosenName: 'Bridget C. Ashworth' },
+    );
+  });
+
+  it('clears a choice without pinning legalName', async () => {
+    const request = entity({ status: RequestStatus.Ready, chosenName: 'Bridget C. Ashworth' });
+    const { service, requests } = buildService(request);
+
+    await service.chooseCandidate('r1', { penName: '' });
+
+    expect(requests.update).toHaveBeenCalledWith(
+      { id: 'r1', status: RequestStatus.Ready },
+      { chosenName: '' },
+    );
   });
 
   it('deletes with WHERE status = expected so a generate claim cannot CASCADE-delete mid-flight', async () => {

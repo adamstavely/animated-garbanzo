@@ -4,10 +4,12 @@ import {
   RequestStatus,
   UpdateRequestPayload,
 } from '@nym/shared';
+import { HttpErrorResponse } from '@angular/common/http';
 import { DestroyRef, Injectable, computed, effect, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { NymApiService } from '../api/nym-api.service';
+import { canApproveRequest } from '../util/can-approve';
 
 /** How often the queue re-checks a request that is mid-generation. */
 export const GENERATION_POLL_MS = 2000;
@@ -86,10 +88,7 @@ export class RequestsStore {
 
   /** Requests that could be approved right now, for the bulk button's count. */
   readonly readyCount = computed(
-    () =>
-      this.requestsState().filter(
-        (request) => request.status === RequestStatus.Ready && request.proposedName !== '',
-      ).length,
+    () => this.requestsState().filter(canApproveRequest).length,
   );
 
   constructor() {
@@ -222,11 +221,16 @@ export class RequestsStore {
         return;
       }
       this.pinnedRequestState.set(request);
-    } catch {
+    } catch (error) {
       if (generation !== this.listGeneration || this.pinnedId !== pinnedId) {
         return;
       }
-      this.pinnedRequestState.set(undefined);
+      // Only clear when the server confirms the row is gone. Network/5xx must
+      // keep the pin — otherwise Generating drops out of hasPendingGeneration,
+      // polling stops, and the edit page flashes “Request not found”.
+      if (error instanceof HttpErrorResponse && error.status === 404) {
+        this.pinnedRequestState.set(undefined);
+      }
     }
   }
 
@@ -288,6 +292,11 @@ export class RequestsStore {
     this.requestsState.update((requests) => {
       const index = requests.findIndex((candidate) => candidate.id === request.id);
       if (index === -1) {
+        // Pin lives outside requestsState so filtered tabs stay honest — do not
+        // reinsert a search/limit drop on mutation.
+        if (this.pinnedId === request.id) {
+          return requests;
+        }
         return [request, ...requests];
       }
       const next = [...requests];

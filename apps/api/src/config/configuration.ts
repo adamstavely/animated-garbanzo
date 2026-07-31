@@ -63,7 +63,11 @@ export const environmentSchema = z
     /** Signs the httpOnly session cookie issued after a successful OIDC exchange. */
     SESSION_SECRET: z.string().min(32),
     SESSION_COOKIE_NAME: z.string().default('nym_session'),
-    /** Session JWT and cookie lifetime; default 8 hours. There is no sign-out. */
+    /**
+     * Session JWT and cookie lifetime; default 8 hours. There is no sign-out.
+     * Ops caveat: desk-admin is the JWT `role` claim, reissued only on OIDC
+     * callback — IdP demotion waits up to this TTL (intentional SSO shape).
+     */
     SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(28_800),
     SESSION_COOKIE_SECURE: booleanish.default('true'),
     SESSION_COOKIE_DOMAIN: z.string().optional(),

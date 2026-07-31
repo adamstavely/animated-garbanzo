@@ -48,6 +48,8 @@ export class PromptModalComponent {
   readonly settings = input.required<PromptSettingsDto>();
   /** Saving or resetting this request’s override requires a desk-admin role. */
   readonly canAdminister = input(false);
+  /** History stays sealed until reopen — separate from role so copy stays accurate. */
+  readonly sealed = input(false);
 
   readonly saved = output<PromptSettingsDto>();
   readonly closed = output<void>();
@@ -60,7 +62,13 @@ export class PromptModalComponent {
     prompt: [''],
   });
 
+  /** Writes need desk-admin and a non-sealed row; viewing stays open either way. */
+  protected readonly canEdit = computed(() => this.canAdminister() && !this.sealed());
+
   protected readonly note = computed(() => {
+    if (this.sealed()) {
+      return 'View only — reopen this request before rewriting the prompt.';
+    }
     if (!this.canAdminister()) {
       return 'View only — rewriting this request’s prompt requires a desk-admin role from the identity provider.';
     }
@@ -73,7 +81,7 @@ export class PromptModalComponent {
     // The panel is created fresh each time it opens, so seeding once is enough.
     queueMicrotask(() => {
       this.form.setValue({ system: this.settings().system, prompt: this.settings().prompt });
-      if (!this.canAdminister()) {
+      if (!this.canEdit()) {
         this.form.disable({ emitEvent: false });
       }
     });

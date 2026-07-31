@@ -129,9 +129,6 @@ export class EditPageComponent {
 
   protected readonly promptEdited = computed(() => this.promptSettings()?.isCustom ?? false);
 
-  /** Prompt viewing stays open; writes need desk-admin and a non-sealed row. */
-  protected readonly canEditPrompt = computed(() => this.canAdminister() && !this.sealed());
-
   constructor() {
     effect((onCleanup) => {
       const id = this.id();
