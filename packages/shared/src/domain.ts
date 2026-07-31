@@ -39,13 +39,18 @@ export const CHECK_ORDER: readonly CheckId[] = [
   CheckId.Offensive,
 ] as const;
 
+/** Outcome of a screening check shown in the Checks column. */
+export type CheckOutcome = 'passed' | 'failed' | 'unknown';
+
 export interface CheckResult {
   id: CheckId;
   /** Copy shown when the check passes, e.g. "No name overlap". */
   passLabel: string;
   /** Copy shown when the check fails, e.g. "Overlaps legal name". */
   failLabel: string;
-  passed: boolean;
+  /** Copy shown when the desk cannot verify the check, e.g. "Prior use unverified". */
+  unknownLabel: string;
+  outcome: CheckOutcome;
 }
 
 /** Language / cultural origin options offered in the brief and the intake modal. */

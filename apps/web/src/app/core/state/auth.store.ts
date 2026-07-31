@@ -1,6 +1,6 @@
 import { CurrentUserDto, SuiteAppDto } from '@nym/shared';
 import { DOCUMENT } from '@angular/common';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { API_BASE_URL } from '../api/api.tokens';
@@ -26,6 +26,7 @@ export class AuthStore {
   readonly user = this.userState.asReadonly();
   readonly apps = this.appsState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
+  readonly canAdminister = computed(() => this.userState()?.canAdminister === true);
 
   async load(): Promise<void> {
     this.loadingState.set(true);

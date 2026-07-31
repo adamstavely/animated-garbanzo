@@ -18,6 +18,10 @@
   color: var(--fail);
 }
 
+.check--unknown {
+  color: var(--muted);
+}
+
 .check__glyph {
   stroke-width: 2.4;
 }

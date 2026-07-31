@@ -31,7 +31,14 @@ export function buildDataSourceOptions(
   return {
     type: 'postgres',
     url: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_SSL === 'true' ? { rejectUnauthorized: false } : false,
+    ssl:
+      process.env.DATABASE_SSL === 'true'
+        ? {
+            // Default to verifying the server cert; set
+            // DATABASE_SSL_REJECT_UNAUTHORIZED=false only for local self-signed hosts.
+            rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false',
+          }
+        : false,
     entities: [...ENTITIES],
     migrations: [...MIGRATIONS],
     migrationsTableName: 'nym_migrations',

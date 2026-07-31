@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { LucideArrowLeft } from '@lucide/angular';
 
 import { NymApiService } from '../../core/api/nym-api.service';
+import { AuthStore } from '../../core/state/auth.store';
 import { RequestsStore, describeError } from '../../core/state/requests.store';
 import { ToastService } from '../../core/state/toast.service';
 import { formatScreening } from '../../core/util/format';
@@ -45,6 +46,7 @@ import { PromptModalComponent } from './prompt-modal';
 })
 export class EditPageComponent {
   private readonly store = inject(RequestsStore);
+  private readonly auth = inject(AuthStore);
   private readonly api = inject(NymApiService);
   private readonly toasts = inject(ToastService);
   private readonly router = inject(Router);
@@ -58,6 +60,7 @@ export class EditPageComponent {
 
   protected readonly request = computed(() => this.store.byId(this.id()));
   protected readonly allRequests = this.store.requests;
+  protected readonly canAdminister = this.auth.canAdminister;
 
   protected readonly busy = computed(() => this.request()?.status === RequestStatus.Generating);
 

@@ -132,9 +132,6 @@ class E2EOidcService {
   exchange(): Promise<never> {
     return Promise.reject(new Error('not used in end-to-end runs'));
   }
-  endSessionUrl(): Promise<string | null> {
-    return Promise.resolve(null);
-  }
 }
 
 /** The assistant every end-to-end run signs in as. */
@@ -221,7 +218,7 @@ class TestSupportController {
         presentation: 'Male',
         notes: 'Techno-thriller, US mass market.',
         status: RequestStatus.Failed,
-        errorMessage: 'Generation failed — the naming model is unavailable.',
+        errorMessage: 'Generation failed — try again.',
         createdById: user.id,
         createdAt: new Date(now - 3 * HOUR),
       }),

@@ -101,7 +101,6 @@ export class StubOidcService {
     role: 'Publishing assistant · Trade',
   };
   exchangeError: Error | null = null;
-  endSession: string | null = null;
 
   readonly exchanges: { url: string; transaction: unknown }[] = [];
 
@@ -119,10 +118,6 @@ export class StubOidcService {
   exchange(url: string, transaction: unknown): Promise<OidcProfile> {
     this.exchanges.push({ url, transaction });
     return this.exchangeError ? Promise.reject(this.exchangeError) : Promise.resolve(this.profile);
-  }
-
-  endSessionUrl(): Promise<string | null> {
-    return Promise.resolve(this.endSession);
   }
 }
 
@@ -192,6 +187,7 @@ export async function createTestHarness(): Promise<TestHarness> {
     name: saved.name,
     email: saved.email,
     role: saved.role,
+    canAdminister: true,
   };
 
   const jwt = app.get(JwtService);

@@ -1,7 +1,9 @@
 import { RequestStatus } from '@nym/shared';
 import { ConflictException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 
+import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { GenerationService } from './generation.service';
 import { NameGenerator } from './name-generator.interface';
@@ -60,19 +62,60 @@ function buildHarness(options: {
     create: jest.fn(
       (_entity: unknown, values: Partial<CandidateEntity>) => values as CandidateEntity,
     ),
-    update: jest.fn((_entity: unknown, _id: string, values: Partial<PenNameRequestEntity>) => {
-      written.updates.push(values);
-      return Promise.resolve();
-    }),
+    update: jest.fn(
+      (
+        _entity: unknown,
+        criteria: string | { id: string; status?: unknown },
+        values: Partial<PenNameRequestEntity>,
+      ) => {
+        if (typeof criteria === 'object' && criteria.status === RequestStatus.Generating) {
+          if (request.status !== RequestStatus.Generating) {
+            return Promise.resolve({ affected: 0 });
+          }
+        }
+        Object.assign(request, values);
+        written.updates.push(values);
+        return Promise.resolve({ affected: 1 });
+      },
+    ),
   };
 
   const requests = {
-    update: jest.fn((_id: string, values: Partial<PenNameRequestEntity>) => {
-      Object.assign(request, values);
-      written.updates.push(values);
-      return Promise.resolve();
-    }),
+    update: jest.fn(
+      (
+        criteria: string | { id: string; status?: unknown; updatedAt?: unknown },
+        values: Partial<PenNameRequestEntity>,
+      ) => {
+        // Atomic claim: UPDATE … WHERE status <> generating (TypeORM `Not`).
+        if (
+          typeof criteria === 'object' &&
+          'status' in criteria &&
+          criteria.status !== RequestStatus.Generating &&
+          !('updatedAt' in criteria)
+        ) {
+          if (request.status === RequestStatus.Generating) {
+            return Promise.resolve({ affected: 0 });
+          }
+          Object.assign(request, values);
+          written.updates.push(values);
+          return Promise.resolve({ affected: 1 });
+        }
+
+        if (
+          typeof criteria === 'object' &&
+          criteria.status === RequestStatus.Generating &&
+          request.status !== RequestStatus.Generating
+        ) {
+          return Promise.resolve({ affected: 0 });
+        }
+
+        Object.assign(request, values);
+        written.updates.push(values);
+        return Promise.resolve({ affected: 1 });
+      },
+    ),
     findOne: jest.fn(() => Promise.resolve(request)),
+    find: jest.fn(() => Promise.resolve([])),
     manager: {
       transaction: jest.fn((work: (m: typeof manager) => Promise<void>) => work(manager)),
     },
@@ -95,7 +138,22 @@ function buildHarness(options: {
     resolvePrompt: jest.fn(() => Promise.resolve('prompt')),
   } as unknown as PromptSettingsService;
 
-  const service = new GenerationService(requests, candidates, generator, promptSettings);
+  const configService = {
+    get: (key: keyof AppConfig) => {
+      if (key === 'generation') {
+        return { staleMs: 150_000 };
+      }
+      return undefined;
+    },
+  } as unknown as ConfigService<AppConfig, true>;
+
+  const service = new GenerationService(
+    requests,
+    candidates,
+    generator,
+    promptSettings,
+    configService,
+  );
 
   return { service, request, written, generator, promptSettings, requests };
 }
@@ -131,6 +189,19 @@ describe('GenerationService', () => {
     const { service, request } = buildHarness({ request: { status: RequestStatus.Generating } });
 
     await expect(service.start(request)).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('claims the row with a status predicate so overlapping starts cannot both proceed', async () => {
+    const { service, request, requests } = buildHarness({
+      generated: [{ name: 'Bridget C. Ashworth' }],
+    });
+
+    await (await service.start(request)).completion;
+
+    expect(requests.update).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'r1', status: expect.anything() }),
+      expect.objectContaining({ status: RequestStatus.Generating }),
+    );
   });
 
   it('stores cleared candidates and counts what screening discarded', async () => {
@@ -236,19 +307,22 @@ describe('GenerationService', () => {
     });
   });
 
-  it('records a readable reason when the model call fails', async () => {
+  it('records a fixed user-facing reason when the model call fails', async () => {
+    const upstream = 'upstream Anthropic detail that must not leak';
     const { service, request, written } = buildHarness({
-      generatorError: new Error('The naming model is unavailable. Try again.'),
+      generatorError: new Error(upstream),
     });
 
     await (
       await service.start(request)
     ).completion;
 
-    expect(written.updates.at(-1)).toMatchObject({
+    const failure = written.updates.at(-1);
+    expect(failure).toMatchObject({
       status: RequestStatus.Failed,
-      errorMessage: 'Generation failed — The naming model is unavailable. Try again.',
+      errorMessage: 'Generation failed — try again.',
     });
+    expect(failure?.errorMessage).not.toContain(upstream);
   });
 
   it('never leaves a failed run as an unhandled rejection', async () => {

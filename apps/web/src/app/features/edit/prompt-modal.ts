@@ -46,6 +46,8 @@ export class PromptModalComponent {
 
   readonly requestId = input.required<string>();
   readonly settings = input.required<PromptSettingsDto>();
+  /** Saving or resetting the global override requires a desk-admin role. */
+  readonly canAdminister = input(false);
 
   readonly saved = output<PromptSettingsDto>();
   readonly closed = output<void>();
@@ -58,17 +60,23 @@ export class PromptModalComponent {
     prompt: [''],
   });
 
-  protected readonly note = computed(() =>
-    this.settings().isCustom
+  protected readonly note = computed(() => {
+    if (!this.canAdminister()) {
+      return 'View only — rewriting the shared prompt requires a desk-admin role from the identity provider.';
+    }
+    return this.settings().isCustom
       ? 'Custom prompt in use — sent verbatim, so brief fields no longer flow into it.'
-      : 'Auto-composed from the brief. Edit and save to send this text verbatim instead.',
-  );
+      : 'Auto-composed from the brief. Edit and save to send this text verbatim instead.';
+  });
 
   constructor() {
     // The panel is created fresh each time it opens, so seeding once is enough.
-    queueMicrotask(() =>
-      this.form.setValue({ system: this.settings().system, prompt: this.settings().prompt }),
-    );
+    queueMicrotask(() => {
+      this.form.setValue({ system: this.settings().system, prompt: this.settings().prompt });
+      if (!this.canAdminister()) {
+        this.form.disable({ emitEvent: false });
+      }
+    });
   }
 
   protected async save(): Promise<void> {

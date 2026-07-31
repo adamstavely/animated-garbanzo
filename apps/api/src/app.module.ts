@@ -29,7 +29,9 @@ import { RequestsModule } from './requests/requests.module';
         return {
           type: 'postgres' as const,
           url: database.url,
-          ssl: database.ssl ? { rejectUnauthorized: false } : false,
+          ssl: database.ssl
+            ? { rejectUnauthorized: database.sslRejectUnauthorized }
+            : false,
           entities: [...ENTITIES],
           migrations: [...MIGRATIONS],
           migrationsTableName: 'nym_migrations',
