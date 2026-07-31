@@ -80,6 +80,13 @@ export class PenNameRequestEntity {
   @Column({ type: 'text', default: '' })
   errorMessage: string;
 
+  /**
+   * Durable token for the in-flight generation. Persist/fail only succeed when this
+   * still matches, so a reclaimed worker on another instance cannot overwrite a newer run.
+   */
+  @Column({ type: 'uuid', nullable: true })
+  generationRunId: string | null;
+
   @Column({ type: 'uuid', nullable: true })
   createdById: string | null;
 

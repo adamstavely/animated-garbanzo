@@ -14,9 +14,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, In, Repository } from 'typeorm';
+import { Brackets, In, QueryDeepPartialEntity, Repository } from 'typeorm';
 
 import { AuthenticatedUser } from '../auth/authenticated-user';
+import { escapeIlikePattern } from '../common/ilike';
 import { RateLimiter } from '../common/rate-limiter';
 import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
@@ -66,7 +67,9 @@ export class RequestsService {
     this.rateLimit = configService.get('rateLimit', { infer: true });
   }
 
-  async list(query: ListRequestsQueryDto): Promise<RequestListDto> {
+  async list(query: ListRequestsQueryDto, user: AuthenticatedUser): Promise<RequestListDto> {
+    await this.rateLimiter.consume(`list:${user.id}`, this.rateLimit.list, this.rateLimit.windowMs);
+
     const view = query.view ?? 'all';
     const search = query.q?.trim() ?? '';
     const limit = Math.min(
@@ -75,22 +78,25 @@ export class RequestsService {
     );
     const offset = Math.max(query.offset ?? 0, 0);
 
-    const matching = await this.findMatchingSummaries(search);
-
-    const queueMatches = matching.filter((row) => row.status !== RequestStatus.Approved);
-    const historyMatches = matching.filter((row) => row.status === RequestStatus.Approved);
-    const filtered = view === 'queue' ? queueMatches : view === 'history' ? historyMatches : matching;
-    const page = filtered.slice(offset, offset + limit);
+    // Counts and the page slice stay in SQL — never pull every matching id into Node.
+    const [counts, pageIds] = await Promise.all([
+      this.countMatchingByView(search),
+      this.findPageIds(view, search, limit, offset),
+    ]);
+    const total =
+      view === 'queue'
+        ? counts.queue
+        : view === 'history'
+          ? counts.history
+          : counts.queue + counts.history;
     const items =
-      page.length === 0
-        ? []
-        : (await this.loadByIds(page.map((row) => row.id))).map(toRequestDto);
+      pageIds.length === 0 ? [] : (await this.loadByIds(pageIds)).map(toRequestDto);
 
     return {
       items,
-      queueMatchCount: queueMatches.length,
-      historyMatchCount: historyMatches.length,
-      total: filtered.length,
+      queueMatchCount: counts.queue,
+      historyMatchCount: counts.history,
+      total,
       limit,
       offset,
     };
@@ -105,7 +111,7 @@ export class RequestsService {
    * to press Generate for a new request.
    */
   async create(dto: CreateRequestDto, user: AuthenticatedUser): Promise<PenNameRequestDto> {
-    this.rateLimiter.consume(
+    await this.rateLimiter.consume(
       `create:${user.id}`,
       this.rateLimit.create,
       this.rateLimit.windowMs,
@@ -138,28 +144,33 @@ export class RequestsService {
   async update(id: string, dto: UpdateRequestDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    const expectedStatus = request.status;
+
+    const patch: QueryDeepPartialEntity<PenNameRequestEntity> = {};
 
     if (dto.legalName !== undefined) {
       const legalName = normaliseName(dto.legalName);
       if (!legalName) {
         throw new BadRequestException('The legal name cannot be empty.');
       }
-      request.legalName = legalName;
+      patch.legalName = legalName;
     }
     if (dto.presentation !== undefined) {
-      request.presentation = dto.presentation;
+      patch.presentation = dto.presentation;
     }
     if (dto.origin !== undefined) {
-      request.origin = dto.origin;
+      patch.origin = dto.origin;
     }
     if (dto.notes !== undefined) {
-      request.notes = dto.notes;
+      patch.notes = dto.notes;
     }
     if (dto.refine !== undefined) {
-      request.refine = dto.refine;
+      patch.refine = dto.refine;
     }
 
-    await this.requests.save(request);
+    if (Object.keys(patch).length > 0) {
+      await this.updateIfStatus(id, expectedStatus, patch);
+    }
     return this.findOne(id);
   }
 
@@ -175,7 +186,7 @@ export class RequestsService {
 
   /** Starts (or restarts) generation. Returns the request in its "generating" state. */
   async generate(id: string, dto: GenerateRequestDto, user: AuthenticatedUser): Promise<PenNameRequestDto> {
-    this.rateLimiter.consume(
+    await this.rateLimiter.consume(
       `generate:${user.id}`,
       this.rateLimit.generate,
       this.rateLimit.windowMs,
@@ -199,14 +210,14 @@ export class RequestsService {
   async chooseCandidate(id: string, dto: ChooseCandidateDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    const expectedStatus = request.status;
     const penName = normaliseName(dto.penName);
 
     if (penName && !request.candidates.some((candidate) => candidate.name === penName)) {
       throw new BadRequestException('That name is not among the cleared candidates.');
     }
 
-    request.chosenName = penName;
-    await this.requests.save(request);
+    await this.updateIfStatus(id, expectedStatus, { chosenName: penName });
     return this.findOne(id);
   }
 
@@ -239,6 +250,7 @@ export class RequestsService {
   ): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    const expectedStatus = request.status;
     const penName = normaliseName(dto.penName ?? '') || resolveProposedName(request);
 
     if (!penName) {
@@ -248,15 +260,14 @@ export class RequestsService {
       throw new BadRequestException('That name is not among the cleared candidates.');
     }
 
-    this.applyApproval(request, penName, user);
-    await this.requests.save(request);
+    await this.updateIfStatus(id, expectedStatus, this.approvalFields(penName, user));
 
     return this.findOne(id);
   }
 
   /** Approves the proposed name of every request that is ready for review. */
   async approveAll(user: AuthenticatedUser): Promise<BulkApproveResultDto> {
-    this.rateLimiter.consume(
+    await this.rateLimiter.consume(
       `approve-all:${user.id}`,
       this.rateLimit.approveAll,
       this.rateLimit.windowMs,
@@ -269,21 +280,32 @@ export class RequestsService {
       take: this.approveAllLimit,
     });
 
-    const approvable = ready.filter((request) => resolveProposedName(request) !== '');
+    const approved: PenNameRequestEntity[] = [];
 
-    for (const request of approvable) {
-      this.applyApproval(request, resolveProposedName(request), user);
+    for (const request of ready) {
+      const penName = resolveProposedName(request);
+      if (!penName) {
+        continue;
+      }
+
+      const fields = this.approvalFields(penName, user);
+      const result = await this.requests.update(
+        { id: request.id, status: RequestStatus.Ready },
+        fields,
+      );
+      if (!result.affected) {
+        continue;
+      }
+
+      Object.assign(request, fields);
+      approved.push(request);
     }
 
-    if (approvable.length > 0) {
-      await this.requests.save(approvable);
-    }
-
-    this.logger.log(`${user.name} bulk-approved ${approvable.length} request(s)`);
+    this.logger.log(`${user.name} bulk-approved ${approved.length} request(s)`);
 
     return {
-      approvedCount: approvable.length,
-      requests: approvable.map(toRequestDto),
+      approvedCount: approved.length,
+      requests: approved.map(toRequestDto),
     };
   }
 
@@ -291,14 +313,16 @@ export class RequestsService {
   async reopen(id: string): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    const expectedStatus = request.status;
 
-    request.approvedName = '';
-    request.approvedByName = '';
-    request.approvedById = null;
-    request.approvedAt = null;
-    request.status = request.candidates.length > 0 ? RequestStatus.Ready : RequestStatus.Queued;
+    await this.updateIfStatus(id, expectedStatus, {
+      approvedName: '',
+      approvedByName: '',
+      approvedById: null,
+      approvedAt: null,
+      status: request.candidates.length > 0 ? RequestStatus.Ready : RequestStatus.Queued,
+    });
 
-    await this.requests.save(request);
     return this.findOne(id);
   }
 
@@ -318,17 +342,34 @@ export class RequestsService {
     return this.promptSettings.reset(await this.requireRequest(id), user.id);
   }
 
-  private applyApproval(
-    request: PenNameRequestEntity,
+  private approvalFields(
     penName: string,
     user: AuthenticatedUser,
-  ): void {
-    request.approvedName = penName;
-    request.chosenName = penName;
-    request.approvedByName = user.name;
-    request.approvedById = user.id;
-    request.approvedAt = new Date();
-    request.status = RequestStatus.Approved;
+  ): QueryDeepPartialEntity<PenNameRequestEntity> {
+    return {
+      approvedName: penName,
+      chosenName: penName,
+      approvedByName: user.name,
+      approvedById: user.id,
+      approvedAt: new Date(),
+      status: RequestStatus.Approved,
+    };
+  }
+
+  /**
+   * Persists a patch only when status is still what we read. A concurrent
+   * generate claim flips status to Generating; a stale entity.save() would
+   * write Ready (etc.) back and erase the claim — this UPDATE cannot.
+   */
+  private async updateIfStatus(
+    id: string,
+    expectedStatus: RequestStatus,
+    values: QueryDeepPartialEntity<PenNameRequestEntity>,
+  ): Promise<void> {
+    const result = await this.requests.update({ id, status: expectedStatus }, values);
+    if (!result.affected) {
+      throw new ConflictException('This request is still generating. Try again shortly.');
+    }
   }
 
   private assertNotGenerating(request: PenNameRequestEntity): void {
@@ -337,34 +378,82 @@ export class RequestsService {
     }
   }
 
-  /** Lightweight rows for filtering / pagination — candidates are loaded for the page only. */
-  private async findMatchingSummaries(
+  /** Queue vs history match totals for the current search (one round trip). */
+  private async countMatchingByView(
     search: string,
-  ): Promise<Array<{ id: string; status: RequestStatus; createdAt: Date }>> {
+  ): Promise<{ queue: number; history: number }> {
     const query = this.requests
       .createQueryBuilder('request')
-      .select(['request.id', 'request.status', 'request.createdAt'])
-      .orderBy('request.createdAt', 'DESC');
+      .select(
+        `COUNT(*) FILTER (WHERE request.status != :approved)`,
+        'queue',
+      )
+      .addSelect(
+        `COUNT(*) FILTER (WHERE request.status = :approved)`,
+        'history',
+      )
+      .setParameter('approved', RequestStatus.Approved);
 
-    if (search) {
-      query.andWhere(
-        new Brackets((where) => {
-          where
-            .where('request.legalName ILIKE :term')
-            .orWhere('request.approvedName ILIKE :term')
-            .orWhere('request.chosenName ILIKE :term')
-            .orWhere('request.origin ILIKE :term')
-            .orWhere('request.notes ILIKE :term')
-            .orWhere('request.presentation ILIKE :term')
-            .orWhere(
-              'EXISTS (SELECT 1 FROM candidates match WHERE match."requestId" = request.id AND match.name ILIKE :term)',
-            );
-        }),
-        { term: `%${search}%` },
-      );
+    this.applySearchFilter(query, search);
+
+    const raw = await query.getRawOne<{ queue: string; history: string }>();
+    return {
+      queue: Number(raw?.queue ?? 0),
+      history: Number(raw?.history ?? 0),
+    };
+  }
+
+  /** Ids for one page only — candidates load separately for those rows. */
+  private async findPageIds(
+    view: 'queue' | 'history' | 'all',
+    search: string,
+    limit: number,
+    offset: number,
+  ): Promise<string[]> {
+    const query = this.requests
+      .createQueryBuilder('request')
+      .select(['request.id'])
+      .orderBy('request.createdAt', 'DESC')
+      .skip(offset)
+      .take(limit);
+
+    if (view === 'queue') {
+      query.andWhere('request.status != :approved', { approved: RequestStatus.Approved });
+    } else if (view === 'history') {
+      query.andWhere('request.status = :approved', { approved: RequestStatus.Approved });
     }
 
-    return query.getMany();
+    this.applySearchFilter(query, search);
+
+    const rows = await query.getMany();
+    return rows.map((row) => row.id);
+  }
+
+  private applySearchFilter(
+    query: ReturnType<Repository<PenNameRequestEntity>['createQueryBuilder']>,
+    search: string,
+  ): void {
+    if (!search) {
+      return;
+    }
+
+    // Escape user wildcards; keep our surrounding %…% as the only pattern metacharacters.
+    const term = `%${escapeIlikePattern(search)}%`;
+    query.andWhere(
+      new Brackets((where) => {
+        where
+          .where(`request.legalName ILIKE :term ESCAPE '\\'`)
+          .orWhere(`request.approvedName ILIKE :term ESCAPE '\\'`)
+          .orWhere(`request.chosenName ILIKE :term ESCAPE '\\'`)
+          .orWhere(`request.origin ILIKE :term ESCAPE '\\'`)
+          .orWhere(`request.notes ILIKE :term ESCAPE '\\'`)
+          .orWhere(`request.presentation ILIKE :term ESCAPE '\\'`)
+          .orWhere(
+            `EXISTS (SELECT 1 FROM candidates match WHERE match."requestId" = request.id AND match.name ILIKE :term ESCAPE '\\')`,
+          );
+      }),
+      { term },
+    );
   }
 
   private async loadByIds(ids: string[]): Promise<PenNameRequestEntity[]> {

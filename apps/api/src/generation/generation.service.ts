@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { LessThan, Not, Repository } from 'typeorm';
 
 import { AppConfig } from '../config/configuration';
@@ -46,8 +47,11 @@ const RECLAIM_INTERVAL_MS = 60_000;
 export class GenerationService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(GenerationService.name);
   private readonly staleMs: number;
-  /** In-flight run tokens so a superseded or reclaimed run cannot overwrite a newer claim. */
-  private readonly activeRuns = new Map<string, symbol>();
+  /**
+   * In-process run tokens for early bail-out after reclaim on this instance.
+   * Cross-instance safety uses the durable `generationRunId` column on the row.
+   */
+  private readonly activeRuns = new Map<string, string>();
   private reclaimTimer: ReturnType<typeof setInterval> | undefined;
 
   constructor(
@@ -96,7 +100,7 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
     await this.reclaimStale();
 
     const refine = options.refine ?? request.refine ?? '';
-    const runId = Symbol(request.id);
+    const runId = randomUUID();
 
     const claimed = await this.requests.update(
       { id: request.id, status: Not(RequestStatus.Generating) },
@@ -104,6 +108,7 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
         status: RequestStatus.Generating,
         errorMessage: '',
         refine,
+        generationRunId: runId,
       },
     );
 
@@ -150,7 +155,11 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
 
     const result = await this.requests.update(
       { status: RequestStatus.Generating, updatedAt: LessThan(cutoff) },
-      { status: RequestStatus.Failed, errorMessage: STALE_FAILURE },
+      {
+        status: RequestStatus.Failed,
+        errorMessage: STALE_FAILURE,
+        generationRunId: null,
+      },
     );
 
     if (result.affected) {
@@ -164,7 +173,7 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
   private async execute(
     request: PenNameRequestEntity,
     options: GenerationOptions,
-    runId: symbol,
+    runId: string,
   ): Promise<void> {
     const regenerate = options.regenerate === true;
     const existing = await this.candidates.find({
@@ -238,14 +247,37 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
       discarded: number;
       regenerate: boolean;
     },
-    runId: symbol,
+    runId: string,
   ): Promise<void> {
     if (!this.isCurrentRun(request.id, runId)) {
       return;
     }
 
     await this.requests.manager.transaction(async (manager) => {
-      if (!this.isCurrentRun(request.id, runId)) {
+      // Claim the finish with the durable run token before touching candidates —
+      // otherwise a late worker could mutate rows owned by a newer claim.
+      const keptNames = new Set(input.kept.map((candidate) => candidate.name));
+      const updated = await manager.update(
+        PenNameRequestEntity,
+        {
+          id: request.id,
+          status: RequestStatus.Generating,
+          generationRunId: runId,
+        },
+        {
+          status: RequestStatus.Ready,
+          errorMessage: '',
+          generationRunId: null,
+          discardedCount: input.regenerate
+            ? request.discardedCount + input.discarded
+            : input.discarded,
+          // A fresh list invalidates the selection; a regeneration keeps it only if
+          // the chosen name was locked and therefore survived.
+          chosenName: keptNames.has(request.chosenName) ? request.chosenName : '',
+        },
+      );
+
+      if (!updated.affected) {
         return;
       }
 
@@ -274,25 +306,7 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
         await manager.save(fresh);
       }
 
-      const keptNames = new Set(input.kept.map((candidate) => candidate.name));
-      const updated = await manager.update(
-        PenNameRequestEntity,
-        { id: request.id, status: RequestStatus.Generating },
-        {
-          status: RequestStatus.Ready,
-          errorMessage: '',
-          discardedCount: input.regenerate
-            ? request.discardedCount + input.discarded
-            : input.discarded,
-          // A fresh list invalidates the selection; a regeneration keeps it only if
-          // the chosen name was locked and therefore survived.
-          chosenName: keptNames.has(request.chosenName) ? request.chosenName : '',
-        },
-      );
-
-      if (updated.affected) {
-        this.activeRuns.delete(request.id);
-      }
+      this.activeRuns.delete(request.id);
     });
   }
 
@@ -300,18 +314,19 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
     id: string,
     message: string,
     discardedCount: number,
-    runId: symbol,
+    runId: string,
   ): Promise<void> {
     if (!this.isCurrentRun(id, runId)) {
       return;
     }
 
     const updated = await this.requests.update(
-      { id, status: RequestStatus.Generating },
+      { id, status: RequestStatus.Generating, generationRunId: runId },
       {
         status: RequestStatus.Failed,
         errorMessage: message,
         discardedCount,
+        generationRunId: null,
       },
     );
 
@@ -320,7 +335,7 @@ export class GenerationService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private isCurrentRun(requestId: string, runId: symbol): boolean {
+  private isCurrentRun(requestId: string, runId: string): boolean {
     return this.activeRuns.get(requestId) === runId;
   }
 

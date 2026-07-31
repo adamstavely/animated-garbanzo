@@ -42,6 +42,7 @@ function buildHarness(options: {
     approvedAt: null,
     discardedCount: 0,
     errorMessage: '',
+    generationRunId: null,
     createdById: null,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -49,6 +50,25 @@ function buildHarness(options: {
   } as PenNameRequestEntity;
 
   const written: Written = { removed: [], saved: [], updates: [] };
+
+  function applyGeneratingPredicate(criteria: {
+    status?: unknown;
+    generationRunId?: string | null;
+  }): boolean {
+    if (criteria.status === RequestStatus.Generating) {
+      if (request.status !== RequestStatus.Generating) {
+        return false;
+      }
+      if (
+        'generationRunId' in criteria &&
+        criteria.generationRunId !== undefined &&
+        criteria.generationRunId !== request.generationRunId
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   const manager = {
     remove: jest.fn((rows: CandidateEntity[]) => {
@@ -65,13 +85,11 @@ function buildHarness(options: {
     update: jest.fn(
       (
         _entity: unknown,
-        criteria: string | { id: string; status?: unknown },
+        criteria: string | { id: string; status?: unknown; generationRunId?: string | null },
         values: Partial<PenNameRequestEntity>,
       ) => {
-        if (typeof criteria === 'object' && criteria.status === RequestStatus.Generating) {
-          if (request.status !== RequestStatus.Generating) {
-            return Promise.resolve({ affected: 0 });
-          }
+        if (typeof criteria === 'object' && !applyGeneratingPredicate(criteria)) {
+          return Promise.resolve({ affected: 0 });
         }
         Object.assign(request, values);
         written.updates.push(values);
@@ -83,7 +101,14 @@ function buildHarness(options: {
   const requests = {
     update: jest.fn(
       (
-        criteria: string | { id: string; status?: unknown; updatedAt?: unknown },
+        criteria:
+          | string
+          | {
+              id?: string;
+              status?: unknown;
+              updatedAt?: unknown;
+              generationRunId?: string | null;
+            },
         values: Partial<PenNameRequestEntity>,
       ) => {
         // Atomic claim: UPDATE … WHERE status <> generating (TypeORM `Not`).
@@ -101,11 +126,7 @@ function buildHarness(options: {
           return Promise.resolve({ affected: 1 });
         }
 
-        if (
-          typeof criteria === 'object' &&
-          criteria.status === RequestStatus.Generating &&
-          request.status !== RequestStatus.Generating
-        ) {
+        if (typeof criteria === 'object' && !applyGeneratingPredicate(criteria)) {
           return Promise.resolve({ affected: 0 });
         }
 
@@ -181,6 +202,7 @@ describe('GenerationService', () => {
     expect(written.updates[0]).toMatchObject({
       status: RequestStatus.Generating,
       errorMessage: '',
+      generationRunId: expect.any(String),
     });
     await handle.completion;
   });
@@ -200,8 +222,73 @@ describe('GenerationService', () => {
 
     expect(requests.update).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'r1', status: expect.anything() }),
-      expect.objectContaining({ status: RequestStatus.Generating }),
+      expect.objectContaining({
+        status: RequestStatus.Generating,
+        generationRunId: expect.any(String),
+      }),
     );
+  });
+
+  it('does not let a superseded run overwrite a newer claim', async () => {
+    let releaseGenerate!: () => void;
+    const generateGate = new Promise<void>((resolve) => {
+      releaseGenerate = resolve;
+    });
+
+    const { service, request, written, generator } = buildHarness({
+      generated: [{ name: 'Bridget C. Ashworth' }],
+    });
+
+    (generator.generate as jest.Mock).mockImplementation(async () => {
+      await generateGate;
+      return [{ name: 'Bridget C. Ashworth' }];
+    });
+
+    const handle = await service.start(request);
+    const staleRunId = request.generationRunId;
+    expect(staleRunId).toEqual(expect.any(String));
+
+    // Simulate reclaim + claim on another instance: durable token rotates while
+    // this worker is still mid-model-call (in-process map still holds the old id).
+    request.status = RequestStatus.Generating;
+    request.generationRunId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    (service as unknown as { activeRuns: Map<string, string> }).activeRuns.set(
+      request.id,
+      staleRunId!,
+    );
+
+    releaseGenerate();
+    await handle.completion;
+
+    expect(written.removed).toEqual([]);
+    expect(written.saved).toEqual([]);
+    expect(written.updates.some((update) => update.status === RequestStatus.Ready)).toBe(false);
+    expect(request.status).toBe(RequestStatus.Generating);
+    expect(request.generationRunId).toBe('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
+  });
+
+  it('clears the durable run token when reclaiming stale rows', async () => {
+    const stale = new Date(Date.now() - 200_000);
+    const { service, request, requests } = buildHarness({
+      request: {
+        status: RequestStatus.Generating,
+        generationRunId: '11111111-2222-3333-4444-555555555555',
+        updatedAt: stale,
+      },
+    });
+
+    (requests.find as jest.Mock).mockResolvedValue([{ id: request.id }]);
+
+    await expect(service.reclaimStale()).resolves.toBe(1);
+
+    expect(requests.update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: RequestStatus.Generating }),
+      expect.objectContaining({
+        status: RequestStatus.Failed,
+        generationRunId: null,
+      }),
+    );
+    expect(request.generationRunId).toBeNull();
   });
 
   it('stores cleared candidates and counts what screening discarded', async () => {

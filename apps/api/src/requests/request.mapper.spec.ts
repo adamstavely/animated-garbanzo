@@ -33,12 +33,13 @@ function request(over: Partial<PenNameRequestEntity> = {}): PenNameRequestEntity
     approvedAt: null,
     discardedCount: 4,
     errorMessage: '',
+    generationRunId: null,
     createdById: null,
     createdBy: null,
     createdAt: new Date('2026-07-30T09:14:00Z'),
     updatedAt: new Date('2026-07-30T09:14:00Z'),
     ...over,
-  };
+  } as PenNameRequestEntity;
 }
 
 describe('resolveProposedName', () => {

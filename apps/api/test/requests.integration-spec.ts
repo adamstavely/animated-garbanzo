@@ -350,20 +350,27 @@ describe('Requests (integration)', () => {
   });
 
   describe('rate limits', () => {
-    function fillBucket(key: 'create' | 'generate' | 'approveAll'): void {
+    async function fillBucket(key: 'list' | 'create' | 'generate' | 'approveAll'): Promise<void> {
       const limiter = harness.app.get(RateLimiter);
       const rateLimit = harness.app.get(ConfigService<AppConfig, true>).get('rateLimit', {
         infer: true,
       });
       const limit = rateLimit[key];
+      const bucketKey = `${key === 'approveAll' ? 'approve-all' : key}:${harness.user.id}`;
       for (let i = 0; i < limit; i++) {
-        limiter.consume(`${key === 'approveAll' ? 'approve-all' : key}:${harness.user.id}`, limit, rateLimit.windowMs);
+        await limiter.consume(bucketKey, limit, rateLimit.windowMs);
       }
     }
 
+    it('returns 429 when list is over the per-user limit', async () => {
+      await fillBucket('list');
+
+      await auth(http().get(`${API}/requests`)).expect(429);
+    });
+
     it('returns 429 when generate is over the per-user limit', async () => {
       const created = await createRequest();
-      fillBucket('generate');
+      await fillBucket('generate');
 
       await auth(http().post(`${API}/requests/${created.id}/generate`))
         .send({})
@@ -372,13 +379,13 @@ describe('Requests (integration)', () => {
 
     it('returns 429 when approve-all is over the per-user limit', async () => {
       await createRequest();
-      fillBucket('approveAll');
+      await fillBucket('approveAll');
 
       await auth(http().post(`${API}/requests/approve-all`)).expect(429);
     });
 
     it('returns 429 when create is over the per-user limit', async () => {
-      fillBucket('create');
+      await fillBucket('create');
 
       await auth(http().post(`${API}/requests`))
         .send({
@@ -431,6 +438,23 @@ describe('Requests (integration)', () => {
 
       expect(items).toHaveLength(1);
       expect(items[0]?.candidates.length).toBeGreaterThan(1);
+    });
+
+    it('treats % and _ as literal characters, not ILIKE wildcards', async () => {
+      await createRequest({ notes: 'Roughly 50% complete.' });
+      await createRequest({
+        firstName: 'Daniel',
+        middleInitial: 'O',
+        lastName: 'Reyes',
+        notes: 'No percent here.',
+      });
+
+      const byPercent = await auth(http().get(`${API}/requests`).query({ q: '%' })).expect(200);
+      expect((byPercent.body as RequestListDto).items).toHaveLength(1);
+      expect((byPercent.body as RequestListDto).items[0]?.notes).toContain('50%');
+
+      const byUnderscore = await auth(http().get(`${API}/requests`).query({ q: '_' })).expect(200);
+      expect((byUnderscore.body as RequestListDto).items).toHaveLength(0);
     });
 
     it('reports how many matches sit on the other tab', async () => {

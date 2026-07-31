@@ -95,7 +95,7 @@ describe('RequestsStore', () => {
     expect(store.query()).toBe('  ashworth  ');
   });
 
-  it('surfaces a readable message when loading fails', async () => {
+  it('surfaces a safe fallback when loading fails', async () => {
     const loading = store.load();
 
     http
@@ -103,7 +103,7 @@ describe('RequestsStore', () => {
       .flush({ message: 'Sign in to continue.' }, { status: 401, statusText: 'Unauthorized' });
     await loading;
 
-    expect(store.error()).toBe('Sign in to continue.');
+    expect(store.error()).toBe('Could not load requests.');
     expect(store.loading()).toBe(false);
   });
 
@@ -212,17 +212,19 @@ describe('RequestsStore', () => {
 });
 
 describe('describeError', () => {
-  it('reads a Nest error message', () => {
-    expect(describeError({ error: { message: 'Nope.' } }, 'fallback')).toBe('Nope.');
+  it('ignores Nest string bodies and uses the safe fallback', () => {
+    expect(describeError({ error: { message: 'Internal stack dump' } }, 'fallback')).toBe(
+      'fallback',
+    );
   });
 
-  it('joins the array of validation messages Nest returns', () => {
+  it('ignores Nest validation arrays', () => {
     expect(
       describeError({ error: { message: ['a must be set', 'b must be set'] } }, 'fallback'),
-    ).toBe('a must be set b must be set');
+    ).toBe('fallback');
   });
 
-  it('falls back for anything else', () => {
+  it('uses the fallback for any other failure shape', () => {
     expect(describeError(new Error('boom'), 'fallback')).toBe('fallback');
     expect(describeError(null, 'fallback')).toBe('fallback');
     expect(describeError({ error: { message: [] } }, 'fallback')).toBe('fallback');

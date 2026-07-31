@@ -26,6 +26,7 @@ describe('loadConfiguration', () => {
     expect(config.oidc.adminRoles).toEqual([]);
     expect(config.generation.staleMs).toBe(150_000);
     expect(config.requests.listDefaultLimit).toBe(100);
+    expect(config.rateLimit.list).toBe(120);
     expect(config.rateLimit.generate).toBe(20);
   });
 

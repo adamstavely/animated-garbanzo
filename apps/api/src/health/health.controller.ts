@@ -54,11 +54,4 @@ export class HealthController {
   check(): Promise<HealthCheckResult> {
     return this.ready();
   }
-
-  @Public()
-  @Get('live')
-  @ApiOperation({ summary: 'Liveness probe: the process only, no dependencies.' })
-  live(): { status: 'ok' } {
-    return { status: 'ok' };
-  }
 }
