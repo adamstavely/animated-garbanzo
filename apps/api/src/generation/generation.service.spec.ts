@@ -67,11 +67,26 @@ function buildHarness(options: {
   };
 
   const requests = {
-    update: jest.fn((_id: string, values: Partial<PenNameRequestEntity>) => {
-      Object.assign(request, values);
-      written.updates.push(values);
-      return Promise.resolve();
-    }),
+    update: jest.fn(
+      (
+        criteria: string | { id: string; status?: unknown },
+        values: Partial<PenNameRequestEntity>,
+      ) => {
+        // Atomic claim: UPDATE … WHERE status <> generating.
+        if (typeof criteria === 'object' && 'status' in criteria) {
+          if (request.status === RequestStatus.Generating) {
+            return Promise.resolve({ affected: 0 });
+          }
+          Object.assign(request, values);
+          written.updates.push(values);
+          return Promise.resolve({ affected: 1 });
+        }
+
+        Object.assign(request, values);
+        written.updates.push(values);
+        return Promise.resolve({ affected: 1 });
+      },
+    ),
     findOne: jest.fn(() => Promise.resolve(request)),
     manager: {
       transaction: jest.fn((work: (m: typeof manager) => Promise<void>) => work(manager)),
@@ -131,6 +146,19 @@ describe('GenerationService', () => {
     const { service, request } = buildHarness({ request: { status: RequestStatus.Generating } });
 
     await expect(service.start(request)).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('claims the row with a status predicate so overlapping starts cannot both proceed', async () => {
+    const { service, request, requests } = buildHarness({
+      generated: [{ name: 'Bridget C. Ashworth' }],
+    });
+
+    await (await service.start(request)).completion;
+
+    expect(requests.update).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'r1', status: expect.anything() }),
+      expect.objectContaining({ status: RequestStatus.Generating }),
+    );
   });
 
   it('stores cleared candidates and counts what screening discarded', async () => {

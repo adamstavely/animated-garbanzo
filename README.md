@@ -87,7 +87,8 @@ Notable decisions:
 - **Generation is asynchronous.** A model call takes tens of seconds, so
   `POST /requests/:id/generate` returns `202` immediately and the row shows
   "Generating…" while the client polls. A second concurrent run on the same
-  request is rejected with `409`.
+  request is rejected with `409` via an atomic status claim, so overlapping
+  API instances cannot both start model calls for one row.
 - **Sessions, not IdP tokens, reach the browser.** After the code exchange the API
   mints a short-lived HS256 JWT in an httpOnly, SameSite=Lax cookie. No
   server-side session store is needed and no provider token is exposed.
@@ -242,7 +243,8 @@ moves the request to History. Reopening clears the approval.
 - **Commits and reviews.** `npm run lint`, `npm run typecheck` and `npm test` must
   pass; CI runs all three plus the end-to-end suite.
 - **Schema changes go through migrations.** `DATABASE_SYNCHRONIZE` stays false
-  outside local experimentation.
+  outside local experimentation, and production boot refuses it along with an
+  insecure session cookie or unverified database TLS.
 - **New endpoints are authenticated by default.** Marking one `@Public()` should
   be a deliberate, reviewed decision.
 - **New styling values go in `tokens.css` first.** A literal colour or size in a

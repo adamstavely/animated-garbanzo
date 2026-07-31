@@ -34,13 +34,63 @@ describe('loadConfiguration', () => {
 
     expect(config.port).toBe(8080);
     expect(config.database.ssl).toBe(true);
+    expect(config.database.sslRejectUnauthorized).toBe(true);
     expect(config.session.secureCookie).toBe(false);
     expect(config.anthropic.maxTokens).toBe(1500);
+  });
+
+  it('allows disabling TLS verification only outside production', () => {
+    const config = loadConfiguration({
+      ...validEnv,
+      NODE_ENV: 'development',
+      DATABASE_SSL: 'true',
+      DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+    });
+
+    expect(config.database.ssl).toBe(true);
+    expect(config.database.sslRejectUnauthorized).toBe(false);
   });
 
   it('marks production explicitly', () => {
     expect(loadConfiguration({ ...validEnv, NODE_ENV: 'production' }).isProduction).toBe(true);
     expect(loadConfiguration(validEnv).isProduction).toBe(false);
+  });
+
+  it.each([
+    ['DATABASE_SYNCHRONIZE', 'true', /DATABASE_SYNCHRONIZE/],
+    ['SESSION_COOKIE_SECURE', 'false', /SESSION_COOKIE_SECURE/],
+  ])('refuses %s=%s in production', (key, value, pattern) => {
+    expect(() =>
+      loadConfiguration({ ...validEnv, NODE_ENV: 'production', [key]: value }),
+    ).toThrow(pattern);
+  });
+
+  it('refuses unverified database TLS in production', () => {
+    expect(() =>
+      loadConfiguration({
+        ...validEnv,
+        NODE_ENV: 'production',
+        DATABASE_SSL: 'true',
+        DATABASE_SSL_REJECT_UNAUTHORIZED: 'false',
+      }),
+    ).toThrow(/DATABASE_SSL_REJECT_UNAUTHORIZED/);
+  });
+
+  it('boots production with synchronize off, secure cookie, and verified TLS', () => {
+    const config = loadConfiguration({
+      ...validEnv,
+      NODE_ENV: 'production',
+      DATABASE_SSL: 'true',
+      DATABASE_SSL_REJECT_UNAUTHORIZED: 'true',
+      DATABASE_SYNCHRONIZE: 'false',
+      SESSION_COOKIE_SECURE: 'true',
+    });
+
+    expect(config.isProduction).toBe(true);
+    expect(config.database.ssl).toBe(true);
+    expect(config.database.sslRejectUnauthorized).toBe(true);
+    expect(config.database.synchronize).toBe(false);
+    expect(config.session.secureCookie).toBe(true);
   });
 
   it.each([

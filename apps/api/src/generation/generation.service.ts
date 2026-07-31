@@ -1,7 +1,7 @@
 import { RequestStatus } from '@nym/shared';
 import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { NAME_GENERATOR, NameGenerator } from './name-generator.interface';
@@ -45,24 +45,27 @@ export class GenerationService {
   /**
    * Marks a request as generating and starts the run.
    *
-   * Rejects a second concurrent run for the same request: two runs would race on
-   * the candidate list and the discard tally.
+   * The claim is a single UPDATE … WHERE status <> generating so two API
+   * instances cannot both start Anthropic runs for the same row.
    */
   async start(
     request: PenNameRequestEntity,
     options: GenerationOptions = {},
   ): Promise<GenerationHandle> {
-    if (request.status === RequestStatus.Generating) {
-      throw new ConflictException('This request is already generating.');
-    }
-
     const refine = options.refine ?? request.refine ?? '';
 
-    await this.requests.update(request.id, {
-      status: RequestStatus.Generating,
-      errorMessage: '',
-      refine,
-    });
+    const claimed = await this.requests.update(
+      { id: request.id, status: Not(RequestStatus.Generating) },
+      {
+        status: RequestStatus.Generating,
+        errorMessage: '',
+        refine,
+      },
+    );
+
+    if (!claimed.affected) {
+      throw new ConflictException('This request is already generating.');
+    }
 
     const marked = await this.requireRequest(request.id);
     const completion = this.execute(marked, { ...options, refine }).catch((error: unknown) => {

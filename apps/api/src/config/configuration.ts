@@ -11,47 +11,83 @@ const booleanish = z
   .enum(['true', 'false', '1', '0'])
   .transform((value) => value === 'true' || value === '1');
 
-export const environmentSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(3000),
-  API_PREFIX: z.string().default('api/v1'),
+export const environmentSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().int().positive().default(3000),
+    API_PREFIX: z.string().default('api/v1'),
 
-  /** Origin allowed to call the API with credentials, i.e. the Angular app. */
-  WEB_ORIGIN: z.string().url().default('http://localhost:4200'),
-  /** Where the OIDC callback sends the browser once a session exists. */
-  WEB_APP_URL: z.string().url().default('http://localhost:4200'),
+    /** Origin allowed to call the API with credentials, i.e. the Angular app. */
+    WEB_ORIGIN: z.string().url().default('http://localhost:4200'),
+    /** Where the OIDC callback sends the browser once a session exists. */
+    WEB_APP_URL: z.string().url().default('http://localhost:4200'),
 
-  DATABASE_URL: z.string().min(1),
-  DATABASE_SSL: booleanish.default('false'),
-  /** Never enable outside local development; migrations are the supported path. */
-  DATABASE_SYNCHRONIZE: booleanish.default('false'),
-  DATABASE_LOGGING: booleanish.default('false'),
+    DATABASE_URL: z.string().min(1),
+    DATABASE_SSL: booleanish.default('false'),
+    /**
+     * Verify the database TLS certificate when DATABASE_SSL is on.
+     * Set false only as a local break-glass for self-signed hosts; refused in
+     * production.
+     */
+    DATABASE_SSL_REJECT_UNAUTHORIZED: booleanish.default('true'),
+    /** Never enable outside local development; migrations are the supported path. */
+    DATABASE_SYNCHRONIZE: booleanish.default('false'),
+    DATABASE_LOGGING: booleanish.default('false'),
 
-  ANTHROPIC_API_KEY: z.string().min(1),
-  ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
-  ANTHROPIC_MAX_TOKENS: z.coerce.number().int().positive().default(3000),
-  ANTHROPIC_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
-  ANTHROPIC_MAX_RETRIES: z.coerce.number().int().min(0).default(2),
+    ANTHROPIC_API_KEY: z.string().min(1),
+    ANTHROPIC_MODEL: z.string().default('claude-sonnet-5'),
+    ANTHROPIC_MAX_TOKENS: z.coerce.number().int().positive().default(3000),
+    ANTHROPIC_TIMEOUT_MS: z.coerce.number().int().positive().default(120_000),
+    ANTHROPIC_MAX_RETRIES: z.coerce.number().int().min(0).default(2),
 
-  OIDC_ISSUER_URL: z.string().url(),
-  OIDC_CLIENT_ID: z.string().min(1),
-  OIDC_CLIENT_SECRET: z.string().min(1),
-  OIDC_REDIRECT_URI: z.string().url(),
-  OIDC_SCOPES: z.string().default('openid profile email'),
-  OIDC_POST_LOGOUT_REDIRECT_URI: z.string().url().optional(),
-  /** Claim names differ per IdP (Entra, Okta, Auth0, Keycloak), so they are configurable. */
-  OIDC_NAME_CLAIM: z.string().default('name'),
-  OIDC_EMAIL_CLAIM: z.string().default('email'),
-  OIDC_ROLE_CLAIM: z.string().default('role'),
-  OIDC_DEFAULT_ROLE: z.string().default('Publishing assistant'),
+    OIDC_ISSUER_URL: z.string().url(),
+    OIDC_CLIENT_ID: z.string().min(1),
+    OIDC_CLIENT_SECRET: z.string().min(1),
+    OIDC_REDIRECT_URI: z.string().url(),
+    OIDC_SCOPES: z.string().default('openid profile email'),
+    OIDC_POST_LOGOUT_REDIRECT_URI: z.string().url().optional(),
+    /** Claim names differ per IdP (Entra, Okta, Auth0, Keycloak), so they are configurable. */
+    OIDC_NAME_CLAIM: z.string().default('name'),
+    OIDC_EMAIL_CLAIM: z.string().default('email'),
+    OIDC_ROLE_CLAIM: z.string().default('role'),
+    OIDC_DEFAULT_ROLE: z.string().default('Publishing assistant'),
 
-  /** Signs the httpOnly session cookie issued after a successful OIDC exchange. */
-  SESSION_SECRET: z.string().min(32),
-  SESSION_COOKIE_NAME: z.string().default('nym_session'),
-  SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(28_800),
-  SESSION_COOKIE_SECURE: booleanish.default('true'),
-  SESSION_COOKIE_DOMAIN: z.string().optional(),
-});
+    /** Signs the httpOnly session cookie issued after a successful OIDC exchange. */
+    SESSION_SECRET: z.string().min(32),
+    SESSION_COOKIE_NAME: z.string().default('nym_session'),
+    SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(28_800),
+    SESSION_COOKIE_SECURE: booleanish.default('true'),
+    SESSION_COOKIE_DOMAIN: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.NODE_ENV !== 'production') {
+      return;
+    }
+
+    if (value.DATABASE_SYNCHRONIZE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['DATABASE_SYNCHRONIZE'],
+        message: 'must be false in production; use migrations',
+      });
+    }
+
+    if (!value.SESSION_COOKIE_SECURE) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['SESSION_COOKIE_SECURE'],
+        message: 'must be true in production',
+      });
+    }
+
+    if (value.DATABASE_SSL && !value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['DATABASE_SSL_REJECT_UNAUTHORIZED'],
+        message: 'must be true in production when DATABASE_SSL is enabled',
+      });
+    }
+  });
 
 export type Environment = z.infer<typeof environmentSchema>;
 
@@ -65,6 +101,7 @@ export interface AppConfig {
   database: {
     url: string;
     ssl: boolean;
+    sslRejectUnauthorized: boolean;
     synchronize: boolean;
     logging: boolean;
   };
@@ -122,6 +159,7 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
     database: {
       url: value.DATABASE_URL,
       ssl: value.DATABASE_SSL,
+      sslRejectUnauthorized: value.DATABASE_SSL_REJECT_UNAUTHORIZED,
       synchronize: value.DATABASE_SYNCHRONIZE,
       logging: value.DATABASE_LOGGING,
     },
