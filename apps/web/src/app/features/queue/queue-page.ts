@@ -8,6 +8,7 @@ import { ToastService } from '../../core/state/toast.service';
 import { pluralise } from '../../core/util/format';
 import { ButtonComponent } from '../../ui/button/button';
 import { EmptyStateComponent } from '../../ui/empty-state/empty-state';
+import { SpinnerComponent } from '../../ui/spinner/spinner';
 import { QueueTableComponent } from './queue-table';
 
 /**
@@ -19,9 +20,15 @@ import { QueueTableComponent } from './queue-table';
 @Component({
   selector: 'nym-queue-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonComponent, EmptyStateComponent, LucideCheckCheck, QueueTableComponent],
+  imports: [
+    ButtonComponent,
+    EmptyStateComponent,
+    LucideCheckCheck,
+    QueueTableComponent,
+    SpinnerComponent,
+  ],
   templateUrl: './queue-page.html',
-  styleUrls: ['../../ui/page/page.css', './queue-page.css'],
+  styleUrls: ['../../ui/page/page.css', '../../ui/table/table.css', './queue-page.css'],
 })
 export class QueuePageComponent {
   private readonly store = inject(RequestsStore);
@@ -30,6 +37,7 @@ export class QueuePageComponent {
 
   protected readonly requests = this.store.queueRequests;
   protected readonly error = this.store.error;
+  protected readonly loading = this.store.loading;
   protected readonly canAdminister = this.auth.canAdminister;
   protected readonly listTruncated = this.store.listTruncated;
   protected readonly listTotal = this.store.listTotal;

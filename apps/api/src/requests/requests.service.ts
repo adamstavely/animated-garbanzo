@@ -22,7 +22,7 @@ import { RateLimiter } from '../common/rate-limiter';
 import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { GenerationService } from '../generation/generation.service';
-import { composeLegalName, normaliseName } from '../generation/name-rules';
+import { composeLegalName, normaliseName, overlapsLegalName } from '../generation/name-rules';
 import { PromptSettingsService } from '../generation/prompt-settings.service';
 import {
   ApproveRequestDto,
@@ -35,6 +35,10 @@ import {
   UpdateRequestDto,
 } from './dto';
 import { resolveProposedName, toRequestDto } from './request.mapper';
+
+/** Status drifted under a conditional write — not only generate races. */
+const STATUS_CONFLICT =
+  'This request changed while you were working. Refresh and try again.';
 
 /**
  * Everything an assistant can do to a pen name request.
@@ -183,7 +187,7 @@ export class RequestsService {
     // (and CASCADE its candidates) while the worker is still mid-flight.
     const result = await this.requests.delete({ id, status: request.status });
     if (!result.affected) {
-      throw new ConflictException('This request is still generating. Try again shortly.');
+      throw new ConflictException(STATUS_CONFLICT);
     }
   }
 
@@ -228,11 +232,20 @@ export class RequestsService {
     if (penName && !request.candidates.some((candidate) => candidate.name === penName)) {
       throw new BadRequestException('That name is not among the cleared candidates.');
     }
+    // Live re-screen: a brief legal-name edit can invalidate a previously cleared name.
+    if (penName) {
+      this.assertClearOfLegalName(penName, request.legalName);
+    }
 
     await this.updateIfStatus(id, expectedStatus, { chosenName: penName });
     return this.findOne(id);
   }
 
+  /**
+   * Locks or unlocks a candidate. Serialises with generate's claim: the request
+   * row is locked under the status we read, so a mid-toggle claim cannot leave
+   * execute's snapped keep/replace set disagreeing with the UI.
+   */
   async toggleLock(
     id: string,
     candidateId: string,
@@ -240,14 +253,28 @@ export class RequestsService {
   ): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    this.assertNotApproved(request);
+    const expectedStatus = request.status;
 
-    const candidate = await this.candidates.findOne({ where: { id: candidateId, requestId: id } });
-    if (!candidate) {
-      throw new NotFoundException(`Candidate ${candidateId} was not found on request ${id}.`);
-    }
+    await this.requests.manager.transaction(async (manager) => {
+      const current = await manager.findOne(PenNameRequestEntity, {
+        where: { id, status: expectedStatus },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!current) {
+        throw new ConflictException(STATUS_CONFLICT);
+      }
 
-    candidate.locked = dto.locked;
-    await this.candidates.save(candidate);
+      const result = await manager.update(
+        CandidateEntity,
+        { id: candidateId, requestId: id },
+        { locked: dto.locked },
+      );
+      if (!result.affected) {
+        throw new NotFoundException(`Candidate ${candidateId} was not found on request ${id}.`);
+      }
+    });
+
     return this.findOne(id);
   }
 
@@ -272,6 +299,8 @@ export class RequestsService {
     if (!request.candidates.some((candidate) => candidate.name === penName)) {
       throw new BadRequestException('That name is not among the cleared candidates.');
     }
+    // Same live overlap the Checks column and refine cards show after a brief edit.
+    this.assertClearOfLegalName(penName, request.legalName);
 
     await this.updateIfStatus(id, RequestStatus.Ready, this.approvalFields(penName, user));
 
@@ -297,7 +326,8 @@ export class RequestsService {
 
     for (const request of ready) {
       const penName = resolveProposedName(request);
-      if (!penName) {
+      // Skip empty or live-overlap failures — same gate as single approve.
+      if (!penName || overlapsLegalName(penName, request.legalName)) {
         continue;
       }
 
@@ -322,13 +352,16 @@ export class RequestsService {
     };
   }
 
-  /** Returns an approved request to the queue and clears its audit stamp. */
+  /**
+   * Returns an approved History row to the queue and clears its audit stamp.
+   * Approved-only — Failed regen keeps prior candidates, and promoting those to
+   * Ready would let approve launder past the Ready-only gate.
+   */
   async reopen(id: string): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
-    this.assertNotGenerating(request);
-    const expectedStatus = request.status;
+    this.assertApprovedForReopen(request);
 
-    await this.updateIfStatus(id, expectedStatus, {
+    await this.updateIfStatus(id, RequestStatus.Approved, {
       approvedName: '',
       approvedByName: '',
       approvedById: null,
@@ -349,6 +382,7 @@ export class RequestsService {
   ): Promise<PromptSettingsDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    this.assertNotApproved(request);
     const patch = this.promptSettings.overrideColumns(request, dto);
     await this.updateIfStatus(id, request.status, patch);
     Object.assign(request, patch);
@@ -358,6 +392,7 @@ export class RequestsService {
   async resetPromptSettings(id: string): Promise<PromptSettingsDto> {
     const request = await this.requireRequest(id);
     this.assertNotGenerating(request);
+    this.assertNotApproved(request);
     const patch = this.promptSettings.clearedOverrides();
     await this.updateIfStatus(id, request.status, patch);
     Object.assign(request, patch);
@@ -390,7 +425,7 @@ export class RequestsService {
   ): Promise<void> {
     const result = await this.requests.update({ id, status: expectedStatus }, values);
     if (!result.affected) {
-      throw new ConflictException('This request is still generating. Try again shortly.');
+      throw new ConflictException(STATUS_CONFLICT);
     }
   }
 
@@ -400,10 +435,21 @@ export class RequestsService {
     }
   }
 
-  /** History rows stay sealed until reopen — no silent brief or selection drift. */
+  /** History rows stay sealed until reopen — no silent brief, selection, lock, or prompt drift. */
   private assertNotApproved(request: PenNameRequestEntity): void {
     if (request.status === RequestStatus.Approved) {
       throw new BadRequestException('Reopen this request before making changes.');
+    }
+  }
+
+  /**
+   * Re-screens against the current legal name. Generation already filtered once,
+   * but a later brief edit must not leave choose/approve able to sign off a name
+   * the UI marks as overlapping.
+   */
+  private assertClearOfLegalName(penName: string, legalName: string): void {
+    if (overlapsLegalName(penName, legalName)) {
+      throw new BadRequestException('That name overlaps the author’s legal name.');
     }
   }
 
@@ -412,6 +458,14 @@ export class RequestsService {
     this.assertNotGenerating(request);
     if (request.status !== RequestStatus.Ready) {
       throw new BadRequestException('Only ready requests can be approved.');
+    }
+  }
+
+  /** Reopen is the History return path — not a Failed→Ready promotion. */
+  private assertApprovedForReopen(request: PenNameRequestEntity): void {
+    this.assertNotGenerating(request);
+    if (request.status !== RequestStatus.Approved) {
+      throw new BadRequestException('Only approved requests can be reopened.');
     }
   }
 

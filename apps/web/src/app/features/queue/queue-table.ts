@@ -1,4 +1,4 @@
-import { PenNameRequestDto, RequestStatus } from '@nym/shared';
+import { CheckId, PenNameRequestDto, RequestStatus } from '@nym/shared';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideCheck, LucidePencil, LucideRotateCw } from '@lucide/angular';
@@ -46,7 +46,17 @@ export class QueueTableComponent {
     return request.status === RequestStatus.Failed;
   }
 
+  /**
+   * Approve only when Ready with a proposed name that still clears live overlap.
+   * The Checks column already re-screens after a legal-name edit — the button
+   * must not offer a sign-off the API (and the failed check) would refuse.
+   */
   protected canApprove(request: PenNameRequestDto): boolean {
-    return request.status === RequestStatus.Ready && request.proposedName !== '';
+    if (request.status !== RequestStatus.Ready || !request.proposedName) {
+      return false;
+    }
+    return request.checks.every(
+      (check) => check.id !== CheckId.Overlap || check.outcome !== 'failed',
+    );
   }
 }

@@ -5,15 +5,16 @@ import { RequestsStore, describeError } from '../../core/state/requests.store';
 import { ToastService } from '../../core/state/toast.service';
 import { pluralise } from '../../core/util/format';
 import { EmptyStateComponent } from '../../ui/empty-state/empty-state';
+import { SpinnerComponent } from '../../ui/spinner/spinner';
 import { HistoryTableComponent } from './history-table';
 
 /** Completed requests. Reopening one clears the approval and returns it to the queue. */
 @Component({
   selector: 'nym-history-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [EmptyStateComponent, HistoryTableComponent],
+  imports: [EmptyStateComponent, HistoryTableComponent, SpinnerComponent],
   templateUrl: './history-page.html',
-  styleUrls: ['../../ui/page/page.css'],
+  styleUrls: ['../../ui/page/page.css', '../../ui/table/table.css'],
 })
 export class HistoryPageComponent {
   private readonly store = inject(RequestsStore);
@@ -21,6 +22,7 @@ export class HistoryPageComponent {
 
   protected readonly requests = this.store.historyRequests;
   protected readonly error = this.store.error;
+  protected readonly loading = this.store.loading;
   protected readonly listTruncated = this.store.listTruncated;
   protected readonly listTotal = this.store.listTotal;
   protected readonly shownCount = computed(() => this.store.requests().length);

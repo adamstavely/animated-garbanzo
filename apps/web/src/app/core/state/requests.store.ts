@@ -25,7 +25,7 @@ export class RequestsStore {
 
   private readonly requestsState = signal<readonly PenNameRequestDto[]>([]);
   private readonly queryState = signal('');
-  private readonly loadingState = signal(false);
+  private readonly loadingState = signal(true);
   private readonly errorState = signal('');
   private readonly queueMatchesState = signal(0);
   private readonly historyMatchesState = signal(0);
@@ -71,10 +71,18 @@ export class RequestsStore {
   /** True when the API has more matching rows than this load returned. */
   readonly listTruncated = computed(() => this.totalState() > this.requestsState().length);
 
-  /** True while at least one request is mid-generation. */
-  readonly hasPendingGeneration = computed(() =>
-    this.requestsState().some((request) => request.status === RequestStatus.Generating),
-  );
+  /**
+   * True while a list or pinned request is mid-generation.
+   * The pin must count: search / the 200-row ceiling can drop the open row from
+   * `requestsState` while `syncPinned` still holds it — otherwise polling stops
+   * and the edit page sticks on “Working…”.
+   */
+  readonly hasPendingGeneration = computed(() => {
+    if (this.requestsState().some((request) => request.status === RequestStatus.Generating)) {
+      return true;
+    }
+    return this.pinnedRequestState()?.status === RequestStatus.Generating;
+  });
 
   /** Requests that could be approved right now, for the bulk button's count. */
   readonly readyCount = computed(

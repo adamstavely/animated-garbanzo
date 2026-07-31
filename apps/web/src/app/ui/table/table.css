@@ -16,6 +16,12 @@
   box-shadow: var(--shadow-card);
 }
 
+.table-card__loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-23) var(--row-padding-x);
+}
+
 .table {
   display: block;
   width: 100%;

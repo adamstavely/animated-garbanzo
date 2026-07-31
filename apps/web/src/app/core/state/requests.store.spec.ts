@@ -66,6 +66,10 @@ describe('RequestsStore', () => {
     http.verify();
   });
 
+  it('starts loading so the queue does not flash an empty state on cold load', () => {
+    expect(store.loading()).toBe(true);
+  });
+
   it('splits the loaded list into the queue and history tabs', async () => {
     const loading = store.load();
 
@@ -252,6 +256,49 @@ describe('RequestsStore', () => {
 
     expect(store.requests()).toHaveLength(0);
     expect(store.byId('r1')?.id).toBe('r1');
+  });
+
+  it('keeps polling when a pinned generating request drops off the filtered list', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const loading = store.load();
+      http
+        .expectOne(`${BASE}/requests?view=all&limit=200`)
+        .flush(listResponse([makeRequest({ status: RequestStatus.Generating })]));
+      await loading;
+      TestBed.tick();
+
+      store.pin('r1');
+      store.setQuery('no-match');
+      const refreshing = store.refresh();
+      http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+      await Promise.resolve();
+      http
+        .expectOne(`${BASE}/requests/r1`)
+        .flush(makeRequest({ status: RequestStatus.Generating }));
+      await refreshing;
+      TestBed.tick();
+
+      expect(store.requests()).toHaveLength(0);
+      expect(store.byId('r1')?.status).toBe(RequestStatus.Generating);
+      expect(store.hasPendingGeneration()).toBe(true);
+
+      vi.advanceTimersByTime(GENERATION_POLL_MS);
+      http.expectOne(`${BASE}/requests?view=all&q=no-match&limit=200`).flush(listResponse([]));
+      await Promise.resolve();
+      http.expectOne(`${BASE}/requests/r1`).flush(makeRequest({ status: RequestStatus.Ready }));
+      await Promise.resolve();
+      TestBed.tick();
+
+      expect(store.hasPendingGeneration()).toBe(false);
+      expect(store.byId('r1')?.status).toBe(RequestStatus.Ready);
+
+      vi.advanceTimersByTime(GENERATION_POLL_MS * 2);
+      http.expectNone(`${BASE}/requests?view=all&q=no-match&limit=200`);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('ignores a stale list response when a newer refresh has started', async () => {

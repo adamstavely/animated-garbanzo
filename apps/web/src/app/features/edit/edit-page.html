@@ -36,7 +36,7 @@
       [promptEdited]="promptEdited()"
       [canAdminister]="canAdminister()"
       (briefChange)="onBriefChange($event)"
-      (generate)="generate()"
+      (generate)="generate($event)"
       (regenerate)="regenerate($event)"
       (openPrompt)="openPrompt()"
       (askDelete)="deleteOpen.set(true)"
@@ -46,6 +46,11 @@
       <div class="results__header">
         <p class="results__eyebrow">Candidates for</p>
         <h1 class="results__title" id="results-heading">{{ request.legalName }}</h1>
+        @if (sealed()) {
+          <p class="results__sealed" role="status">
+            Approved · {{ request.approvedName }}. Reopen from History to make changes.
+          </p>
+        }
       </div>
 
       @if (busy()) {
@@ -72,6 +77,7 @@
                   [candidate]="candidate"
                   [legalName]="request.legalName"
                   [selected]="candidate.name === request.chosenName"
+                  [interactive]="!readOnly()"
                   (choose)="choose($event)"
                   (toggleLock)="toggleLock($event)"
                 />
@@ -87,7 +93,7 @@
         />
       }
 
-      @if (request.chosenName) {
+      @if (showApproveBar()) {
         <div class="approve-bar">
           <div class="approve-bar__selection">
             <p class="approve-bar__eyebrow">Selected</p>
@@ -95,8 +101,13 @@
           </div>
           <div class="approve-bar__actions">
             <button nymButton class="approve-bar__clear" (click)="clearChoice()">Clear</button>
-            <button nymButton variant="inverse" (click)="approve()">
-              {{ request.approvedName === request.chosenName ? 'Approved' : 'Approve pen name' }}
+            <button
+              nymButton
+              variant="inverse"
+              [disabled]="!canApproveSelection()"
+              (click)="approve()"
+            >
+              Approve pen name
             </button>
           </div>
         </div>
@@ -108,7 +119,7 @@
     <nym-prompt-modal
       [requestId]="request.id"
       [settings]="settings"
-      [canAdminister]="canAdminister()"
+      [canAdminister]="canEditPrompt()"
       (saved)="onPromptSaved($event)"
       (closed)="promptOpen.set(false)"
     />

@@ -8,7 +8,8 @@ import dataSource from './data-source';
  * A compiled entry point rather than the TypeORM CLI: the production image has
  * no dev dependencies and a read-only root filesystem, so neither `ts-node` nor
  * `npm run` is available to a container. `node dist/database/migrate.js` needs
- * nothing but the runtime and DATABASE_URL.
+ * nothing but the runtime, DATABASE_URL, and DATABASE_SSL (required in
+ * production — same guards as app boot).
  *
  * Migrations run in a single transaction, so a failure part-way leaves the
  * schema exactly as it was and the release hook fails loudly.

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { addProductionDatabaseSslIssues } from './database-ssl';
+
 /**
  * Environment contract for the API.
  *
@@ -111,21 +113,7 @@ export const environmentSchema = z
       });
     }
 
-    if (!value.DATABASE_SSL) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['DATABASE_SSL'],
-        message: 'must be true in production',
-      });
-    }
-
-    if (!value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['DATABASE_SSL_REJECT_UNAUTHORIZED'],
-        message: 'must be true in production',
-      });
-    }
+    addProductionDatabaseSslIssues(value, ctx);
   });
 
 export type Environment = z.infer<typeof environmentSchema>;

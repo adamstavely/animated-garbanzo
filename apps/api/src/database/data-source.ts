@@ -1,6 +1,7 @@
 import { config as loadDotenv } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+import { resolveTypeOrmSsl } from '../config/database-ssl';
 import {
   CandidateEntity,
   PenNameRequestEntity,
@@ -32,26 +33,23 @@ export const MIGRATIONS = [
 /**
  * Options shared by the running app and the TypeORM CLI, so migrations are
  * generated against exactly the schema the app boots with.
+ *
+ * SSL uses the same production guards as app boot — migrate must not talk
+ * plaintext when DATABASE_SSL is omitted in production.
  */
 export function buildDataSourceOptions(
   overrides: Partial<DataSourceOptions> = {},
+  env: NodeJS.ProcessEnv = process.env,
 ): DataSourceOptions {
   return {
     type: 'postgres',
-    url: process.env.DATABASE_URL,
-    ssl:
-      process.env.DATABASE_SSL === 'true'
-        ? {
-            // Default to verifying the server cert; set
-            // DATABASE_SSL_REJECT_UNAUTHORIZED=false only for local self-signed hosts.
-            rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false',
-          }
-        : false,
+    url: env.DATABASE_URL,
+    ssl: resolveTypeOrmSsl(env),
     entities: [...ENTITIES],
     migrations: [...MIGRATIONS],
     migrationsTableName: 'nym_migrations',
     synchronize: false,
-    logging: process.env.DATABASE_LOGGING === 'true',
+    logging: env.DATABASE_LOGGING === 'true',
     ...overrides,
   } as DataSourceOptions;
 }

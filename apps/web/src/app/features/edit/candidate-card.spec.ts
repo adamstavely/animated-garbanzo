@@ -6,7 +6,11 @@ import { CandidateCardComponent } from './candidate-card';
 
 @Component({
   template: `
-    <nym-candidate-card [candidate]="candidate" [legalName]="legalName()" />
+    <nym-candidate-card
+      [candidate]="candidate"
+      [legalName]="legalName()"
+      [interactive]="interactive()"
+    />
   `,
   imports: [CandidateCardComponent],
 })
@@ -19,6 +23,7 @@ class HostComponent {
     locked: false,
   };
   readonly legalName = signal('Margaret E. Voss');
+  readonly interactive = signal(true);
 }
 
 describe('CandidateCardComponent', () => {
@@ -48,5 +53,26 @@ describe('CandidateCardComponent', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Overlaps legal name');
     expect(fixture.nativeElement.textContent).not.toContain('No overlap');
+
+    const select = fixture.nativeElement.querySelector(
+      'button.candidate__select',
+    ) as HTMLButtonElement;
+    expect(select.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.candidate--blocked')).toBeTruthy();
+  });
+
+  it('disables select and lock when not interactive', async () => {
+    host.interactive.set(false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const select = fixture.nativeElement.querySelector(
+      '.candidate__select',
+    ) as HTMLButtonElement;
+    const lock = fixture.nativeElement.querySelector('.candidate__lock') as HTMLButtonElement;
+
+    expect(select.disabled).toBe(true);
+    expect(lock.disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('.candidate--inert')).toBeTruthy();
   });
 });

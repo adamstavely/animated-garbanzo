@@ -1,5 +1,6 @@
 import {
   CandidateDto,
+  overlapsLegalName,
   PenNameRequestDto,
   PromptSettingsDto,
   RequestStatus,
@@ -89,6 +90,34 @@ export class EditPageComponent {
 
   protected readonly busy = computed(() => this.request()?.status === RequestStatus.Generating);
 
+  /** History rows stay sealed until reopen — UI matches the API gate. */
+  protected readonly sealed = computed(() => this.request()?.status === RequestStatus.Approved);
+
+  /** Brief, candidates, and approve stay inert while Generating or Approved. */
+  protected readonly readOnly = computed(() => this.busy() || this.sealed());
+
+  /**
+   * Approve is Ready-only. Hide the bar while Generating (chosenName can linger)
+   * and for Approved History views.
+   */
+  protected readonly showApproveBar = computed(() => {
+    const request = this.request();
+    return (
+      !!request?.chosenName &&
+      request.status === RequestStatus.Ready &&
+      !this.busy()
+    );
+  });
+
+  /** Approve stays offered only when the selection still clears live overlap. */
+  protected readonly canApproveSelection = computed(() => {
+    const request = this.request();
+    if (!request?.chosenName) {
+      return false;
+    }
+    return !overlapsLegalName(request.chosenName, request.legalName);
+  });
+
   protected readonly busyNote = signal('Drafting and screening candidates…');
 
   protected readonly candidates = computed(() => this.request()?.candidates ?? []);
@@ -99,6 +128,9 @@ export class EditPageComponent {
   );
 
   protected readonly promptEdited = computed(() => this.promptSettings()?.isCustom ?? false);
+
+  /** Prompt viewing stays open; writes need desk-admin and a non-sealed row. */
+  protected readonly canEditPrompt = computed(() => this.canAdminister() && !this.sealed());
 
   constructor() {
     effect((onCleanup) => {
@@ -115,6 +147,11 @@ export class EditPageComponent {
   }
 
   protected async onBriefChange(payload: UpdateRequestPayload): Promise<void> {
+    // Generation and History refuse brief PATCH — skip rather than toast a
+    // conflict the form should already have prevented by disabling.
+    if (this.readOnly()) {
+      return;
+    }
     try {
       await this.store.update(this.id(), payload);
     } catch (error) {
@@ -122,17 +159,20 @@ export class EditPageComponent {
     }
   }
 
-  protected async generate(): Promise<void> {
+  protected async generate(brief: UpdateRequestPayload): Promise<void> {
     this.busyNote.set('Drafting and screening candidates…');
-    await this.run({ regenerate: false });
+    await this.runAfterBrief(brief, { regenerate: false });
   }
 
-  protected async regenerate(refine: string): Promise<void> {
+  protected async regenerate(brief: UpdateRequestPayload): Promise<void> {
     this.busyNote.set('Regenerating around your locked names…');
-    await this.run({ regenerate: true, refine });
+    await this.runAfterBrief(brief, { regenerate: true, refine: brief.refine });
   }
 
   protected async choose(candidate: CandidateDto): Promise<void> {
+    if (this.readOnly()) {
+      return;
+    }
     const current = this.request();
     const next = current?.chosenName === candidate.name ? '' : candidate.name;
     try {
@@ -143,6 +183,9 @@ export class EditPageComponent {
   }
 
   protected async clearChoice(): Promise<void> {
+    if (this.readOnly()) {
+      return;
+    }
     try {
       await this.store.choose(this.id(), '');
     } catch (error) {
@@ -151,6 +194,9 @@ export class EditPageComponent {
   }
 
   protected async toggleLock(candidate: CandidateDto): Promise<void> {
+    if (this.readOnly()) {
+      return;
+    }
     try {
       await this.store.toggleLock(this.id(), candidate.id, !candidate.locked);
     } catch (error) {
@@ -160,7 +206,7 @@ export class EditPageComponent {
 
   protected async approve(): Promise<void> {
     const request = this.request();
-    if (!request?.chosenName) {
+    if (!request?.chosenName || !this.canApproveSelection()) {
       return;
     }
     try {
@@ -207,11 +253,43 @@ export class EditPageComponent {
     return request.status === RequestStatus.Generating ? 'Generating' : 'Draft';
   }
 
-  private async run(options: { regenerate: boolean; refine?: string }): Promise<void> {
+  /**
+   * Persist any brief edits that have not yet settled through the debounce,
+   * then start generation — otherwise screening runs against a stale legal name.
+   */
+  private async runAfterBrief(
+    brief: UpdateRequestPayload,
+    options: { regenerate: boolean; refine?: string },
+  ): Promise<void> {
+    try {
+      await this.persistBriefIfChanged(brief);
+    } catch (error) {
+      this.toasts.show(describeError(error, 'That change could not be saved.'));
+      return;
+    }
+
     try {
       await this.store.generate(this.id(), options);
     } catch (error) {
       this.toasts.show(describeError(error, 'Generation could not be started.'));
     }
   }
+
+  private async persistBriefIfChanged(brief: UpdateRequestPayload): Promise<void> {
+    const current = this.request();
+    if (!current || briefMatchesRequest(brief, current)) {
+      return;
+    }
+    await this.store.update(this.id(), brief);
+  }
+}
+
+function briefMatchesRequest(brief: UpdateRequestPayload, request: PenNameRequestDto): boolean {
+  return (
+    (brief.legalName ?? request.legalName) === request.legalName &&
+    (brief.presentation ?? request.presentation) === request.presentation &&
+    (brief.origin ?? request.origin) === request.origin &&
+    (brief.notes ?? request.notes) === request.notes &&
+    (brief.refine ?? request.refine) === request.refine
+  );
 }

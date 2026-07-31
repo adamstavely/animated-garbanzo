@@ -168,6 +168,25 @@ describe('QueueTableComponent', () => {
       expect(generating.textContent).not.toContain('Approve');
     });
 
+    it('hides Approve when live overlap has failed after a legal-name edit', async () => {
+      const overlapping = await render([
+        makeRequest({
+          legalName: 'Bridget A. Voss',
+          checks: [
+            {
+              id: CheckId.Overlap,
+              passLabel: 'No name overlap',
+              failLabel: 'Overlaps legal name',
+              unknownLabel: 'Overlap unchecked',
+              outcome: 'failed',
+            },
+          ],
+        }),
+      ]);
+      expect(overlapping.textContent).toContain('Overlaps legal name');
+      expect(overlapping.textContent).not.toContain('Approve');
+    });
+
     it('always offers Edit, as a link to the request', async () => {
       const element = await render([makeRequest()]);
       const edit = element.querySelector('a.table__link-button') as HTMLAnchorElement;

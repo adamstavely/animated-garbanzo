@@ -142,6 +142,23 @@ describe('Requests (integration)', () => {
       expect(body.checks[0]?.outcome).toBe('failed');
     });
 
+    it('refuses choose and approve after a legal-name edit makes the name overlap', async () => {
+      const created = await createRequest();
+      const penName = created.candidates[0]?.name ?? '';
+
+      await auth(http().patch(`${API}/requests/${created.id}`))
+        .send({ legalName: 'Bridget A. Voss' })
+        .expect(200);
+
+      await auth(http().post(`${API}/requests/${created.id}/choose`))
+        .send({ penName })
+        .expect(400);
+
+      await auth(http().post(`${API}/requests/${created.id}/approve`))
+        .send({ penName })
+        .expect(400);
+    });
+
     it('fails the request when nothing survives screening', async () => {
       harness.generator.queueCandidates([{ name: 'Margaret T. Bland' }]);
 
@@ -317,7 +334,26 @@ describe('Requests (integration)', () => {
       expect(body.approvedAt).toBeNull();
     });
 
-    it('refuses choose and brief updates on Approved until reopen', async () => {
+    it('refuses reopen on Failed leftovers so they cannot launder into Ready', async () => {
+      const ready = await createRequest({ firstName: 'Clara', lastName: 'Nash' });
+      expect(ready.candidates.length).toBeGreaterThan(0);
+
+      harness.generator.queueFailure(new Error('upstream'));
+      await auth(http().post(`${API}/requests/${ready.id}/generate`))
+        .send({ regenerate: true })
+        .expect(202);
+      const failed = await settle(ready.id);
+
+      expect(failed.status).toBe(RequestStatus.Failed);
+      expect(failed.candidates.length).toBeGreaterThan(0);
+
+      await auth(http().post(`${API}/requests/${failed.id}/reopen`)).expect(400);
+
+      const listed = await auth(http().get(`${API}/requests/${failed.id}`)).expect(200);
+      expect((listed.body as PenNameRequestDto).status).toBe(RequestStatus.Failed);
+    });
+
+    it('refuses choose, brief, lock, and prompt changes on Approved until reopen', async () => {
       const created = await createRequest();
       await auth(http().post(`${API}/requests/${created.id}/approve`))
         .send({})
@@ -330,6 +366,17 @@ describe('Requests (integration)', () => {
       await auth(http().patch(`${API}/requests/${created.id}`))
         .send({ notes: 'quiet edit after approval' })
         .expect(400);
+
+      const keeper = created.candidates[0];
+      await auth(http().patch(`${API}/requests/${created.id}/candidates/${keeper?.id}/lock`))
+        .send({ locked: true })
+        .expect(400);
+
+      await auth(http().patch(`${API}/requests/${created.id}/prompt`))
+        .send({ system: 'Custom system.', prompt: 'Custom prompt after approval.' })
+        .expect(400);
+
+      await auth(http().delete(`${API}/requests/${created.id}/prompt`)).expect(400);
     });
   });
 
