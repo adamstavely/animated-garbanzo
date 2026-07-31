@@ -75,8 +75,10 @@
     <p class="brief__error" role="alert">{{ request().errorMessage }}</p>
   }
 
-  <button nymButton variant="danger" [block]="true" class="brief__delete" (click)="askDelete.emit()">
-    <svg lucideTrash2 class="nym-icon" [size]="13" aria-hidden="true"></svg>
-    <span>Delete request</span>
-  </button>
+  @if (canAdminister()) {
+    <button nymButton variant="danger" [block]="true" class="brief__delete" (click)="askDelete.emit()">
+      <svg lucideTrash2 class="nym-icon" [size]="13" aria-hidden="true"></svg>
+      <span>Delete request</span>
+    </button>
+  }
 </section>

@@ -9,6 +9,8 @@ export interface AuthenticatedUser {
   name: string;
   email: string;
   role: string;
+  /** Derived from the IdP role against OIDC_ADMIN_ROLES — not a free-text display field. */
+  canAdminister: boolean;
 }
 
 /** Express request augmented by {@link SessionAuthGuard}. */
@@ -37,5 +39,6 @@ export function toCurrentUserDto(user: AuthenticatedUser): CurrentUserDto {
     email: user.email,
     role: user.role,
     initials: initialsFor(user.name),
+    canAdminister: user.canAdminister,
   };
 }

@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { LucideCheckCheck } from '@lucide/angular';
 
 import { RequestsStore, describeError } from '../../core/state/requests.store';
+import { AuthStore } from '../../core/state/auth.store';
 import { ToastService } from '../../core/state/toast.service';
 import { pluralise } from '../../core/util/format';
 import { ButtonComponent } from '../../ui/button/button';
@@ -24,10 +25,12 @@ import { QueueTableComponent } from './queue-table';
 })
 export class QueuePageComponent {
   private readonly store = inject(RequestsStore);
+  private readonly auth = inject(AuthStore);
   private readonly toasts = inject(ToastService);
 
   protected readonly requests = this.store.queueRequests;
   protected readonly error = this.store.error;
+  protected readonly canAdminister = this.auth.canAdminister;
 
   protected readonly approveAllLabel = computed(() => {
     const count = this.store.readyCount();

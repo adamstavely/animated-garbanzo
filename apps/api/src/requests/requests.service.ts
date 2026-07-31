@@ -5,11 +5,20 @@ import {
   RequestListDto,
   RequestStatus,
 } from '@nym/shared';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, In, Repository } from 'typeorm';
 
 import { AuthenticatedUser } from '../auth/authenticated-user';
+import { RateLimiter } from '../common/rate-limiter';
+import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { GenerationService } from '../generation/generation.service';
 import { composeLegalName, normaliseName } from '../generation/name-rules';
@@ -35,6 +44,10 @@ import { resolveProposedName, toRequestDto } from './request.mapper';
 @Injectable()
 export class RequestsService {
   private readonly logger = new Logger(RequestsService.name);
+  private readonly listDefaultLimit: number;
+  private readonly listMaxLimit: number;
+  private readonly approveAllLimit: number;
+  private readonly rateLimit: AppConfig['rateLimit'];
 
   constructor(
     @InjectRepository(PenNameRequestEntity)
@@ -43,23 +56,43 @@ export class RequestsService {
     private readonly candidates: Repository<CandidateEntity>,
     private readonly generation: GenerationService,
     private readonly promptSettings: PromptSettingsService,
-  ) {}
+    private readonly rateLimiter: RateLimiter,
+    configService: ConfigService<AppConfig, true>,
+  ) {
+    const requestsConfig = configService.get('requests', { infer: true });
+    this.listDefaultLimit = requestsConfig.listDefaultLimit;
+    this.listMaxLimit = requestsConfig.listMaxLimit;
+    this.approveAllLimit = requestsConfig.approveAllLimit;
+    this.rateLimit = configService.get('rateLimit', { infer: true });
+  }
 
   async list(query: ListRequestsQueryDto): Promise<RequestListDto> {
     const view = query.view ?? 'all';
     const search = query.q?.trim() ?? '';
+    const limit = Math.min(
+      Math.max(query.limit ?? this.listDefaultLimit, 1),
+      this.listMaxLimit,
+    );
+    const offset = Math.max(query.offset ?? 0, 0);
 
-    const matching = await this.findMatching(search);
+    const matching = await this.findMatchingSummaries(search);
 
-    const queueMatches = matching.filter((request) => request.status !== RequestStatus.Approved);
-    const historyMatches = matching.filter((request) => request.status === RequestStatus.Approved);
-
-    const items = view === 'queue' ? queueMatches : view === 'history' ? historyMatches : matching;
+    const queueMatches = matching.filter((row) => row.status !== RequestStatus.Approved);
+    const historyMatches = matching.filter((row) => row.status === RequestStatus.Approved);
+    const filtered = view === 'queue' ? queueMatches : view === 'history' ? historyMatches : matching;
+    const page = filtered.slice(offset, offset + limit);
+    const items =
+      page.length === 0
+        ? []
+        : (await this.loadByIds(page.map((row) => row.id))).map(toRequestDto);
 
     return {
-      items: items.map(toRequestDto),
+      items,
       queueMatchCount: queueMatches.length,
       historyMatchCount: historyMatches.length,
+      total: filtered.length,
+      limit,
+      offset,
     };
   }
 
@@ -72,6 +105,12 @@ export class RequestsService {
    * to press Generate for a new request.
    */
   async create(dto: CreateRequestDto, user: AuthenticatedUser): Promise<PenNameRequestDto> {
+    this.rateLimiter.consume(
+      `create:${user.id}`,
+      this.rateLimit.create,
+      this.rateLimit.windowMs,
+    );
+
     const legalName = composeLegalName(dto.firstName, dto.middleInitial, dto.lastName);
 
     if (!legalName) {
@@ -98,6 +137,7 @@ export class RequestsService {
 
   async update(id: string, dto: UpdateRequestDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
 
     if (dto.legalName !== undefined) {
       const legalName = normaliseName(dto.legalName);
@@ -124,6 +164,9 @@ export class RequestsService {
   }
 
   async remove(id: string): Promise<void> {
+    const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
+
     const result = await this.requests.delete(id);
     if (!result.affected) {
       throw new NotFoundException(`Request ${id} was not found.`);
@@ -131,7 +174,13 @@ export class RequestsService {
   }
 
   /** Starts (or restarts) generation. Returns the request in its "generating" state. */
-  async generate(id: string, dto: GenerateRequestDto): Promise<PenNameRequestDto> {
+  async generate(id: string, dto: GenerateRequestDto, user: AuthenticatedUser): Promise<PenNameRequestDto> {
+    this.rateLimiter.consume(
+      `generate:${user.id}`,
+      this.rateLimit.generate,
+      this.rateLimit.windowMs,
+    );
+
     const request = await this.requireRequest(id);
 
     if (!request.legalName.trim()) {
@@ -149,6 +198,7 @@ export class RequestsService {
   /** Selects a candidate without approving it; an empty name clears the selection. */
   async chooseCandidate(id: string, dto: ChooseCandidateDto): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
     const penName = normaliseName(dto.penName);
 
     if (penName && !request.candidates.some((candidate) => candidate.name === penName)) {
@@ -165,6 +215,9 @@ export class RequestsService {
     candidateId: string,
     dto: ToggleLockDto,
   ): Promise<PenNameRequestDto> {
+    const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
+
     const candidate = await this.candidates.findOne({ where: { id: candidateId, requestId: id } });
     if (!candidate) {
       throw new NotFoundException(`Candidate ${candidateId} was not found on request ${id}.`);
@@ -185,6 +238,7 @@ export class RequestsService {
     user: AuthenticatedUser,
   ): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
     const penName = normaliseName(dto.penName ?? '') || resolveProposedName(request);
 
     if (!penName) {
@@ -202,9 +256,17 @@ export class RequestsService {
 
   /** Approves the proposed name of every request that is ready for review. */
   async approveAll(user: AuthenticatedUser): Promise<BulkApproveResultDto> {
+    this.rateLimiter.consume(
+      `approve-all:${user.id}`,
+      this.rateLimit.approveAll,
+      this.rateLimit.windowMs,
+    );
+
     const ready = await this.requests.find({
       where: { status: RequestStatus.Ready },
       relations: { candidates: true },
+      order: { createdAt: 'DESC' },
+      take: this.approveAllLimit,
     });
 
     const approvable = ready.filter((request) => resolveProposedName(request) !== '');
@@ -228,6 +290,7 @@ export class RequestsService {
   /** Returns an approved request to the queue and clears its audit stamp. */
   async reopen(id: string): Promise<PenNameRequestDto> {
     const request = await this.requireRequest(id);
+    this.assertNotGenerating(request);
 
     request.approvedName = '';
     request.approvedByName = '';
@@ -268,16 +331,22 @@ export class RequestsService {
     request.status = RequestStatus.Approved;
   }
 
-  private async findMatching(search: string): Promise<PenNameRequestEntity[]> {
+  private assertNotGenerating(request: PenNameRequestEntity): void {
+    if (request.status === RequestStatus.Generating) {
+      throw new ConflictException('This request is still generating. Try again shortly.');
+    }
+  }
+
+  /** Lightweight rows for filtering / pagination — candidates are loaded for the page only. */
+  private async findMatchingSummaries(
+    search: string,
+  ): Promise<Array<{ id: string; status: RequestStatus; createdAt: Date }>> {
     const query = this.requests
       .createQueryBuilder('request')
-      .leftJoinAndSelect('request.candidates', 'candidate')
-      .orderBy('request.createdAt', 'DESC')
-      .addOrderBy('candidate.position', 'ASC');
+      .select(['request.id', 'request.status', 'request.createdAt'])
+      .orderBy('request.createdAt', 'DESC');
 
     if (search) {
-      // Candidates are matched with EXISTS rather than a join predicate so that a
-      // hit on one candidate does not prune the request's other candidates.
       query.andWhere(
         new Brackets((where) => {
           where
@@ -296,6 +365,15 @@ export class RequestsService {
     }
 
     return query.getMany();
+  }
+
+  private async loadByIds(ids: string[]): Promise<PenNameRequestEntity[]> {
+    const rows = await this.requests.find({
+      where: { id: In(ids) },
+      relations: { candidates: true },
+    });
+    const order = new Map(ids.map((id, index) => [id, index]));
+    return rows.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   }
 
   private async requireRequest(id: string): Promise<PenNameRequestEntity> {

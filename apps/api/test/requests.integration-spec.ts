@@ -124,7 +124,8 @@ describe('Requests (integration)', () => {
       const created = await createRequest();
 
       expect(created.checks).toHaveLength(4);
-      expect(created.checks.every((check) => check.passed)).toBe(true);
+      expect(created.checks[0]?.outcome).toBe('passed');
+      expect(created.checks.slice(1).every((check) => check.outcome === 'unknown')).toBe(true);
     });
 
     it('flips the overlap check when the brief is edited to a colliding name', async () => {
@@ -148,11 +149,13 @@ describe('Requests (integration)', () => {
     });
 
     it('records a failure when the model call itself fails, and allows a retry', async () => {
-      harness.generator.queueFailure(new Error('The naming model is unavailable. Try again.'));
+      const upstream = 'upstream Anthropic detail that must not leak';
+      harness.generator.queueFailure(new Error(upstream));
 
       const created = await createRequest();
       expect(created.status).toBe(RequestStatus.Failed);
-      expect(created.errorMessage).toContain('Generation failed');
+      expect(created.errorMessage).toBe('Generation failed — try again.');
+      expect(created.errorMessage).not.toContain(upstream);
 
       await auth(http().post(`${API}/requests/${created.id}/generate`))
         .send({})

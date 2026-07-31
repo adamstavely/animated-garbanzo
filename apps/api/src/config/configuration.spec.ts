@@ -21,6 +21,7 @@ describe('loadConfiguration', () => {
     expect(config.anthropic.model).toBe('claude-sonnet-5');
     expect(config.oidc.scopes).toBe('openid profile email');
     expect(config.session.cookieName).toBe('nym_session');
+    expect(config.session.ttlSeconds).toBe(28_800);
   });
 
   it('coerces numeric and boolean values from strings', () => {

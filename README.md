@@ -56,7 +56,9 @@ can run at all:
   `OIDC_REDIRECT_URI`. Discovery is standards-based, so the same code works
   against Entra ID, Okta, Auth0 or Keycloak. Claim names differ per provider and
   are mapped with `OIDC_NAME_CLAIM` / `OIDC_EMAIL_CLAIM` / `OIDC_ROLE_CLAIM`
-  rather than in code.
+  rather than in code. Restrict sign-in to a trusted IdP group, and set
+  `OIDC_ADMIN_ROLES` to the claim values that may delete requests, bulk-approve,
+  and rewrite the global prompt (empty in production means nobody can).
 
 > **Outstanding from the client:** the IdP tenant values above. Until they are
 > supplied the app cannot complete a sign-in; everything else — schema,
@@ -90,8 +92,9 @@ Notable decisions:
   request is rejected with `409` via an atomic status claim, so overlapping
   API instances cannot both start model calls for one row.
 - **Sessions, not IdP tokens, reach the browser.** After the code exchange the API
-  mints a short-lived HS256 JWT in an httpOnly, SameSite=Lax cookie. No
-  server-side session store is needed and no provider token is exposed.
+  mints an HS256 JWT (default TTL 8 hours) in an httpOnly, SameSite=Lax cookie.
+  There is no sign-out; sessions expire with the token. No server-side session
+  store is needed and no provider token is exposed.
 - **Everything is closed by default.** `SessionAuthGuard` is registered globally;
   an endpoint opts out with `@Public()`, so a new controller cannot ship
   unauthenticated by accident.
@@ -217,15 +220,16 @@ if one name part contains another. Single-letter middle initials are compared
 against every initial of the legal name — including the legal name's own middle
 initial. Comparison is case-insensitive and strips punctuation.
 
-**Prior use.** Any candidate the model flags is discarded silently. Production
-should verify against a real catalogue and rights database rather than model
-recall; the seam for that is `NameGenerator`.
+**Prior use / fame / offensive.** Model flags and prompt guardrails discard what
+they can, but there is no catalogue verification yet. The Checks column shows
+those three as **unknown** until a real rights database is wired at the
+`NameGenerator` seam — only the overlap check can honestly pass or fail.
 
 **Shape.** Every candidate must be given name + middle initial + surname. Names
 without a middle initial are discarded. Surnames are upper-cased at data level.
 
-**Presentation.** Only cleared names are shown, with a count of what screening
-removed so the assistant knows it ran.
+**Presentation.** Cleared names are shown with their check outcomes (including
+unknown), and a count of what screening removed so the assistant knows it ran.
 
 **Regeneration.** Locked names are kept and passed back to the model as "do not
 repeat, match this register"; everything else is replaced. A free-text refinement

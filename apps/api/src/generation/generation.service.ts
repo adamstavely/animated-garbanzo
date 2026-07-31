@@ -1,8 +1,17 @@
 import { RequestStatus } from '@nym/shared';
-import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
 
+import { AppConfig } from '../config/configuration';
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { NAME_GENERATOR, NameGenerator } from './name-generator.interface';
 import { MAX_KEPT_CANDIDATES } from './prompt-builder.service';
@@ -23,14 +32,23 @@ export interface GenerationHandle {
   completion: Promise<void>;
 }
 
+/** Fixed copy for the desk — never interpolate upstream exception text into the row. */
+const USER_FACING_FAILURE = 'Generation failed — try again.';
+const STALE_FAILURE = 'Generation timed out — try again.';
+const RECLAIM_INTERVAL_MS = 60_000;
+
 /**
  * Orchestrates a generation run: compose prompt → call the model → screen →
  * persist. Runs are started in the background because a model call takes tens of
  * seconds; the row shows "Generating…" and the client polls until it settles.
  */
 @Injectable()
-export class GenerationService {
+export class GenerationService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(GenerationService.name);
+  private readonly staleMs: number;
+  /** In-flight run tokens so a superseded or reclaimed run cannot overwrite a newer claim. */
+  private readonly activeRuns = new Map<string, symbol>();
+  private reclaimTimer: ReturnType<typeof setInterval> | undefined;
 
   constructor(
     @InjectRepository(PenNameRequestEntity)
@@ -40,19 +58,45 @@ export class GenerationService {
     @Inject(NAME_GENERATOR)
     private readonly generator: NameGenerator,
     private readonly promptSettings: PromptSettingsService,
-  ) {}
+    configService: ConfigService<AppConfig, true>,
+  ) {
+    this.staleMs = configService.get('generation', { infer: true }).staleMs;
+  }
+
+  onModuleInit(): void {
+    this.reclaimTimer = setInterval(() => {
+      void this.reclaimStale().catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to reclaim stale generations: ${
+            error instanceof Error ? error.message : 'unknown error'
+          }`,
+        );
+      });
+    }, RECLAIM_INTERVAL_MS);
+    this.reclaimTimer.unref?.();
+  }
+
+  onModuleDestroy(): void {
+    if (this.reclaimTimer) {
+      clearInterval(this.reclaimTimer);
+    }
+  }
 
   /**
    * Marks a request as generating and starts the run.
    *
    * The claim is a single UPDATE … WHERE status <> generating so two API
-   * instances cannot both start Anthropic runs for the same row.
+   * instances cannot both start Anthropic runs for the same row. Stale
+   * generating rows are reclaimed first so a dead worker cannot block retries.
    */
   async start(
     request: PenNameRequestEntity,
     options: GenerationOptions = {},
   ): Promise<GenerationHandle> {
+    await this.reclaimStale();
+
     const refine = options.refine ?? request.refine ?? '';
+    const runId = Symbol(request.id);
 
     const claimed = await this.requests.update(
       { id: request.id, status: Not(RequestStatus.Generating) },
@@ -67,22 +111,61 @@ export class GenerationService {
       throw new ConflictException('This request is already generating.');
     }
 
+    this.activeRuns.set(request.id, runId);
+
     const marked = await this.requireRequest(request.id);
-    const completion = this.execute(marked, { ...options, refine }).catch((error: unknown) => {
-      // execute() records its own failures; this guards against an unexpected throw
-      // escaping into an unhandled rejection.
-      this.logger.error(
-        `Unhandled generation failure for ${request.id}: ${
-          error instanceof Error ? error.message : 'unknown error'
-        }`,
-      );
-    });
+    const completion = this.execute(marked, { ...options, refine }, runId).catch(
+      (error: unknown) => {
+        // execute() records its own failures; this guards against an unexpected throw
+        // escaping into an unhandled rejection.
+        this.logger.error(
+          `Unhandled generation failure for ${request.id}: ${
+            error instanceof Error ? error.message : 'unknown error'
+          }`,
+        );
+      },
+    );
 
     return { request: marked, completion };
   }
 
+  /**
+   * Fails any row that has been generating longer than the stale window — typically
+   * after a process restart mid-run.
+   */
+  async reclaimStale(): Promise<number> {
+    const cutoff = new Date(Date.now() - this.staleMs);
+    const stale = await this.requests.find({
+      where: { status: RequestStatus.Generating, updatedAt: LessThan(cutoff) },
+      select: { id: true },
+    });
+
+    if (stale.length === 0) {
+      return 0;
+    }
+
+    for (const row of stale) {
+      this.activeRuns.delete(row.id);
+    }
+
+    const result = await this.requests.update(
+      { status: RequestStatus.Generating, updatedAt: LessThan(cutoff) },
+      { status: RequestStatus.Failed, errorMessage: STALE_FAILURE },
+    );
+
+    if (result.affected) {
+      this.logger.warn(`Reclaimed ${result.affected} stale generating request(s)`);
+    }
+
+    return result.affected ?? 0;
+  }
+
   /** Runs a generation to completion and persists the outcome. */
-  private async execute(request: PenNameRequestEntity, options: GenerationOptions): Promise<void> {
+  private async execute(
+    request: PenNameRequestEntity,
+    options: GenerationOptions,
+    runId: symbol,
+  ): Promise<void> {
     const regenerate = options.regenerate === true;
     const existing = await this.candidates.find({
       where: { requestId: request.id },
@@ -101,6 +184,10 @@ export class GenerationService {
       ]);
 
       const raw = await this.generator.generate({ system, prompt });
+      if (!this.isCurrentRun(request.id, runId)) {
+        return;
+      }
+
       const { accepted, rejected } = screenCandidates(raw, {
         legalName: request.legalName,
         reservedNames: keptNames,
@@ -116,24 +203,29 @@ export class GenerationService {
           request.id,
           'Every candidate was filtered out. Regenerate or loosen the notes.',
           regenerate ? request.discardedCount + discarded : discarded,
+          runId,
         );
         return;
       }
 
-      await this.persist(request, {
-        kept,
-        replaced: existing.filter((candidate) => !kept.includes(candidate)),
-        accepted,
-        discarded,
-        regenerate,
-      });
+      await this.persist(
+        request,
+        {
+          kept,
+          replaced: existing.filter((candidate) => !kept.includes(candidate)),
+          accepted,
+          discarded,
+          regenerate,
+        },
+        runId,
+      );
     } catch (error) {
-      const message =
-        error instanceof Error && error.message
-          ? `Generation failed — ${error.message}`
-          : 'Generation failed — try again.';
-      this.logger.warn(`Generation failed for request ${request.id}: ${message}`);
-      await this.fail(request.id, message, request.discardedCount);
+      this.logger.warn(
+        `Generation failed for request ${request.id}: ${
+          error instanceof Error ? error.message : 'unknown error'
+        }`,
+      );
+      await this.fail(request.id, USER_FACING_FAILURE, request.discardedCount, runId);
     }
   }
 
@@ -146,8 +238,17 @@ export class GenerationService {
       discarded: number;
       regenerate: boolean;
     },
+    runId: symbol,
   ): Promise<void> {
+    if (!this.isCurrentRun(request.id, runId)) {
+      return;
+    }
+
     await this.requests.manager.transaction(async (manager) => {
+      if (!this.isCurrentRun(request.id, runId)) {
+        return;
+      }
+
       if (input.replaced.length > 0) {
         await manager.remove(input.replaced);
       }
@@ -174,25 +275,53 @@ export class GenerationService {
       }
 
       const keptNames = new Set(input.kept.map((candidate) => candidate.name));
-      await manager.update(PenNameRequestEntity, request.id, {
-        status: RequestStatus.Ready,
-        errorMessage: '',
-        discardedCount: input.regenerate
-          ? request.discardedCount + input.discarded
-          : input.discarded,
-        // A fresh list invalidates the selection; a regeneration keeps it only if
-        // the chosen name was locked and therefore survived.
-        chosenName: keptNames.has(request.chosenName) ? request.chosenName : '',
-      });
+      const updated = await manager.update(
+        PenNameRequestEntity,
+        { id: request.id, status: RequestStatus.Generating },
+        {
+          status: RequestStatus.Ready,
+          errorMessage: '',
+          discardedCount: input.regenerate
+            ? request.discardedCount + input.discarded
+            : input.discarded,
+          // A fresh list invalidates the selection; a regeneration keeps it only if
+          // the chosen name was locked and therefore survived.
+          chosenName: keptNames.has(request.chosenName) ? request.chosenName : '',
+        },
+      );
+
+      if (updated.affected) {
+        this.activeRuns.delete(request.id);
+      }
     });
   }
 
-  private async fail(id: string, message: string, discardedCount: number): Promise<void> {
-    await this.requests.update(id, {
-      status: RequestStatus.Failed,
-      errorMessage: message,
-      discardedCount,
-    });
+  private async fail(
+    id: string,
+    message: string,
+    discardedCount: number,
+    runId: symbol,
+  ): Promise<void> {
+    if (!this.isCurrentRun(id, runId)) {
+      return;
+    }
+
+    const updated = await this.requests.update(
+      { id, status: RequestStatus.Generating },
+      {
+        status: RequestStatus.Failed,
+        errorMessage: message,
+        discardedCount,
+      },
+    );
+
+    if (updated.affected) {
+      this.activeRuns.delete(id);
+    }
+  }
+
+  private isCurrentRun(requestId: string, runId: symbol): boolean {
+    return this.activeRuns.get(requestId) === runId;
   }
 
   private async requireRequest(id: string): Promise<PenNameRequestEntity> {

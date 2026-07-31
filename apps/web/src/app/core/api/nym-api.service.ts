@@ -20,6 +20,8 @@ import { API_BASE_URL } from './api.tokens';
 export interface ListRequestsQuery {
   view?: 'queue' | 'history' | 'all';
   q?: string;
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -40,6 +42,12 @@ export class NymApiService {
     }
     if (query.q) {
       params = params.set('q', query.q);
+    }
+    if (query.limit !== undefined) {
+      params = params.set('limit', String(query.limit));
+    }
+    if (query.offset !== undefined) {
+      params = params.set('offset', String(query.offset));
     }
     return this.http.get<RequestListDto>(`${this.baseUrl}/requests`, { params });
   }

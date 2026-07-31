@@ -1,4 +1,11 @@
-import { CandidateDto, CheckId, CheckResult, PenNameRequestDto, RequestStatus } from '@nym/shared';
+import {
+  CandidateDto,
+  CheckId,
+  CheckOutcome,
+  CheckResult,
+  PenNameRequestDto,
+  RequestStatus,
+} from '@nym/shared';
 
 import { CandidateEntity, PenNameRequestEntity } from '../database/entities';
 import { overlapsLegalName } from '../generation/name-rules';
@@ -15,11 +22,11 @@ export function resolveProposedName(request: PenNameRequestEntity): string {
 /**
  * Builds the four screening statements shown in the Checks column.
  *
- * Only the overlap check is re-evaluated live, because it is the one that can
- * flip after the fact — editing the brief's legal name can invalidate a name that
- * cleared earlier. Prior use, famous names and offensive terms are enforced during
- * screening: any candidate tripping them is discarded before an assistant ever
- * sees it, so a name that reached this point has passed them by construction.
+ * Overlap is re-evaluated live because editing the brief's legal name can
+ * invalidate a name that cleared earlier. Prior use, famous names and offensive
+ * terms are not verified against a real catalogue — model flags and prompt
+ * guardrails are best-effort only — so those checks surface as unknown rather
+ * than a false green pass.
  */
 export function buildChecks(request: PenNameRequestEntity, proposedName: string): CheckResult[] {
   const settled =
@@ -29,32 +36,46 @@ export function buildChecks(request: PenNameRequestEntity, proposedName: string)
     return [];
   }
 
+  const overlapPassed = !overlapsLegalName(proposedName, request.legalName);
+
   return [
-    {
-      id: CheckId.Overlap,
+    check(CheckId.Overlap, {
       passLabel: 'No name overlap',
       failLabel: 'Overlaps legal name',
-      passed: !overlapsLegalName(proposedName, request.legalName),
-    },
-    {
-      id: CheckId.PriorUse,
+      unknownLabel: 'Overlap unchecked',
+      outcome: overlapPassed ? 'passed' : 'failed',
+    }),
+    check(CheckId.PriorUse, {
       passLabel: 'No prior use',
       failLabel: 'Prior use found',
-      passed: true,
-    },
-    {
-      id: CheckId.Famous,
+      unknownLabel: 'Prior use unverified',
+      outcome: 'unknown',
+    }),
+    check(CheckId.Famous, {
       passLabel: 'Not a famous name',
       failLabel: 'Resembles a famous name',
-      passed: true,
-    },
-    {
-      id: CheckId.Offensive,
+      unknownLabel: 'Fame unverified',
+      outcome: 'unknown',
+    }),
+    check(CheckId.Offensive, {
       passLabel: 'No offensive terms',
       failLabel: 'Contains offensive terms',
-      passed: true,
-    },
+      unknownLabel: 'Offensive terms unverified',
+      outcome: 'unknown',
+    }),
   ];
+}
+
+function check(
+  id: CheckId,
+  labels: {
+    passLabel: string;
+    failLabel: string;
+    unknownLabel: string;
+    outcome: CheckOutcome;
+  },
+): CheckResult {
+  return { id, ...labels };
 }
 
 function sortCandidates(candidates: CandidateEntity[]): CandidateEntity[] {

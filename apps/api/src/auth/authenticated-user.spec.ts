@@ -25,6 +25,7 @@ describe('toCurrentUserDto', () => {
       name: 'Rosa Marchetti',
       email: 'rosa@example.com',
       role: 'Publishing assistant · Trade',
+      canAdminister: true,
     };
 
     expect(toCurrentUserDto(user)).toEqual({
@@ -33,6 +34,7 @@ describe('toCurrentUserDto', () => {
       email: 'rosa@example.com',
       role: 'Publishing assistant · Trade',
       initials: 'RM',
+      canAdminister: true,
     });
   });
 });

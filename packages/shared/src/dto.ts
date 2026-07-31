@@ -54,6 +54,10 @@ export interface RequestListDto {
   items: PenNameRequestDto[];
   queueMatchCount: number;
   historyMatchCount: number;
+  /** Total rows matching the current view + search, before pagination. */
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 export interface CreateRequestPayload {
@@ -122,6 +126,12 @@ export interface CurrentUserDto {
   role: string;
   /** e.g. "RM". */
   initials: string;
+  /**
+   * True when the IdP role is on OIDC_ADMIN_ROLES (or every signed-in user in
+   * non-production when that list is empty). Gates delete, bulk approve, and
+   * global prompt overrides.
+   */
+  canAdminister: boolean;
 }
 
 /** One entry in the publishing-suite app picker. */

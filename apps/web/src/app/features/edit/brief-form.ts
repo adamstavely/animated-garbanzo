@@ -61,6 +61,8 @@ export class BriefFormComponent {
 
   readonly request = input.required<PenNameRequestDto>();
   readonly promptEdited = input(false);
+  /** Desk-admin actions: delete request. Prompt viewing stays open to everyone. */
+  readonly canAdminister = input(false);
 
   readonly briefChange = output<UpdateRequestPayload>();
   readonly generate = output<void>();

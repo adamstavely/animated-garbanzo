@@ -5,6 +5,7 @@ import { CookieOptions, Response } from 'express';
 
 import { AppConfig } from '../config/configuration';
 import { AuthenticatedUser } from './authenticated-user';
+import { canAdministerRole } from './privileges';
 
 /** Claims carried by the session cookie. */
 interface SessionClaims {
@@ -28,20 +29,25 @@ const TRANSACTION_TTL_SECONDS = 600;
 /**
  * Issues and reads the application session.
  *
- * After the OIDC exchange we mint our own short-lived JWT and put it in an
- * httpOnly, SameSite=Lax cookie. That keeps the IdP tokens off the browser
- * entirely and means no server-side session store is needed.
+ * After the OIDC exchange we mint our own JWT (default TTL 8 hours) and put it
+ * in an httpOnly, SameSite=Lax cookie. That keeps the IdP tokens off the
+ * browser entirely and means no server-side session store is needed. There is
+ * no sign-out path; sessions end when the JWT expires.
  */
 @Injectable()
 export class SessionService {
   private readonly logger = new Logger(SessionService.name);
   private readonly session: AppConfig['session'];
+  private readonly adminRoles: string[];
+  private readonly isProduction: boolean;
 
   constructor(
     private readonly jwt: JwtService,
     configService: ConfigService<AppConfig, true>,
   ) {
     this.session = configService.get('session', { infer: true });
+    this.adminRoles = configService.get('oidc', { infer: true }).adminRoles;
+    this.isProduction = configService.get('isProduction', { infer: true });
   }
 
   async issue(response: Response, user: AuthenticatedUser): Promise<void> {
@@ -72,6 +78,7 @@ export class SessionService {
         name: claims.name,
         email: claims.email,
         role: claims.role,
+        canAdminister: canAdministerRole(claims.role, this.adminRoles, this.isProduction),
       };
     } catch (error) {
       this.logger.debug(
@@ -79,10 +86,6 @@ export class SessionService {
       );
       return null;
     }
-  }
-
-  clear(response: Response): void {
-    response.clearCookie(this.session.cookieName, this.cookieOptions(0));
   }
 
   async storeTransaction(response: Response, transaction: OidcTransaction): Promise<void> {
