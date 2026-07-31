@@ -1,0 +1,78 @@
+{{- if .Values.migrations.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ printf "%s-migrate" (include "nym.fullname" .) }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "migrate") | nindent 4 }}
+  annotations:
+    # Runs before any new pod serves traffic, and blocks the release if it
+    # fails — a failed migration should stop a rollout, not be discovered by
+    # code that starts against the wrong schema.
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: '-5'
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+    {{- with .Values.commonAnnotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migrations.activeDeadlineSeconds }}
+  {{- with .Values.migrations.ttlSecondsAfterFinished }}
+  ttlSecondsAfterFinished: {{ . }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        {{- include "nym.componentLabels" (dict "context" . "component" "migrate") | nindent 8 }}
+      {{- with .Values.migrations.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "nym.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrate
+          image: {{ include "nym.image" (dict "context" . "image" .Values.api.image) | quote }}
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          # A compiled entry point rather than the TypeORM CLI or `npm run`:
+          # the production image has no dev dependencies, and npm would want a
+          # writable HOME for its cache that a read-only root filesystem does
+          # not provide.
+          command: ['node', 'dist/database/migrate.js']
+          envFrom:
+            - configMapRef:
+                name: {{ include "nym.configMapName" . }}
+          env:
+            {{- include "nym.apiEnv" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.migrations.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.migrations.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrations.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.migrations.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -21,3 +21,6 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 .pgdata/
+
+# TypeScript incremental build state
+*.tsbuildinfo

@@ -1,0 +1,84 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "%s-api" (include "nym.fullname" .) }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "api") | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "nym.componentSelectorLabels" (dict "context" . "component" "api") | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only whatever fronts the ingress may reach the API.
+    - from:
+        {{- if .Values.networkPolicy.ingressFromNamespaceSelector }}
+        - namespaceSelector:
+            {{- toYaml .Values.networkPolicy.ingressFromNamespaceSelector | nindent 12 }}
+          {{- with .Values.networkPolicy.ingressFromPodSelector }}
+          podSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- else }}
+        - namespaceSelector: {}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.api.service.port }}
+  egress:
+    # DNS, or nothing else resolves.
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # The database.
+    - ports:
+        - protocol: TCP
+          port: {{ .Values.networkPolicy.databasePort }}
+    {{- if .Values.networkPolicy.allowExternalEgress }}
+    # The Claude API and the identity provider are both external over TLS.
+    - ports:
+        - protocol: TCP
+          port: 443
+    {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ printf "%s-web" (include "nym.fullname" .) }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "web") | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "nym.componentSelectorLabels" (dict "context" . "component" "web") | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        {{- if .Values.networkPolicy.ingressFromNamespaceSelector }}
+        - namespaceSelector:
+            {{- toYaml .Values.networkPolicy.ingressFromNamespaceSelector | nindent 12 }}
+        {{- else }}
+        - namespaceSelector: {}
+        {{- end }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.web.service.containerPort }}
+  egress:
+    # Static files only: nginx needs DNS and nothing else.
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+{{- end }}

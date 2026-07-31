@@ -1,0 +1,314 @@
+# Default values for the Nym chart.
+#
+# The defaults deploy safely but deliberately will not start without the four
+# secrets under `secrets` and the OIDC issuer under `config.oidc`, because the
+# API validates its whole environment at boot and refuses to run half-configured.
+
+# -----------------------------------------------------------------------------
+# Naming and images
+# -----------------------------------------------------------------------------
+nameOverride: ''
+fullnameOverride: ''
+
+global:
+  # Prefixed to both image repositories when set, e.g. "ghcr.io/adamstavely".
+  imageRegistry: ''
+  imagePullSecrets: []
+
+# -----------------------------------------------------------------------------
+# Public address
+# -----------------------------------------------------------------------------
+# The canonical external URL. It drives CORS, the post-sign-in redirect and the
+# default OIDC callback, so it must match what a browser actually types.
+publicUrl: https://nym.example.com
+
+# -----------------------------------------------------------------------------
+# API
+# -----------------------------------------------------------------------------
+api:
+  image:
+    repository: nym-api
+    tag: '' # defaults to .Chart.AppVersion
+    digest: '' # takes precedence over tag when set
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 3000
+    annotations: {}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      # No CPU limit by default: throttling an event loop mid-request hurts
+      # latency more than the noisy-neighbour risk it removes. Set one if your
+      # cluster policy requires it.
+      memory: 512Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: ''
+    behavior: {}
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+    maxUnavailable: ''
+
+  # A generation run is a background call to the Claude API that can take tens of
+  # seconds. This gives an in-flight run room to finish before the pod is killed;
+  # Nest's shutdown hooks stop accepting new work immediately.
+  terminationGracePeriodSeconds: 90
+
+  livenessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startupProbe:
+    enabled: true
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 30
+
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  priorityClassName: ''
+
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumes: []
+  extraVolumeMounts: []
+
+# -----------------------------------------------------------------------------
+# Web
+# -----------------------------------------------------------------------------
+web:
+  image:
+    repository: nym-web
+    tag: ''
+    digest: ''
+    pullPolicy: IfNotPresent
+
+  replicaCount: 2
+
+  service:
+    type: ClusterIP
+    port: 80
+    # The unprivileged nginx image listens here as a non-root user.
+    containerPort: 8080
+    annotations: {}
+
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: ''
+    behavior: {}
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+    maxUnavailable: ''
+
+  terminationGracePeriodSeconds: 30
+
+  livenessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 2
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  podAnnotations: {}
+  podLabels: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  topologySpreadConstraints: []
+  priorityClassName: ''
+
+  extraEnv: []
+  extraVolumes: []
+  extraVolumeMounts: []
+
+# -----------------------------------------------------------------------------
+# Application configuration (non-secret)
+# -----------------------------------------------------------------------------
+# These land in a ConfigMap. Every key mirrors a variable the API validates at
+# boot in apps/api/src/config/configuration.ts.
+config:
+  apiPrefix: api/v1
+  logLevel: log
+
+  database:
+    ssl: true
+    logging: false
+
+  anthropic:
+    model: claude-sonnet-5
+    maxTokens: 3000
+    timeoutMs: 120000
+    maxRetries: 2
+
+  oidc:
+    # Required. Examples:
+    #   Entra ID  https://login.microsoftonline.com/<tenant-id>/v2.0
+    #   Okta      https://<org>.okta.com/oauth2/default
+    #   Auth0     https://<tenant>.eu.auth0.com/
+    #   Keycloak  https://<host>/realms/<realm>
+    issuerUrl: ''
+    clientId: ''
+    scopes: openid profile email
+    # Defaults to {{ publicUrl }}/{{ apiPrefix }}/auth/callback.
+    redirectUri: ''
+    # Defaults to publicUrl.
+    postLogoutRedirectUri: ''
+    nameClaim: name
+    emailClaim: email
+    roleClaim: role
+    defaultRole: Publishing assistant
+
+  session:
+    cookieName: nym_session
+    ttlSeconds: 28800
+    # Only ever false for plain-http local development.
+    secureCookie: true
+    cookieDomain: ''
+
+# -----------------------------------------------------------------------------
+# Secrets
+# -----------------------------------------------------------------------------
+# Two ways to supply them:
+#
+#  1. Point at a Secret you already manage (External Secrets, Sealed Secrets,
+#     your cloud's secret store). Set `existingSecret` and leave `create` true
+#     only if you also want the chart to own the rest.
+#  2. Let the chart create the Secret from these values. Convenient for a
+#     preview environment; for production prefer option 1, so the values never
+#     sit in a release history or a CI log.
+secrets:
+  create: true
+  existingSecret: ''
+
+  # Used when create is true.
+  databaseUrl: '' # postgres://user:password@host:5432/nym
+  anthropicApiKey: ''
+  oidcClientSecret: ''
+  sessionSecret: '' # at least 32 characters
+
+  # Key names to read when using an existing Secret.
+  keys:
+    databaseUrl: DATABASE_URL
+    anthropicApiKey: ANTHROPIC_API_KEY
+    oidcClientSecret: OIDC_CLIENT_SECRET
+    sessionSecret: SESSION_SECRET
+
+# -----------------------------------------------------------------------------
+# Database migrations
+# -----------------------------------------------------------------------------
+# Runs as a pre-install / pre-upgrade hook so the schema is in place before any
+# new pod serves traffic. The hook blocks the release: a failed migration stops
+# the rollout rather than letting mismatched code start.
+migrations:
+  enabled: true
+  backoffLimit: 2
+  activeDeadlineSeconds: 600
+  ttlSecondsAfterFinished: 3600
+  resources:
+    requests:
+      cpu: 50m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# -----------------------------------------------------------------------------
+# Ingress
+# -----------------------------------------------------------------------------
+# One host serves both: /{apiPrefix} routes to the API, everything else to the
+# client. Same origin means the session cookie stays first-party, which is what
+# the application assumes.
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  # Defaults to the host in publicUrl.
+  host: ''
+  extraHosts: []
+  tls:
+    enabled: true
+    # Defaults to {{ fullname }}-tls.
+    secretName: ''
+
+# -----------------------------------------------------------------------------
+# Service account, security and network
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: ''
+  annotations: {}
+  automountServiceAccountToken: false
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  privileged: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+networkPolicy:
+  enabled: false
+  # Where the API is allowed to reach the database.
+  databasePort: 5432
+  # The API must reach the Claude API and the identity provider, so egress to
+  # the public internet on 443 is allowed; tighten this to your egress gateway
+  # if you have one.
+  allowExternalEgress: true
+  # Selectors for whatever fronts the ingress, e.g. the ingress controller.
+  ingressFromNamespaceSelector: {}
+  ingressFromPodSelector: {}
+
+# Extra labels and annotations applied to every object the chart creates.
+commonLabels: {}
+commonAnnotations: {}

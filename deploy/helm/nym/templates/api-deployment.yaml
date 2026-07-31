@@ -1,0 +1,149 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nym.apiFullname" . }}
+  labels:
+    {{- include "nym.componentLabels" (dict "context" . "component" "api") | nindent 4 }}
+  {{- with .Values.commonAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .Values.api.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicaCount }}
+  {{- end }}
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "nym.componentSelectorLabels" (dict "context" . "component" "api") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "nym.componentLabels" (dict "context" . "component" "api") | nindent 8 }}
+        {{- with .Values.api.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        # Rolls the pods when configuration changes, which a ConfigMap edit does
+        # not do on its own.
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if and .Values.secrets.create (not .Values.secrets.existingSecret) }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- end }}
+        {{- with .Values.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "nym.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automountServiceAccountToken }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      terminationGracePeriodSeconds: {{ .Values.api.terminationGracePeriodSeconds }}
+      {{- with .Values.api.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      containers:
+        - name: api
+          image: {{ include "nym.image" (dict "context" . "image" .Values.api.image) | quote }}
+          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.api.service.port }}
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: {{ include "nym.configMapName" . }}
+            {{- with .Values.api.extraEnvFrom }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          env:
+            {{- include "nym.apiEnv" . | nindent 12 }}
+            {{- with .Values.api.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if .Values.api.startupProbe.enabled }}
+          # Gives a cold start room to finish — OIDC discovery runs at boot —
+          # without loosening the liveness threshold afterwards.
+          startupProbe:
+            httpGet:
+              path: /{{ trim .Values.config.apiPrefix }}/health/live
+              port: http
+            periodSeconds: {{ .Values.api.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.api.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.api.startupProbe.failureThreshold }}
+          {{- end }}
+          # Liveness deliberately avoids the database: a shared database blip
+          # must not restart every pod at once.
+          livenessProbe:
+            httpGet:
+              path: /{{ trim .Values.config.apiPrefix }}/health/live
+              port: http
+            initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.api.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.api.livenessProbe.failureThreshold }}
+          # Readiness does check it, so a pod that cannot reach the database is
+          # taken out of the Service until it can.
+          readinessProbe:
+            httpGet:
+              path: /{{ trim .Values.config.apiPrefix }}/health
+              port: http
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.api.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.api.readinessProbe.failureThreshold }}
+          resources:
+            {{- toYaml .Values.api.resources | nindent 12 }}
+          volumeMounts:
+            # The root filesystem is read-only, so anything that needs to write
+            # gets an explicit emptyDir.
+            - name: tmp
+              mountPath: /tmp
+            {{- with .Values.api.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- with .Values.api.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.api.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.api.affinity }}
+      affinity:
+        {{- toYaml .Values.api.affinity | nindent 8 }}
+      {{- else }}
+      affinity:
+        # Spread replicas across nodes where possible, without making a
+        # single-node cluster unschedulable.
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "nym.componentSelectorLabels" (dict "context" . "component" "api") | nindent 20 }}
+      {{- end }}
+      {{- with .Values.api.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

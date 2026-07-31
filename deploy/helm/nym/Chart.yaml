@@ -1,0 +1,32 @@
+apiVersion: v2
+name: nym
+description: Nym — the pen name desk for publishing assistants
+type: application
+
+# version  — the chart's own version, bumped when the templates change.
+# appVersion — the application release the default image tags point at.
+version: 1.0.0
+appVersion: '1.0.0'
+
+kubeVersion: '>=1.25.0-0'
+
+home: https://github.com/adamstavely/animated-garbanzo
+sources:
+  - https://github.com/adamstavely/animated-garbanzo
+
+keywords:
+  - nym
+  - publishing
+  - pen-names
+
+maintainers:
+  - name: Publishing platform team
+
+annotations:
+  category: ApplicationServer
+
+# No database dependency is declared on purpose. Nym expects a managed Postgres
+# reached through `config.database` / the release Secret, so the chart never
+# owns the lifecycle of the data. See the chart README for how to add the
+# Bitnami postgresql subchart if you want an in-cluster database for a
+# non-production environment.
