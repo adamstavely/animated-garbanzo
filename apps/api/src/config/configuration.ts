@@ -23,6 +23,7 @@ export const environmentSchema = z
     WEB_APP_URL: z.string().url().default('http://localhost:4200'),
 
     DATABASE_URL: z.string().min(1),
+    /** Required true in production; plaintext DB traffic is refused there. */
     DATABASE_SSL: booleanish.default('false'),
     /**
      * Verify the database TLS certificate when DATABASE_SSL is on.
@@ -109,11 +110,19 @@ export const environmentSchema = z
       });
     }
 
-    if (value.DATABASE_SSL && !value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
+    if (!value.DATABASE_SSL) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['DATABASE_SSL'],
+        message: 'must be true in production',
+      });
+    }
+
+    if (!value.DATABASE_SSL_REJECT_UNAUTHORIZED) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['DATABASE_SSL_REJECT_UNAUTHORIZED'],
-        message: 'must be true in production when DATABASE_SSL is enabled',
+        message: 'must be true in production',
       });
     }
   });

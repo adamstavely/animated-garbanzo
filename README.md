@@ -288,7 +288,7 @@ moves the request to History. Reopening clears the approval.
   pass; CI runs all three plus the end-to-end suite.
 - **Schema changes go through migrations.** `DATABASE_SYNCHRONIZE` stays false
   outside local experimentation, and production boot refuses it along with an
-  insecure session cookie or unverified database TLS.
+  insecure session cookie, plaintext database traffic, or unverified database TLS.
 - **New endpoints are authenticated by default.** Marking one `@Public()` should
   be a deliberate, reviewed decision.
 - **New styling values go in `tokens.css` first.** A literal colour or size in a
