@@ -64,6 +64,13 @@ export const environmentSchema = z
     SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(28_800),
     SESSION_COOKIE_SECURE: booleanish.default('true'),
     SESSION_COOKIE_DOMAIN: z.string().optional(),
+    /**
+     * Express trust-proxy hop count when the API sits behind a reverse proxy
+     * (so `req.ip` / `req.protocol` reflect the client). `0` means do not trust
+     * forwarded headers — the right default for local development. The OIDC
+     * code exchange never reads Host / X-Forwarded-*; it uses OIDC_REDIRECT_URI.
+     */
+    TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 
     /**
      * How long a request may stay in `generating` before being marked failed.
@@ -120,6 +127,8 @@ export interface AppConfig {
   apiPrefix: string;
   webOrigin: string;
   webAppUrl: string;
+  /** Express `trust proxy` hop count; `0` leaves the setting unset. */
+  trustProxy: number;
   database: {
     url: string;
     ssl: boolean;
@@ -195,6 +204,7 @@ export function loadConfiguration(env: NodeJS.ProcessEnv = process.env): AppConf
     apiPrefix: value.API_PREFIX,
     webOrigin: value.WEB_ORIGIN,
     webAppUrl: value.WEB_APP_URL,
+    trustProxy: value.TRUST_PROXY,
     database: {
       url: value.DATABASE_URL,
       ssl: value.DATABASE_SSL,

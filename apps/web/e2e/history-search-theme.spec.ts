@@ -13,7 +13,7 @@ test.describe('History', () => {
 
     await expect(row.getByText('Ash T. FENNIMORE')).toBeVisible();
     await expect(row.getByText('No name overlap')).toBeVisible();
-    await expect(row.getByText('No prior use')).toBeVisible();
+    await expect(row.getByText('Prior use unverified')).toBeVisible();
     await expect(row.getByText('Rosa Marchetti')).toBeVisible();
     await expect(row.getByText('Approved')).toBeVisible();
   });

@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -11,13 +12,20 @@ import { AppModule } from './app.module';
 import { AppConfig } from './config/configuration';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService<AppConfig, true>);
 
   const port = config.get('port', { infer: true });
   const apiPrefix = config.get('apiPrefix', { infer: true });
   const webOrigin = config.get('webOrigin', { infer: true });
   const isProduction = config.get('isProduction', { infer: true });
+  const trustProxy = config.get('trustProxy', { infer: true });
+
+  // Only when a reverse proxy sits in front. OIDC still uses OIDC_REDIRECT_URI
+  // for the code exchange and never trusts Host / X-Forwarded-* for that path.
+  if (trustProxy > 0) {
+    app.set('trust proxy', trustProxy);
+  }
 
   app.use(helmet());
   app.use(cookieParser());

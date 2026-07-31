@@ -11,9 +11,9 @@ test.describe('Queue', () => {
 
     const readyRow = rows.filter({ hasText: 'Margaret E. Voss' });
     await expect(readyRow.getByText('No name overlap')).toBeVisible();
-    await expect(readyRow.getByText('No prior use')).toBeVisible();
-    await expect(readyRow.getByText('Not a famous name')).toBeVisible();
-    await expect(readyRow.getByText('No offensive terms')).toBeVisible();
+    await expect(readyRow.getByText('Prior use unverified')).toBeVisible();
+    await expect(readyRow.getByText('Fame unverified')).toBeVisible();
+    await expect(readyRow.getByText('Offensive terms unverified')).toBeVisible();
     await expect(readyRow.getByText('Ready')).toBeVisible();
   });
 
