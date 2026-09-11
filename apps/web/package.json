@@ -2,7 +2,7 @@
   "name": "@nym/web",
   "version": "1.0.0",
   "private": true,
-  "description": "Nym web client \u2014 the pen name desk",
+  "description": "Nym web client — the pen name desk",
   "license": "UNLICENSED",
   "scripts": {
     "ng": "ng",
@@ -45,6 +45,6 @@
     "jsdom": "^28.0.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.20.0",
-    "vitest": "^4.0.8"
+    "vitest": "^4.1.11"
   }
 }
